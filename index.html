@@ -6,45 +6,28 @@
 <title>श्रीEstore | Tools Hub Rajkot</title>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-  import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyBMoWAozpZVX8Y5L5h3p_Z_2lWZM_AYQw0",
-    authDomain: "kestore-a6353.firebaseapp.com",
-    projectId: "kestore-a6353",
-    storageBucket: "kestore-a6353.firebasestorage.app",
-    messagingSenderId: "86513678850",
-    appId: "1:86513678850:web:432aca9c0baee8e89c051b",
-    measurementId: "G-YGBD1FMNVS"
+    apiKey: "AIzaSyBOJQSNDeu7yclNvG0WaLvgridGL7TntdM",
+    authDomain: "toolshubrajkot-515307.firebaseapp.com",
+    projectId: "toolshubrajkot-515307",
+    storageBucket: "toolshubrajkot-515307.firebasestorage.app",
+    messagingSenderId: "369485739707",
+    appId: "1:369485739707:web:313175347b580328955b9e",
+    measurementId: "G-WX3S3MC46Z"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  const storage = getStorage(app);
-  const analytics = getAnalytics(app);
 
   window.db = db;
   window.adminAuth = auth;
-  window.storage = storage;
-  window.analytics = analytics;
   window.fbLib = { collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch };
   window.adminAuthApi = { signInWithEmailAndPassword, signOut, onAuthStateChanged };
-  window.uploadProductImage = async (base64Data, productId, imgIndex) => {
-    if (!base64Data.startsWith('data:image/')) return base64Data;
-    try {
-      const storageRef = ref(storage, `products/${productId}/img_${imgIndex}.webp`);
-      const snapshot = await uploadString(storageRef, base64Data, 'data_url');
-      return await getDownloadURL(snapshot.ref);
-    } catch (e) {
-      console.warn("Storage upload failed, falling back to compressed image:", e);
-      return base64Data;
-    }
-  };
 
   if (typeof window.initStoreFirebase === "function") window.initStoreFirebase();
   onAuthStateChanged(auth, user => {
@@ -236,6 +219,13 @@ button{cursor:pointer}
 #adminApp .imageDrop .dropHint{padding:4px;pointer-events:none}
 #adminApp .imageDrop img.visible+.dropHint{display:none}
 #adminApp .imageUrlField{width:100%;margin-top:5px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:11px}
+#adminApp .r2PhotoSlot{min-width:0}
+#adminApp .r2PhotoSlot label{display:block;font-size:12px;font-weight:700;margin:2px 0 5px}
+#adminApp .r2PhotoRow{display:flex;gap:6px;align-items:stretch}
+#adminApp .r2PhotoRow .imageUrlField{flex:1;min-width:0;margin:0}
+#adminApp .r2UploadBtn{min-height:36px!important;padding:6px 9px!important;font-size:11px!important;white-space:nowrap}
+#adminApp .r2PhotoPreview{display:none;width:100%;height:72px;object-fit:contain;margin-top:6px;border:1px solid #d1d5db;border-radius:7px;background:#fff}
+#adminApp .r2PhotoPreview.visible{display:block}
 #adminApp .imgClearBtn{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:#dc2626;color:#fff;font-size:11px;font-weight:700;line-height:20px;text-align:center;padding:0;z-index:2;display:none}
 #adminApp .imgClearBtn.visible{display:block}
 #adminApp .modalShade{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:50}
@@ -643,7 +633,11 @@ window.initStoreFirebase = function(){
   snap.forEach(d => list.push({ id: d.id, ...d.data() }));
   window.storeProducts = list;
   if (window.C) C.onProductsUpdated();
- }, err => console.error("Customer products sync error:", err));
+ }, err => {
+  console.error("Customer products sync error:", err);
+  const banner = document.getElementById('c_topShowcaseBanner');
+  if (banner) banner.innerHTML = '<div class="empty" style="color:#fff">Products could not load. Check Firebase configuration and Firestore read rules.</div>';
+ });
 
  window.fbLib.onSnapshot(window.fbLib.doc(window.db, "settings", "store_profile"), snap => {
   if (snap.exists()) {
@@ -669,7 +663,7 @@ window.C = (() => {
  function liveProducts(){ return getProducts().filter(p => p.live !== false); }
  function discount(p){ if(!(Number(p.mrp)>0)||!(Number(p.price)>=0)||Number(p.price)>Number(p.mrp))return null; let v=Number(p.mrp)-Number(p.price); return {rs:v,pct:v/Number(p.mrp)*100}; }
  function photo(p){ let list=(p?.images||[]).filter(Boolean); return list[0]||p?.image||makeFallbackSVG(p?.name); }
- function imgTag(src, name, cls=''){ let fb=makeFallbackSVG(name); return `<img class="${cls}" src="${esc(src||fb)}" alt="${esc(name||'')}" onerror="this.onerror=null;this.src='${fb}'">`; }
+ function imgTag(src, name, cls=''){ let fb=makeFallbackSVG(name); return `<img class="${cls}" src="${esc(src||fb)}" alt="${esc(name||'')}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">`; }
 
  function productCard(p){
   let d = discount(p);
@@ -823,8 +817,8 @@ window.C = (() => {
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
 
   document.getElementById('c_detailContent').innerHTML = `<div class="panel">
-   <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" onerror="this.onerror=null;this.src='${fb}'">
-   <div class="thumbs">${imgs.slice(0,4).map((u,i)=>`<img class="${i===0?'sel':''}" src="${esc(u)}" onerror="this.onerror=null;this.src='${fb}'" onclick="document.getElementById('c_mainDetailImg').src=this.src;document.querySelectorAll('#customerApp .thumbs img').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')">`).join('')}</div>
+   <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">
+   <div class="thumbs">${imgs.slice(0,4).map((u,i)=>`<img class="${i===0?'sel':''}" src="${esc(u)}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'" onclick="document.getElementById('c_mainDetailImg').src=this.src;document.querySelectorAll('#customerApp .thumbs img').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')">`).join('')}</div>
    <h2>${esc(p.name)}</h2>
    <div class="small">SKU: ${esc(p.sku)} • ${esc(p.cat)} | GST: ${p.gstRate||18}% ${p.hsn?'| HSN: '+esc(p.hsn):''}</div>
    <div class="price" id="c_detailPriceDisp">${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span></div>
@@ -1259,6 +1253,8 @@ window.A = (() => {
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
+ // Set this to your Cloudflare Worker endpoint; never put R2 credentials in browser code.
+ const CLOUDFLARE_WORKER_UPLOAD_URL = '';
  let tempQrImage = '';
  let imagePressTimer = null, imagePressTriggered = false;
 
@@ -1619,17 +1615,16 @@ window.A = (() => {
      ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
     </section>
     <section data-product-step="3" style="display:none">
-     <label>Product Photos * (at least 1 photo; maximum 4)</label>
-     <p class="muted" style="margin:6px 0 10px">One photo is required to save this step. Tap a box for one photo; long-press for multiple photos or a folder. Selected photos are processed one at a time.</p>
-     <input type="file" id="a_bulkImagesInput" accept="image/*" multiple style="display:none" onchange="A.handleBulkProductImages(this)">
-     <input type="file" id="a_folderImagesInput" accept="image/*" multiple webkitdirectory directory style="display:none" onchange="A.handleBulkProductImages(this)">
-     <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="imageSlot">
-      <button type="button" class="imgClearBtn" id="a_imgClear${i}" onclick="A.clearProductImage(${i})">×</button>
-      <div class="imageDrop" id="a_imageDrop${i}" onclick="A.imageBoxClick(event,${i})" onpointerdown="A.startImageBoxPress(event,${i})" onpointerup="A.endImageBoxPress()" onpointercancel="A.endImageBoxPress()" onpointerleave="A.endImageBoxPress()" oncontextmenu="A.imageBoxContextMenu(event,${i})" ondragover="A.imageDragOver(event,${i})" ondragleave="A.imageDragLeave(event,${i})" ondrop="A.imageDropFile(event,${i})">
-       <img id="a_uploadPreview${i}" alt="Upload preview"><span class="dropHint">＋<br>Photo ${i+1}<br>Tap / hold</span>
+     <label>Product Photos (up to 4; URL paste is fastest)</label>
+     <p class="muted" style="margin:6px 0 10px">Paste a public Cloudflare image URL, or choose Upload File to compress and send it to your configured Worker.</p>
+     <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="r2PhotoSlot">
+      <label for="a_imageUrl${i}">Photo ${i+1} URL${i===0?' (Main)':''}</label>
+      <div class="r2PhotoRow">
+       <input class="imageUrlField" id="a_imageUrl${i}" type="url" placeholder="https://..." value="${esc(productUploadImages[i]&&!productUploadImages[i].startsWith('data:image/')?productUploadImages[i]:'')}" oninput="A.handleImageUrlInput(this,${i})">
+       <button type="button" class="btn ghost r2UploadBtn" onclick="document.getElementById('a_singleImageInput${i}').click()">Upload File</button>
        <input id="a_singleImageInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleProductImage(this,${i})">
       </div>
-      <input class="imageUrlField" id="a_imageUrl${i}" type="text" placeholder="Ya image URL paste karein" value="${esc(productUploadImages[i]&&!productUploadImages[i].startsWith('data:image/')?productUploadImages[i]:'')}" oninput="A.handleImageUrlInput(this,${i})">
+      <img class="r2PhotoPreview" id="a_uploadPreview${i}" alt="Photo ${i+1} live preview" loading="lazy">
      </div>`).join('')}</div>
      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button><button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true)">Save Product &amp; Photos</button></div>
      ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
@@ -1637,9 +1632,9 @@ window.A = (() => {
 
    productUploadImages.forEach((src,i)=>{
     if(src){
-     showUploadPreview(i, src);
      let urlInput=document.getElementById(`a_imageUrl${i}`);
      if(urlInput&&!src.startsWith('data:image/')) urlInput.value=src;
+     if(!src.startsWith('data:image/')) showUploadPreview(i, src);
     }
    });
   }
@@ -1689,10 +1684,9 @@ window.A = (() => {
 
  function showUploadPreview(index, src){
   let img = document.getElementById(`a_uploadPreview${index}`);
-  let clr = document.getElementById(`a_imgClear${index}`);
   if(!img) return;
-  if(src){ img.src=src; img.classList.add('visible'); clr?.classList.add('visible'); }
-  else { img.src=''; img.classList.remove('visible'); clr?.classList.remove('visible'); }
+  if(src){ img.src=src; img.classList.add('visible'); }
+  else { img.removeAttribute('src'); img.classList.remove('visible'); }
  }
  function clearProductImage(index){
   productUploadImages[index]='';
@@ -1705,61 +1699,62 @@ window.A = (() => {
   productUploadImages[index]=url;
   showUploadPreview(index,url);
  }
- function imageDragOver(event,index){ event.preventDefault(); document.getElementById(`a_imageDrop${index}`)?.classList.add('dragover'); }
- function imageDragLeave(event,index){ event.preventDefault(); document.getElementById(`a_imageDrop${index}`)?.classList.remove('dragover'); }
- function imageDropFile(event,index){ event.preventDefault(); imageDragLeave(event,index); let file=event.dataTransfer?.files?.[0]; if(file) processProductImage(file,index); }
- function handleProductImage(input,index){ let file=input.files?.[0]; if(file) processProductImage(file,index); input.value=''; }
-
- function imageBoxClick(event,index){
-  if(imagePressTriggered){ imagePressTriggered=false; return; }
-  if(event.target.closest('.imgClearBtn')) return;
-  document.getElementById(`a_singleImageInput${index}`)?.click();
- }
- function startImageBoxPress(event,index){
-  if(event.pointerType==='mouse' && event.button!==0) return;
-  imagePressTriggered=false;
-  clearTimeout(imagePressTimer);
-  imagePressTimer=setTimeout(()=>{
-   imagePressTriggered=true;
-   imageBoxMenu(index);
-  },600);
- }
- function endImageBoxPress(){ clearTimeout(imagePressTimer); }
- function imageBoxContextMenu(event,index){ event.preventDefault(); imagePressTriggered=true; imageBoxMenu(index); }
- function imageBoxMenu(index){
-  document.getElementById('a_quickHost').innerHTML=`<div class="modalShade" style="display:block" onclick="A.closeQuick()">
-   <div class="quick" onclick="event.stopPropagation()">
-    <h3>Upload Photos</h3>
-    <button onclick="A.pickBulkImages('multiple')">📷 Select Multiple Photos</button>
-    <button onclick="A.pickBulkImages('folder')">📁 Select Photo Folder</button>
-    <button onclick="A.closeQuick()" style="color:#6b7280;text-align:center">Cancel</button>
-   </div>
-  </div>`;
- }
- function pickBulkImages(type){
-  closeQuick();
-  document.getElementById(type==='folder'?'a_folderImagesInput':'a_bulkImagesInput')?.click();
- }
-
- async function handleBulkProductImages(input){
-  let files=Array.from(input.files||[]).filter(file=>file.type.startsWith('image/'));
+ function handleProductImage(input,index){
+  let file=input.files?.[0];
+  if(file) processProductImage(file,index);
   input.value='';
-  let slots=productUploadImages.map((value,index)=>value? -1:index).filter(index=>index>=0);
-  if(!files.length){ alert('No image files found.'); return; }
-  if(files.length>slots.length) alert(`Only ${slots.length} photo slot(s) available. Extra files will be ignored.`);
-  for(let i=0;i<Math.min(files.length,slots.length);i++) await processProductImage(files[i],slots[i]);
  }
 
- async function processProductImage(file, index){
+ async function processProductImage(file,index){
   if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
-  if(file.size > 20*1024*1024){ alert('Image too large (max 20 MB).'); return; }
+  if(file.size>20*1024*1024){ alert('Image too large (max 20 MB).'); return; }
+  if(!CLOUDFLARE_WORKER_UPLOAD_URL){ alert('Set CLOUDFLARE_WORKER_UPLOAD_URL in the admin code before uploading files. You can paste a public image URL instead.'); return; }
   try{
-   let compressed = await smartCompressImage(file);
-   productUploadImages[index] = compressed;
-   let urlInput=document.getElementById(`a_imageUrl${index}`);
-   if(urlInput) urlInput.value='';
-   showUploadPreview(index, compressed);
-  }catch(err){ console.error(err); alert('Could not read image.'); }
+   const compressed=await compressForWorker(file);
+   const formData=new FormData();
+   formData.append('file',compressed,`product_${Date.now()}_${index+1}.webp`);
+   formData.append('productId',String(document.getElementById('a_fSku')?.value||'product'));
+   formData.append('imageIndex',String(index));
+   const response=await fetch(CLOUDFLARE_WORKER_UPLOAD_URL,{method:'POST',body:formData});
+   if(!response.ok) throw new Error(`Worker upload failed (${response.status})`);
+   const result=await response.json();
+   const publicUrl=result.url||result.publicUrl||result.imageUrl;
+   if(!publicUrl||!/^https:\/\//i.test(publicUrl)) throw new Error('Worker response must contain a public HTTPS URL in url, publicUrl, or imageUrl.');
+   productUploadImages[index]=publicUrl;
+   const urlInput=document.getElementById(`a_imageUrl${index}`);
+   if(urlInput) urlInput.value=publicUrl;
+   showUploadPreview(index,publicUrl);
+  }catch(err){ console.error('Cloudflare Worker upload failed:',err); alert('Photo upload failed: '+err.message); }
+ }
+ function compressForWorker(file){
+  return new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onerror=()=>reject(reader.error||new Error('Could not read image'));
+   reader.onload=()=>{
+    const image=new Image();
+    image.onerror=()=>reject(new Error('Invalid image'));
+    image.onload=async()=>{
+     const scale=Math.min(1,1200/Math.max(image.naturalWidth,image.naturalHeight));
+     const canvas=document.createElement('canvas');
+     canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+     canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+     const ctx=canvas.getContext('2d');
+     ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+     ctx.drawImage(image,0,0,canvas.width,canvas.height);
+     let quality=.82, blob=null;
+     for(let attempt=0;attempt<10;attempt++){
+      blob=await new Promise(resolveBlob=>canvas.toBlob(resolveBlob,'image/webp',quality));
+      if(!blob) return reject(new Error('WebP compression is not supported in this browser'));
+      if(blob.size<=35*1024) break;
+      quality=Math.max(.25,quality-.08);
+      if(attempt===5){ canvas.width=Math.max(1,Math.round(canvas.width*.75)); canvas.height=Math.max(1,Math.round(canvas.height*.75)); }
+     }
+     resolve(blob);
+    };
+    image.src=reader.result;
+   };
+   reader.readAsDataURL(file);
+  });
  }
 
    async function saveProduct(id, withPhotos=true){
@@ -1768,9 +1763,10 @@ window.A = (() => {
    let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
    if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
    if(!validateProductPricing()){ goProductStep(2); return; }
-   if(withPhotos&&!productUploadImages.some(Boolean)){ alert('At least one product photo is required. You can save without photos from Step 2 and add them later.'); goProductStep(3); return; }
+   if(withPhotos && productUploadImages.some(src=>src && !/^https:\/\//i.test(src))){ alert('Photo URLs must be public HTTPS links. Upload selected files first or enter HTTPS image URLs.'); goProductStep(3); return; }
 
    let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
+   let hsn=document.getElementById('a_fHsn').value.trim();
    let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
    let b2bPrice=b2bInput===''?Math.round(price*(1-Number(document.getElementById('a_fB2bPct').value)/100)):Number(b2bInput);
    const btn=document.getElementById(withPhotos?'a_saveProdBtn':'a_saveNoPhotoBtn');
@@ -1779,12 +1775,13 @@ window.A = (() => {
    try{
     let finalImages=[];
     if(withPhotos){
-     for(let i=0;i<productUploadImages.length;i++){
-      if(productUploadImages[i]) finalImages.push(await window.uploadProductImage(productUploadImages[i],id,i));
-     }
+     finalImages=productUploadImages.filter(Boolean).slice(0,4);
     }else{
-     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:productUploadImages.filter(src=>src&&!src.startsWith('data:image/')));
-     finalImages=keepImages.slice(0,4);
+     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:[]);
+     finalImages=keepImages.filter(src=>typeof src==='string'&&/^https:\/\//i.test(src)).slice(0,4);
+    }
+    if(finalImages.some(src=>typeof src!=='string'||!/^https:\/\//i.test(src))){
+     throw new Error('Product photos must be public HTTPS URLs.');
     }
     let x={
      id,name,sku,cat:document.getElementById('a_fCat').value,
@@ -2313,8 +2310,8 @@ window.A = (() => {
    }
   },
   showPage,   toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
-  newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep, handleBulkProductImages,
-  clearProductImage, handleImageUrlInput, imageDragOver, imageDragLeave, imageDropFile, handleProductImage, imageBoxClick, startImageBoxPress, endImageBoxPress, imageBoxContextMenu, pickBulkImages, saveProduct,
+  newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep,
+  clearProductImage, handleImageUrlInput, handleProductImage, saveProduct,
   closeModal, closeQuick, toggleShowcase, toggleLive, priceChange, saveQuickPrices,
   deliveryChargeChange, saveDeliveryCharge, stockChange, saveQuickStock, deleteProd,
   renderProducts, renderOrders, applyOrderSort, setOrderStatus, deleteOrder,
