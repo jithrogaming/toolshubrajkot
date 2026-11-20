@@ -7,11 +7,12 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+  import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app-check.js";
   import { getFirestore, collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyBOJQSNDeu7yclNvG0WaLvgridGL7TntdM",
+    apiKey: "AIzaSyBOJQSNDeu7yclNvG0WaLvgridGl7TntdM",
     authDomain: "toolshubrajkot-515307.firebaseapp.com",
     projectId: "toolshubrajkot-515307",
     storageBucket: "toolshubrajkot-515307.firebasestorage.app",
@@ -21,6 +22,13 @@
   };
 
   const app = initializeApp(firebaseConfig);
+
+  // Firebase App Check (Fraud Defense / reCAPTCHA Enterprise Site Key)
+  const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LcN6CkuAAAAAO2mGx4aP6GnYvUqz-n46ee_23xn'),
+    isTokenAutoRefreshEnabled: true
+  });
+
   const db = getFirestore(app);
   const auth = getAuth(app);
 
@@ -415,7 +423,7 @@ button{cursor:pointer}
 <!-- ==================== 2. ADMIN PANEL (WHITE THEME) ==================== -->
 <div id="adminApp" class="app-hidden">
  <header class="top">
-  <div class="logo" onclick="A.showPage('a_dashboard')">Shree Estore Admin</div>
+  <div class="logo" onclick="A.showPage('a_dashboard')">KEstore Admin</div>
   <button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="switchToCustomer()">View Store ↗</button>
  </header>
 
@@ -487,9 +495,9 @@ button{cursor:pointer}
      <option value="all">All Orders</option>
      <option>Confirmed</option>
      <option>Shipped</option>
-           <option>Delivered</option>
-      <option>Complete</option>
-      <option>Cancelled</option>
+     <option>Delivered</option>
+     <option>Complete</option>
+     <option>Cancelled</option>
      <option>Pending</option>
     </select>
    </div>
@@ -555,7 +563,7 @@ button{cursor:pointer}
      <input class="field" id="a_sellerState" placeholder="State">
      <input class="field" id="a_invoicePrefix" placeholder="Invoice Prefix">
     </div>
-    <input class="field" id="a_sellerUpi" placeholder="Admin UPI ID (e.g. shreeestore@oksbi)">
+    <input class="field" id="a_sellerUpi" placeholder="Admin UPI ID (e.g. kestore@oksbi)">
     <label style="font-size:12px;font-weight:700;display:block;margin-top:6px">Admin Payment QR Image (UPI / PhonePe / Paytm)</label>
     <div style="display:flex;align-items:center;gap:10px;margin:6px 0 12px">
      <input type="file" accept="image/*" id="a_qrUploadInput" onchange="A.handleQrUpload(this)">
@@ -613,7 +621,7 @@ function applyRoute(){
  const isAdmin = window.location.hash === '#admin' || new URLSearchParams(window.location.search).has('admin');
  document.getElementById('customerApp').classList.toggle('app-hidden', isAdmin);
  document.getElementById('adminApp').classList.toggle('app-hidden', !isAdmin);
- document.title = isAdmin ? 'Shree Estore Admin' : 'श्रीEstore | Tools Hub Rajkot';
+ document.title = isAdmin ? 'KEstore Admin' : 'श्रीEstore | Tools Hub Rajkot';
  if (isAdmin && window.A) A.onOpen();
 }
 function switchToCustomer(){
@@ -670,11 +678,8 @@ window.C = (() => {
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
   let gstRate = p.gstRate !== undefined ? p.gstRate : 18;
-  let hsnCode = p.hsn ? p.hsn : 'N/A';
-  let b2cDel = p.deliveryChargeB2C !== undefined ? p.deliveryChargeB2C : (p.deliveryCharge || 250);
-  let b2bDel = p.deliveryChargeB2B !== undefined ? p.deliveryChargeB2B : 450;
 
-     return `<article class="product" onclick="C.openDetails('${esc(p.id)}')">
+  return `<article class="product" onclick="C.openDetails('${esc(p.id)}')">
     <div class="productVisual">
      ${imgTag(photo(p), p.name)}
      <div class="productActions">
@@ -815,6 +820,8 @@ window.C = (() => {
 
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+  let b2cCustomDel = Number(p.deliveryChargeB2C ?? p.deliveryCharge) || 0;
+  let defaultB2cText = b2cCustomDel > 0 ? `₹${b2cCustomDel} per item delivery` : `1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery`;
 
   document.getElementById('c_detailContent').innerHTML = `<div class="panel">
    <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">
@@ -822,7 +829,7 @@ window.C = (() => {
    <h2>${esc(p.name)}</h2>
    <div class="small">SKU: ${esc(p.sku)} • ${esc(p.cat)} | GST: ${p.gstRate||18}% ${p.hsn?'| HSN: '+esc(p.hsn):''}</div>
    <div class="price" id="c_detailPriceDisp">${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span></div>
-   <div id="c_modeStatusBanner" class="b2b-status-banner">🛒 B2C Retail Mode (1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery)</div>
+   <div id="c_modeStatusBanner" class="b2b-status-banner">🛒 B2C Retail Mode (${defaultB2cText})</div>
    ${discount(p)?`<div class="discount" id="c_detailDiscDiv">Save ${money(discount(p).rs)} • ${discount(p).pct.toFixed(0)}% OFF</div>`:''}
    <p>${esc(p.desc||'')}</p>
    ${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).length?`<div class="variantChooser"><b>Choose your options</b><div class="small">Apni pasand ka size, colour ya weight select karein.</div>${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).map(([k,v])=>`<label><b>${esc(k)}</b></label><select class="field variation" data-var="${esc(k)}">${v.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>`).join('')}</div>`:''}
@@ -843,6 +850,8 @@ window.C = (() => {
   let q = Number(document.getElementById('c_detailQty').value) || 0;
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+  let b2bCustomDel = Number(p.deliveryChargeB2B) || 450;
+  let b2cCustomDel = Number(p.deliveryChargeB2C ?? p.deliveryCharge) || 0;
   let priceEl = document.getElementById('c_detailPriceDisp');
   let bannerEl = document.getElementById('c_modeStatusBanner');
   let discEl = document.getElementById('c_detailDiscDiv');
@@ -851,14 +860,14 @@ window.C = (() => {
    let parcels = Math.ceil(q / 10);
    priceEl.innerHTML = `${money(b2bPriceVal)} <span style="font-size:12px;color:#d97706;font-weight:700">(B2B Wholesale Price)</span>`;
    bannerEl.className = 'b2b-status-banner b2b-on';
-   bannerEl.innerHTML = `📦 B2B Wholesale Active! (${q} items = ${parcels} Parcel${parcels>1?'s':''} × ₹450 delivery)`;
+   bannerEl.innerHTML = `📦 B2B Wholesale Active! (${q} items = ${parcels} Parcel${parcels>1?'s':''} × ₹${b2bCustomDel} delivery)`;
    if(discEl) discEl.style.display = 'none';
   } else {
-   let perItemDel = q >= 6 ? 150 : 250;
+   let perItemDel = b2cCustomDel > 0 ? b2cCustomDel : (q >= 6 ? 150 : 250);
    let totalDel = q > 0 ? q * perItemDel : 0;
    priceEl.innerHTML = `${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span>`;
    bannerEl.className = 'b2b-status-banner';
-   bannerEl.innerHTML = `🛒 B2C Retail Mode (${q>0 ? q+' item(s) delivery = '+money(totalDel) : '1–5 Qty: ₹250 | 6–9 Qty: ₹150'})`;
+   bannerEl.innerHTML = `🛒 B2C Retail Mode (${q>0 ? q+' item(s) delivery = '+money(totalDel) : (b2cCustomDel>0 ? '₹'+b2cCustomDel+' per item' : '1–5 Qty: ₹250 | 6–9 Qty: ₹150')})`;
    if(discEl && discount(p)) discEl.style.display = 'inline-block';
   }
  }
@@ -1044,8 +1053,8 @@ window.C = (() => {
 
   let orders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
   let cart = getCart(), allP = getProducts();
-     let activeOrders = orders.filter(o => !['Delivered','Complete','Cancelled'].includes(o.status));
-   let completedOrders = orders.filter(o => ['Delivered','Complete'].includes(o.status));
+  let activeOrders = orders.filter(o => !['Delivered','Complete','Cancelled'].includes(o.status));
+  let completedOrders = orders.filter(o => ['Delivered','Complete'].includes(o.status));
 
   let cartHtml = cart.length ? `<div class="notice" style="margin-bottom:8px"><b>In Cart (${cart.reduce((s,x)=>s+x.qty,0)} items):</b> ` + cart.map(it=>{
    let pr = allP.find(a=>a.id===it.id);
@@ -1122,8 +1131,7 @@ window.C = (() => {
   let grandTotal = orderGroups.reduce((sum, grp) => sum + grp.subtotal + grp.deliveryFee, 0);
 
   if(mode === 'UPI' || mode === 'PhonePe / Paytm'){
-   let upiLink = upiId ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(s.name||'Shree Estore')}&am=${grandTotal.toFixed(2)}&cu=INR` : '';
-   // यदि Admin ने QR अपलोड नहीं किया है, तो UPI ID से ऑटो-QR बनेगा
+   let upiLink = upiId ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(s.name||'KEstore')}&am=${grandTotal.toFixed(2)}&cu=INR` : '';
    let displayQr = qrImg || (upiLink ? `https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(upiLink)}` : '');
 
    box.innerHTML = `<div class="qrBox">
@@ -1218,7 +1226,7 @@ window.C = (() => {
 
    document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
     <h2>Orders Confirmed Successfully!</h2>
-    <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to Shree Estore.</p>
+    <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to KEstore.</p>
     <p>Grand Total: <b>${money(grandTotal)}</b> via <b>${esc(payOpt)}</b>${payRef ? ` (Ref: <code>${esc(payRef)}</code>)` : ''}</p>
     <button class="primary" onclick="C.showPage('c_profile')">View My Orders</button>
    </div>`;
@@ -1249,14 +1257,13 @@ C.init();
 /* ==================== 2. ADMIN PANEL APP (A - WHITE THEME) ==================== */
 window.A = (() => {
  const NOTES = 'kestore_notes_v1';
- let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'Shree Estore',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',upiId:'',qrImage:''};
+ let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',upiId:'',qrImage:''};
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
  // Set this to your Cloudflare Worker endpoint; never put R2 credentials in browser code.
  const CLOUDFLARE_WORKER_UPLOAD_URL = '';
  let tempQrImage = '';
- let imagePressTimer = null, imagePressTriggered = false;
 
  function products(){ return cloudProducts; }
  function readOrders(){ return cloudOrders; }
@@ -1571,100 +1578,100 @@ window.A = (() => {
  function newProduct(){ productForm(null); }
  function editProduct(id){ productForm(products().find(x=>x.id===id)); }
 
-   function productForm(p, isDuplicate=false){
-   let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],desc:'',live:true,showcase:false,variations:{}};
-   let b2bDefault = x.b2bPrice || (x.price ? Math.round(x.price * 0.85) : '');
-   let defaultPct = (x.price && x.b2bPrice) ? (((x.price - x.b2bPrice)/x.price)*100).toFixed(1) : '15';
-   let hasVariations = Object.values(x.variations||{}).some(v=>Array.isArray(v)&&v.length);
+ function productForm(p, isDuplicate=false){
+  let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],desc:'',live:true,showcase:false,variations:{}};
+  let b2bDefault = x.b2bPrice || (x.price ? Math.round(x.price * 0.85) : '');
+  let defaultPct = (x.price && x.b2bPrice) ? (((x.price - x.b2bPrice)/x.price)*100).toFixed(1) : '15';
+  let hasVariations = Object.values(x.variations||{}).some(v=>Array.isArray(v)&&v.length);
 
-   productUploadImages = Array(4).fill('');
-   let savedImages = [...(x.images||[])];
-   if(x.image && !savedImages.includes(x.image)) savedImages.unshift(x.image);
-   savedImages.filter(Boolean).slice(0,4).forEach((src,i)=>{ productUploadImages[i]=src; });
+  productUploadImages = Array(4).fill('');
+  let savedImages = [...(x.images||[])];
+  if(x.image && !savedImages.includes(x.image)) savedImages.unshift(x.image);
+  savedImages.filter(Boolean).slice(0,4).forEach((src,i)=>{ productUploadImages[i]=src; });
 
-   openModal(`<button class="close" onclick="A.closeModal()">×</button><h2>${p && !isDuplicate ? 'Edit Product' : 'New Product Listing'}</h2>
-    <div class="productStepNav"><div class="productStepBadge active" data-product-step-label="1">1. Details</div><div class="productStepBadge" data-product-step-label="2">2. GST &amp; Price</div><div class="productStepBadge" data-product-step-label="3">3. Photos</div></div>
-    <section data-product-step="1">
-     <label>Product Name *</label><input class="field" id="a_fName" value="${esc(x.name)}" required>
-     <label>SKU Code *</label><input class="field" id="a_fSku" value="${esc(x.sku)}" required>
-     <label>Description</label><textarea class="field" id="a_fDesc">${esc(x.desc||'')}</textarea>
-     <label>Stock *</label><input class="field" id="a_fStock" type="number" min="0" step="1" value="${x.stock}" required>
-     <label>Categories *</label><select class="field" id="a_fCat" required>${CATS.map(c=>`<option ${c===x.cat?'selected':''}>${c}</option>`).join('')}</select>
-     <button type="button" class="btn ghost" style="margin:8px 0" onclick="A.toggleVariationFields()">＋ Add / Edit Variations</button>
-     <div id="a_variationFields" style="display:${hasVariations?'block':'none'}">
-      <label>Colour (comma-separated)</label><input class="field" id="a_fColour" placeholder="e.g. Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}">
-      <label>Size (comma-separated)</label><input class="field" id="a_fSize" placeholder="e.g. S, M, L" value="${esc((x.variations?.Size||[]).join(','))}">
-      <label>Weight (comma-separated)</label><input class="field" id="a_fWeight" placeholder="e.g. 500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}">
-      <label>Combo (comma-separated)</label><input class="field" id="a_fCombo" placeholder="e.g. Tool Only, Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}">
+  openModal(`<button class="close" onclick="A.closeModal()">×</button><h2>${p && !isDuplicate ? 'Edit Product' : 'New Product Listing'}</h2>
+   <div class="productStepNav"><div class="productStepBadge active" data-product-step-label="1">1. Details</div><div class="productStepBadge" data-product-step-label="2">2. GST &amp; Price</div><div class="productStepBadge" data-product-step-label="3">3. Photos</div></div>
+   <section data-product-step="1">
+    <label>Product Name *</label><input class="field" id="a_fName" value="${esc(x.name)}" required>
+    <label>SKU Code *</label><input class="field" id="a_fSku" value="${esc(x.sku)}" required>
+    <label>Description</label><textarea class="field" id="a_fDesc">${esc(x.desc||'')}</textarea>
+    <label>Stock *</label><input class="field" id="a_fStock" type="number" min="0" step="1" value="${x.stock}" required>
+    <label>Categories *</label><select class="field" id="a_fCat" required>${CATS.map(c=>`<option ${c===x.cat?'selected':''}>${c}</option>`).join('')}</select>
+    <button type="button" class="btn ghost" style="margin:8px 0" onclick="A.toggleVariationFields()">＋ Add / Edit Variations</button>
+    <div id="a_variationFields" style="display:${hasVariations?'block':'none'}">
+     <label>Colour (comma-separated)</label><input class="field" id="a_fColour" placeholder="e.g. Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}">
+     <label>Size (comma-separated)</label><input class="field" id="a_fSize" placeholder="e.g. S, M, L" value="${esc((x.variations?.Size||[]).join(','))}">
+     <label>Weight (comma-separated)</label><input class="field" id="a_fWeight" placeholder="e.g. 500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}">
+     <label>Combo (comma-separated)</label><input class="field" id="a_fCombo" placeholder="e.g. Tool Only, Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}">
+    </div>
+    <div class="row" style="margin-top:10px"><button type="button" class="btn" onclick="A.goProductStep(2)">Continue to Step 2 →</button></div>
+   </section>
+   <section data-product-step="2" style="display:none">
+    <label>GST Rate *</label><select class="field" id="a_fGst">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
+    <label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN code" required>
+    <label>MRP (₹) *</label><input class="field" id="a_fMrp" type="number" min="0" step=".01" value="${x.mrp??''}" required>
+    <label>B2C Price (₹) *</label><input class="field" id="a_fPrice" type="number" min="0" step=".01" value="${x.price??''}" oninput="A.calcB2bPercent()" required>
+    <label>B2B Price (₹)</label><input class="field" id="a_fB2bPrice" type="number" min="0" step=".01" value="${b2bDefault}" oninput="A.calcB2bPercent()">
+    <label>B2B Discount (%)</label><input class="field" id="a_fB2bPct" type="number" min="0" max="100" value="${defaultPct}" oninput="A.calcB2bPriceFromPct()">
+    <label>B2B Min Qty</label><input class="field" id="a_fB2bMin" type="number" min="1" value="${x.b2bMinQty||10}">
+    <div class="row" style="margin-top:10px;flex-wrap:wrap">
+     <button type="button" class="btn ghost" onclick="A.goProductStep(1)">← Back</button>
+     <button type="button" class="btn ghost" id="a_saveNoPhotoBtn" onclick="A.saveProduct('${esc(x.id)}',false)">Save Product (Add Photos Later)</button>
+     <button type="button" class="btn" onclick="A.goProductStep(3)">Continue to Photos →</button>
+    </div>
+    ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
+   </section>
+   <section data-product-step="3" style="display:none">
+    <label>Product Photos (up to 4; URL paste is fastest)</label>
+    <p class="muted" style="margin:6px 0 10px">Paste a public Cloudflare image URL, or choose Upload File to compress and send it to your configured Worker.</p>
+    <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="r2PhotoSlot">
+     <label for="a_imageUrl${i}">Photo ${i+1} URL${i===0?' (Main)':''}</label>
+     <div class="r2PhotoRow">
+      <input class="imageUrlField" id="a_imageUrl${i}" type="url" placeholder="https://..." value="${esc(productUploadImages[i]&&!productUploadImages[i].startsWith('data:image/')?productUploadImages[i]:'')}" oninput="A.handleImageUrlInput(this,${i})">
+      <button type="button" class="btn ghost r2UploadBtn" onclick="document.getElementById('a_singleImageInput${i}').click()">Upload File</button>
+      <input id="a_singleImageInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleProductImage(this,${i})">
      </div>
-     <div class="row" style="margin-top:10px"><button type="button" class="btn" onclick="A.goProductStep(2)">Continue to Step 2 →</button></div>
-    </section>
-    <section data-product-step="2" style="display:none">
-     <label>GST Rate *</label><select class="field" id="a_fGst">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
-     <label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN code" required>
-     <label>MRP (₹) *</label><input class="field" id="a_fMrp" type="number" min="0" step=".01" value="${x.mrp??''}" required>
-     <label>B2C Price (₹) *</label><input class="field" id="a_fPrice" type="number" min="0" step=".01" value="${x.price??''}" oninput="A.calcB2bPercent()" required>
-     <label>B2B Price (₹)</label><input class="field" id="a_fB2bPrice" type="number" min="0" step=".01" value="${b2bDefault}" oninput="A.calcB2bPercent()">
-     <label>B2B Discount (%)</label><input class="field" id="a_fB2bPct" type="number" min="0" max="100" value="${defaultPct}" oninput="A.calcB2bPriceFromPct()">
-     <label>B2B Min Qty</label><input class="field" id="a_fB2bMin" type="number" min="1" value="${x.b2bMinQty||10}">
-     <div class="row" style="margin-top:10px;flex-wrap:wrap">
-      <button type="button" class="btn ghost" onclick="A.goProductStep(1)">← Back</button>
-      <button type="button" class="btn ghost" id="a_saveNoPhotoBtn" onclick="A.saveProduct('${esc(x.id)}',false)">Save Product (Add Photos Later)</button>
-      <button type="button" class="btn" onclick="A.goProductStep(3)">Continue to Photos →</button>
-     </div>
-     ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
-    </section>
-    <section data-product-step="3" style="display:none">
-     <label>Product Photos (up to 4; URL paste is fastest)</label>
-     <p class="muted" style="margin:6px 0 10px">Paste a public Cloudflare image URL, or choose Upload File to compress and send it to your configured Worker.</p>
-     <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="r2PhotoSlot">
-      <label for="a_imageUrl${i}">Photo ${i+1} URL${i===0?' (Main)':''}</label>
-      <div class="r2PhotoRow">
-       <input class="imageUrlField" id="a_imageUrl${i}" type="url" placeholder="https://..." value="${esc(productUploadImages[i]&&!productUploadImages[i].startsWith('data:image/')?productUploadImages[i]:'')}" oninput="A.handleImageUrlInput(this,${i})">
-       <button type="button" class="btn ghost r2UploadBtn" onclick="document.getElementById('a_singleImageInput${i}').click()">Upload File</button>
-       <input id="a_singleImageInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleProductImage(this,${i})">
-      </div>
-      <img class="r2PhotoPreview" id="a_uploadPreview${i}" alt="Photo ${i+1} live preview" loading="lazy">
-     </div>`).join('')}</div>
-     <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button><button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true)">Save Product &amp; Photos</button></div>
-     ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
-    </section>`);
+     <img class="r2PhotoPreview" id="a_uploadPreview${i}" alt="Photo ${i+1} live preview" loading="lazy">
+    </div>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button><button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true)">Save Product &amp; Photos</button></div>
+    ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
+   </section>`);
 
-   productUploadImages.forEach((src,i)=>{
-    if(src){
-     let urlInput=document.getElementById(`a_imageUrl${i}`);
-     if(urlInput&&!src.startsWith('data:image/')) urlInput.value=src;
-     if(!src.startsWith('data:image/')) showUploadPreview(i, src);
-    }
-   });
-  }
-
-  function goProductStep(step){
-   if(step===2){
-    const name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
-    const stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
-    if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); return; }
+  productUploadImages.forEach((src,i)=>{
+   if(src){
+    let urlInput=document.getElementById(`a_imageUrl${i}`);
+    if(urlInput&&!src.startsWith('data:image/')) urlInput.value=src;
+    showUploadPreview(i, src);
    }
-   if(step===3 && !validateProductPricing()) return;
-   document.querySelectorAll('#a_modal [data-product-step]').forEach(el=>el.style.display=el.getAttribute('data-product-step')===String(step)?'block':'none');
-   document.querySelectorAll('#a_modal [data-product-step-label]').forEach(el=>el.classList.toggle('active',el.getAttribute('data-product-step-label')===String(step)));
-   document.getElementById('a_modal').scrollTop=0;
-  }
+  });
+ }
 
-  function validateProductPricing(){
-   const hsn=document.getElementById('a_fHsn').value.trim();
-   const mrpInput=document.getElementById('a_fMrp').value.trim(), priceInput=document.getElementById('a_fPrice').value.trim();
-   const mrp=Number(mrpInput), price=Number(priceInput);
-   if(!hsn||mrpInput===''||priceInput===''){ alert('GST Rate, HSN Code, MRP and B2C Price are required.'); return false; }
-   if(!Number.isFinite(mrp)||mrp<0||!Number.isFinite(price)||price<0){ alert('Enter valid MRP and B2C Price.'); return false; }
-   const pct=Number(document.getElementById('a_fB2bPct').value);
-   if(!Number.isFinite(pct)||pct<0||pct>100){ alert('B2B Discount must be between 0 and 100%.'); return false; }
-   const minQty=Number(document.getElementById('a_fB2bMin').value);
-   if(!Number.isFinite(minQty)||minQty<1){ alert('B2B Min Qty must be at least 1.'); return false; }
-   const b2bInput=document.getElementById('a_fB2bPrice').value.trim();
-   if(b2bInput!==''&&(!Number.isFinite(Number(b2bInput))||Number(b2bInput)<0)){ alert('Enter a valid B2B Price.'); return false; }
-   return true;
+ function goProductStep(step){
+  if(step===2){
+   const name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
+   const stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
+   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); return; }
   }
+  if(step===3 && !validateProductPricing()) return;
+  document.querySelectorAll('#a_modal [data-product-step]').forEach(el=>el.style.display=el.getAttribute('data-product-step')===String(step)?'block':'none');
+  document.querySelectorAll('#a_modal [data-product-step-label]').forEach(el=>el.classList.toggle('active',el.getAttribute('data-product-step-label')===String(step)));
+  document.getElementById('a_modal').scrollTop=0;
+ }
+
+ function validateProductPricing(){
+  const hsn=document.getElementById('a_fHsn').value.trim();
+  const mrpInput=document.getElementById('a_fMrp').value.trim(), priceInput=document.getElementById('a_fPrice').value.trim();
+  const mrp=Number(mrpInput), price=Number(priceInput);
+  if(!hsn||mrpInput===''||priceInput===''){ alert('GST Rate, HSN Code, MRP and B2C Price are required.'); return false; }
+  if(!Number.isFinite(mrp)||mrp<0||!Number.isFinite(price)||price<0){ alert('Enter valid MRP and B2C Price.'); return false; }
+  const pct=Number(document.getElementById('a_fB2bPct').value);
+  if(!Number.isFinite(pct)||pct<0||pct>100){ alert('B2B Discount must be between 0 and 100%.'); return false; }
+  const minQty=Number(document.getElementById('a_fB2bMin').value);
+  if(!Number.isFinite(minQty)||minQty<1){ alert('B2B Min Qty must be at least 1.'); return false; }
+  const b2bInput=document.getElementById('a_fB2bPrice').value.trim();
+  if(b2bInput!==''&&(!Number.isFinite(Number(b2bInput))||Number(b2bInput)<0)){ alert('Enter a valid B2B Price.'); return false; }
+  return true;
+ }
 
  function toggleVariationFields(){
   let box=document.getElementById('a_variationFields');
@@ -1708,7 +1715,14 @@ window.A = (() => {
  async function processProductImage(file,index){
   if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
   if(file.size>20*1024*1024){ alert('Image too large (max 20 MB).'); return; }
-  if(!CLOUDFLARE_WORKER_UPLOAD_URL){ alert('Set CLOUDFLARE_WORKER_UPLOAD_URL in the admin code before uploading files. You can paste a public image URL instead.'); return; }
+  if(!CLOUDFLARE_WORKER_UPLOAD_URL){
+   const compressedDataUrl = await smartCompressImage(file, 720);
+   productUploadImages[index] = compressedDataUrl;
+   const urlInput = document.getElementById(`a_imageUrl${index}`);
+   if(urlInput) urlInput.value = "";
+   showUploadPreview(index, compressedDataUrl);
+   return;
+  }
   try{
    const compressed=await compressForWorker(file);
    const formData=new FormData();
@@ -1719,7 +1733,7 @@ window.A = (() => {
    if(!response.ok) throw new Error(`Worker upload failed (${response.status})`);
    const result=await response.json();
    const publicUrl=result.url||result.publicUrl||result.imageUrl;
-   if(!publicUrl||!/^https:\/\//i.test(publicUrl)) throw new Error('Worker response must contain a public HTTPS URL in url, publicUrl, or imageUrl.');
+   if(!publicUrl||!/^https?:\/\//i.test(publicUrl)) throw new Error('Worker response must contain a public HTTP/HTTPS URL.');
    productUploadImages[index]=publicUrl;
    const urlInput=document.getElementById(`a_imageUrl${index}`);
    if(urlInput) urlInput.value=publicUrl;
@@ -1757,60 +1771,57 @@ window.A = (() => {
   });
  }
 
-   async function saveProduct(id, withPhotos=true){
-   let old = products().find(x=>x.id===id);
-   let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
-   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
-   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
-   if(!validateProductPricing()){ goProductStep(2); return; }
-   if(withPhotos && productUploadImages.some(src=>src && !/^https:\/\//i.test(src))){ alert('Photo URLs must be public HTTPS links. Upload selected files first or enter HTTPS image URLs.'); goProductStep(3); return; }
+ async function saveProduct(id, withPhotos=true){
+  let old = products().find(x=>x.id===id);
+  let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
+  let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
+  if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
+  if(!validateProductPricing()){ goProductStep(2); return; }
+  if(withPhotos && productUploadImages.some(src=>src && !/^(https?:\/\/|data:image\/)/i.test(src))){ alert('Photo URL me valid https:// link dalein ya Upload File button se photo chunein.'); goProductStep(3); return; }
 
-   let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
-   let hsn=document.getElementById('a_fHsn').value.trim();
-   let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
-   let b2bPrice=b2bInput===''?Math.round(price*(1-Number(document.getElementById('a_fB2bPct').value)/100)):Number(b2bInput);
-   const btn=document.getElementById(withPhotos?'a_saveProdBtn':'a_saveNoPhotoBtn');
-   if(btn){ btn.disabled=true; btn.textContent=withPhotos?'⏳ Uploading Photos...':'⏳ Saving Product...'; }
+  let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
+  let hsn=document.getElementById('a_fHsn').value.trim();
+  let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
+  let b2bPrice=b2bInput===''?Math.round(price*(1-Number(document.getElementById('a_fB2bPct').value)/100)):Number(b2bInput);
+  const btn=document.getElementById(withPhotos?'a_saveProdBtn':'a_saveNoPhotoBtn');
+  if(btn){ btn.disabled=true; btn.textContent=withPhotos?'⏳ Uploading Photos...':'⏳ Saving Product...'; }
 
-   try{
-    let finalImages=[];
-    if(withPhotos){
-     finalImages=productUploadImages.filter(Boolean).slice(0,4);
-    }else{
-     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:[]);
-     finalImages=keepImages.filter(src=>typeof src==='string'&&/^https:\/\//i.test(src)).slice(0,4);
-    }
-    if(finalImages.some(src=>typeof src!=='string'||!/^https:\/\//i.test(src))){
-     throw new Error('Product photos must be public HTTPS URLs.');
-    }
-    let x={
-     id,name,sku,cat:document.getElementById('a_fCat').value,
-     mrp,price,b2bPrice,
-     b2bMinQty:Number(document.getElementById('a_fB2bMin').value)||10,
-     gstRate:Number(document.getElementById('a_fGst').value),stock,
-     deliveryCharge:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
-     deliveryChargeB2C:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
-     deliveryChargeB2B:Number(old?.deliveryChargeB2B??old?.deliveryCharge)||0,
-     images:finalImages,image:finalImages[0]||'',desc:document.getElementById('a_fDesc').value,
-     hsn,
-     live:old?old.live!==false:true,
-     showcase:old?isShowcased(old):false,
-     variations:{
-      Size:document.getElementById('a_fSize').value.split(',').map(s=>s.trim()).filter(Boolean),
-      Colour:document.getElementById('a_fColour').value.split(',').map(s=>s.trim()).filter(Boolean),
-      Weight:document.getElementById('a_fWeight').value.split(',').map(s=>s.trim()).filter(Boolean),
-      'Combo Kit':document.getElementById('a_fCombo').value.split(',').map(s=>s.trim()).filter(Boolean)
-     }
-    };
-    await saveSingleProductToFirebase(x);
-    closeModal();
-    showPage('a_products');
-   }catch(err){
-    console.error('Save product error:',err);
-    alert('Could not save product: '+err.message);
-    if(btn){ btn.disabled=false; btn.textContent=withPhotos?'Save Product & Photos':'Save Product (Add Photos Later)'; }
+  try{
+   let finalImages=[];
+   if(withPhotos){
+    finalImages=productUploadImages.filter(Boolean).slice(0,4);
+   }else{
+    let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:[]);
+    finalImages=keepImages.filter(src=>typeof src==='string'&&/^(https?:\/\/|data:image\/)/i.test(src)).slice(0,4);
    }
+   let x={
+    id,name,sku,cat:document.getElementById('a_fCat').value,
+    mrp,price,b2bPrice,
+    b2bMinQty:Number(document.getElementById('a_fB2bMin').value)||10,
+    gstRate:Number(document.getElementById('a_fGst').value),stock,
+    deliveryCharge:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
+    deliveryChargeB2C:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
+    deliveryChargeB2B:Number(old?.deliveryChargeB2B??old?.deliveryCharge)||0,
+    images:finalImages,image:finalImages[0]||'',desc:document.getElementById('a_fDesc').value,
+    hsn,
+    live:old?old.live!==false:true,
+    showcase:old?isShowcased(old):false,
+    variations:{
+     Size:document.getElementById('a_fSize').value.split(',').map(s=>s.trim()).filter(Boolean),
+     Colour:document.getElementById('a_fColour').value.split(',').map(s=>s.trim()).filter(Boolean),
+     Weight:document.getElementById('a_fWeight').value.split(',').map(s=>s.trim()).filter(Boolean),
+     'Combo Kit':document.getElementById('a_fCombo').value.split(',').map(s=>s.trim()).filter(Boolean)
+    }
+   };
+   await saveSingleProductToFirebase(x);
+   closeModal();
+   showPage('a_products');
+  }catch(err){
+   console.error('Save product error:',err);
+   alert('Could not save product: '+err.message);
+   if(btn){ btn.disabled=false; btn.textContent=withPhotos?'Save Product & Photos':'Save Product (Add Photos Later)'; }
   }
+ }
 
  /* ORDERS & LONG PRESS */
  function renderToday(){
@@ -1968,7 +1979,7 @@ window.A = (() => {
 
  /* 100% OFFLINE SVG BARCODE & QR CODE */
  function generateBarcodeSVG(codeStr){
-  let s=String(codeStr||'SHREEESTORE00001'), bars=[], x=4;
+  let s=String(codeStr||'KESTORE00001'), bars=[], x=4;
   bars.push(`<rect x="${x}" y="2" width="3" height="38" fill="#000"/>`); x+=5;
   bars.push(`<rect x="${x}" y="2" width="1.5" height="38" fill="#000"/>`); x+=4;
   for(let i=0;i<s.length;i++){
@@ -1981,7 +1992,7 @@ window.A = (() => {
  }
 
  function generateOfflineQRSVG(codeStr){
-  let s=String(codeStr||'SHREEESTORE00001'), size=13, cells=[];
+  let s=String(codeStr||'KESTORE00001'), size=13, cells=[];
   function finder(rx,ry){
    cells.push(`<rect x="${rx}" y="${ry}" width="3" height="3" fill="#000"/>`);
    cells.push(`<rect x="${rx+0.6}" y="${ry+0.6}" width="1.8" height="1.8" fill="#fff"/>`);
@@ -2039,7 +2050,7 @@ window.A = (() => {
  function printParcelLabel(num){
   let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
   if(!o) return;
-  let bName = s.name || 'Shree Estore';
+  let bName = s.name || 'KEstore (Tools Hub Rajkot)';
   let totalQty = (o.items||[]).reduce((sum,i)=>sum+(+i.qty||0),0);
   let itemRows = (o.items||[]).map((i,idx)=>{
    let p=products().find(x=>x.id===i.id), nm=i.name||p?.name||'Product', sk=i.sku||p?.sku||'';
@@ -2078,7 +2089,7 @@ window.A = (() => {
  function printBillInvoice(num){
   let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
   if(!o) return;
-  let bName = s.name || 'Shree Estore', totalTaxable=0, totalGst=0;
+  let bName = s.name || 'KEstore (Tools Hub Rajkot)', totalTaxable=0, totalGst=0;
   let rows = (o.items||[]).map((i,idx)=>{
    let pr=Number(i.price||0), rate=Number(i.gstRate??18), lineTotal=pr*i.qty, taxable=rate===0?lineTotal:lineTotal/(1+rate/100), gstAmt=lineTotal-taxable;
    totalTaxable+=taxable; totalGst+=gstAmt;
@@ -2123,7 +2134,7 @@ window.A = (() => {
  function computeGSTStats(){
   let all = readOrders();
   let cancelled = all.filter(x=>x.status==='Cancelled');
-     let completed = all.filter(x=>['Delivered','Complete'].includes(x.status));
+  let completed = all.filter(x=>['Delivered','Complete'].includes(x.status));
   let active = all.filter(x=>x.status!=='Cancelled');
   let total=0, taxableTotal=0, taxTotal=0, hsnMap={};
 
@@ -2137,19 +2148,19 @@ window.A = (() => {
     hsnMap[hsnKey].qty += qty; hsnMap[hsnKey].taxable += tx; hsnMap[hsnKey].gst += gst; hsnMap[hsnKey].total += lt;
    });
   });
-     return { active, completed, cancelled, total, taxableTotal, taxTotal, hsnRows:Object.values(hsnMap) };
+  return { active, completed, cancelled, total, taxableTotal, taxTotal, hsnRows:Object.values(hsnMap) };
  }
 
  function renderGST(){
   let st = computeGSTStats();
   document.getElementById('a_gstSummary').innerHTML = `
-       <p>Completed Orders: <b style="color:#16a34a">${st.completed.length}</b> • Total Taxable Orders: <b>${st.active.length}</b> • Cancelled (Excluded): <b style="color:#dc2626">${st.cancelled.length}</b></p>
+   <p>Completed Orders: <b style="color:#16a34a">${st.completed.length}</b> • Total Taxable Orders: <b>${st.active.length}</b> • Cancelled (Excluded): <b style="color:#dc2626">${st.cancelled.length}</b></p>
    <p>Taxable Value: <b>${money(st.taxableTotal)}</b></p>
    <p>CGST: <b>${money(st.taxTotal/2)}</b> • SGST: <b>${money(st.taxTotal/2)}</b> (Total GST: <b>${money(st.taxTotal)}</b>)</p>
    <p>Total Order Value (Incl. GST): <b>${money(st.total)}</b></p>`;
 
   let s = getSellerSettings();
-  document.getElementById('a_sellerName').value = s.name||'Shree Estore';
+  document.getElementById('a_sellerName').value = s.name||'KEstore (Tools Hub Rajkot)';
   document.getElementById('a_sellerGstin').value = s.gstin||'';
   document.getElementById('a_sellerAddress').value = s.address||'';
   document.getElementById('a_sellerPhone').value = s.phone||'';
@@ -2173,14 +2184,14 @@ window.A = (() => {
   let html = `<div id="pdfPrintableArea" class="printBox">
    <div style="border-bottom:2px solid #000;padding-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start">
     <div>
-     <div style="font-size:20px;font-weight:900;color:#07366c">${esc(s.name||'Shree Estore')} — GST RETURN STATEMENT</div>
+     <div style="font-size:20px;font-weight:900;color:#07366c">${esc(s.name||'KEstore (Tools Hub Rajkot)')} — GST RETURN STATEMENT</div>
      <div style="font-size:11px;margin-top:3px"><b>GSTIN:</b> ${esc(s.gstin||'Not Configured')} | <b>State:</b> ${esc(s.state||'Gujarat')}</div>
      <div style="font-size:11px"><b>Generated On:</b> ${new Date().toLocaleString()}</div>
     </div>
     <div style="border:1.5px solid #000;padding:4px 8px;font-size:11px;font-weight:900">GSTR SUMMARY</div>
    </div>
    <div style="padding:8px 0;border-bottom:1.5px solid #000;font-size:12px">
-         <b>Completed Orders:</b> ${st.completed.length} | <b>Total Valid Orders:</b> ${st.active.length} | <b>Cancelled (Excluded):</b> ${st.cancelled.length}<br>
+    <b>Completed Orders:</b> ${st.completed.length} | <b>Total Valid Orders:</b> ${st.active.length} | <b>Cancelled (Excluded):</b> ${st.cancelled.length}<br>
     <b>Total Taxable Value:</b> ${money(st.taxableTotal)} | <b>CGST:</b> ${money(st.taxTotal/2)} | <b>SGST:</b> ${money(st.taxTotal/2)} | <b>Total Invoice Value:</b> ${money(st.total)}
    </div>
    <div style="padding:8px 0;border-bottom:1.5px solid #000">
@@ -2192,7 +2203,7 @@ window.A = (() => {
     <table class="printTable"><thead><tr style="background:#eaf4ff"><th>#</th><th>Order No</th><th>Date</th><th>Status</th><th>Taxable</th><th>GST</th><th>Total</th></tr></thead><tbody>${ordHtml}</tbody></table>
    </div>
   </div>`;
-  openPrintStage('GST Return Report', 'ShreeEstore_GST_Return_' + new Date().toISOString().slice(0,10) + '.pdf', html);
+  openPrintStage('GST Return Report', 'KEstore_GST_Return_' + new Date().toISOString().slice(0,10) + '.pdf', html);
  }
 
  function exportGST(){
@@ -2203,7 +2214,7 @@ window.A = (() => {
    return [x.number,x.date,x.customer?.name,x.customer?.phone,tx.toFixed(2),(gst/2).toFixed(2),(gst/2).toFixed(2),gst.toFixed(2),x.total,x.status].map(cell).join(',');
   }).join('\n');
   let blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='Shree-Estore-GST-Return.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  a.href=url; a.download='KEstore-GST-Return.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
 
  async function handleQrUpload(input){
@@ -2224,7 +2235,7 @@ window.A = (() => {
 
  async function saveGSTSettings(){
   const newSettings = {
-   name: document.getElementById('a_sellerName').value.trim() || 'Shree Estore',
+   name: document.getElementById('a_sellerName').value.trim() || 'KEstore (Tools Hub Rajkot)',
    gstin: document.getElementById('a_sellerGstin').value.trim(),
    address: document.getElementById('a_sellerAddress').value.trim(),
    phone: document.getElementById('a_sellerPhone').value.trim(),
@@ -2309,7 +2320,7 @@ window.A = (() => {
     if(window.location.hash === '#admin') showPage('a_login');
    }
   },
-  showPage,   toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
+  showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
   newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep,
   clearProductImage, handleImageUrlInput, handleProductImage, saveProduct,
   closeModal, closeQuick, toggleShowcase, toggleLive, priceChange, saveQuickPrices,
