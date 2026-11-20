@@ -490,7 +490,7 @@ button{cursor:pointer}
 
   <section id="a_today" class="a-page">
    <h2 class="title">Today's Orders</h2>
-   <p class="muted">Tip: Long-press (2.5s) any order for Print (Label / Invoice) &amp; Status options.</p>
+   <p class="muted">Tip: Long-press (3.5s) any order for Print (Label / Invoice) &amp; Status options.</p>
    <div id="a_todayOrders"></div>
   </section>
 
@@ -503,7 +503,7 @@ button{cursor:pointer}
     <h2 class="title">Product List (11-Column Sheet)</h2>
     <button class="btn" onclick="A.newProduct()">+ New Product</button>
    </div>
-   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>2.5s long-press</b> karke product ko upar-neeche (↑/↓) move karein. Kisi bhi column box par <b>2.5s long-press</b> karke sirf usi box ko edit karein — bahar tap karte hi auto-save ho jayega.</p>
+   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>3.5s long-press</b> karke product ko upar-neeche (↑/↓) move karein. Kisi bhi column box par <b>3.5s long-press</b> karke sirf usi box ko edit karein — bahar tap karte hi auto-save ho jayega.</p>
    <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
    <div class="tablewrap">
     <table class="productTable">
@@ -548,7 +548,7 @@ button{cursor:pointer}
      <option>Pending</option>
     </select>
    </div>
-   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 2.5 sec Long-press karein.</p>
+   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 3.5 sec Long-press karein.</p>
    <div class="tablewrap">
     <table>
      <thead>
@@ -1740,7 +1740,7 @@ window.A = (() => {
        <button type="button" class="moveBtn" style="background:#dc2626" onclick="event.stopPropagation();A.selectProductForMove('${id}')" title="Done">✓</button>
       </div>
      </td>`
-   : `<td class="openFormCell kramCell" data-id="${id}" onclick="A.editProduct('${id}')" title="Tap: Full Form | Hold 2.5s: Move Row"><b>${index}</b></td>`;
+   : `<td class="openFormCell kramCell" data-id="${id}" onclick="A.editProduct('${id}')" title="Tap: Full Form | Hold 3.5s: Move Row"><b>${index}</b></td>`;
 
   let nameCell = isEd('name')
    ? `<td class="colName editingCell"><input class="inlineInp wide" id="singleCellInp" value="${esc(p.name)}" onblur="A.commitSingleCellEdit('${id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
@@ -1868,24 +1868,24 @@ window.A = (() => {
 
  let pressTimer=null, longTriggered=false;
  function bindProductLongPress(){
-  // 1. Long press (2.5s) on individual editable cells -> edits ONLY that box
+  // 1. Long press (3.5s) on individual editable cells -> edits ONLY that box
   document.querySelectorAll('#adminApp .editCell').forEach(cell=>{
    let pid = cell.dataset.id, fld = cell.dataset.field;
    cell.addEventListener('touchstart',()=>{
     longTriggered = false;
-    pressTimer = setTimeout(()=>{ longTriggered = true; startSingleCellEdit(pid, fld); }, 2500);
+    pressTimer = setTimeout(()=>{ longTriggered = true; startSingleCellEdit(pid, fld); }, 3500);
    },{passive:true});
    cell.addEventListener('touchend',()=>clearTimeout(pressTimer));
    cell.addEventListener('touchmove',()=>clearTimeout(pressTimer));
    cell.addEventListener('contextmenu',e=>{ e.preventDefault(); startSingleCellEdit(pid, fld); });
   });
 
-  // 2. Long press (2.5s) on 1. Kram -> selects product to move Up/Down
+  // 2. Long press (3.5s) on 1. Kram -> selects product to move Up/Down
   document.querySelectorAll('#adminApp .kramCell').forEach(cell=>{
    let pid = cell.dataset.id;
    cell.addEventListener('touchstart',()=>{
     longTriggered = false;
-    pressTimer = setTimeout(()=>{ longTriggered = true; selectProductForMove(pid); }, 2500);
+    pressTimer = setTimeout(()=>{ longTriggered = true; selectProductForMove(pid); }, 3500);
    },{passive:true});
    cell.addEventListener('touchend',()=>clearTimeout(pressTimer));
    cell.addEventListener('touchmove',()=>clearTimeout(pressTimer));
@@ -2257,7 +2257,7 @@ window.A = (() => {
    <p style="margin:6px 0">${itemsText}</p>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
     <b>Total: ${money(o.total)}</b>
-    <span class="muted">Hold 2.5s for Print &amp; Actions ⋮</span>
+    <span class="muted">Hold 3.5s for Print &amp; Actions ⋮</span>
    </div>
   </div>`;
  }
@@ -2295,7 +2295,7 @@ window.A = (() => {
  let orderTimer = null;
  function bindOrderRowLongPress(){
   document.querySelectorAll('#adminApp .orderrow').forEach(el=>{
-   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),2500)},{passive:true});
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),3500)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(orderTimer));
    el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
@@ -2303,7 +2303,7 @@ window.A = (() => {
  }
  function bindOrderCardLongPress(){
   document.querySelectorAll('#adminApp .ordercard').forEach(el=>{
-   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),2500)},{passive:true});
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),3500)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(orderTimer));
    el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
@@ -2314,7 +2314,7 @@ window.A = (() => {
   let hd = document.getElementById('a_orderListHeader');
   if(!hd) return;
   let hTimer = null;
-  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),2500)},{passive:true});
+  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),3500)},{passive:true});
   hd.addEventListener('touchend',()=>clearTimeout(hTimer));
   hd.addEventListener('touchmove',()=>clearTimeout(hTimer));
   hd.addEventListener('contextmenu',e=>{e.preventDefault();openSortPopup()});
