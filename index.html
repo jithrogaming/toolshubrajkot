@@ -1,0 +1,2338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>श्रीEstore | Tools Hub Rajkot</title>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBMoWAozpZVX8Y5L5h3p_Z_2lWZM_AYQw0",
+    authDomain: "kestore-a6353.firebaseapp.com",
+    projectId: "kestore-a6353",
+    storageBucket: "kestore-a6353.firebasestorage.app",
+    messagingSenderId: "86513678850",
+    appId: "1:86513678850:web:432aca9c0baee8e89c051b",
+    measurementId: "G-YGBD1FMNVS"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
+  const analytics = getAnalytics(app);
+
+  window.db = db;
+  window.adminAuth = auth;
+  window.storage = storage;
+  window.analytics = analytics;
+  window.fbLib = { collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch };
+  window.adminAuthApi = { signInWithEmailAndPassword, signOut, onAuthStateChanged };
+  window.uploadProductImage = async (base64Data, productId, imgIndex) => {
+    if (!base64Data.startsWith('data:image/')) return base64Data;
+    try {
+      const storageRef = ref(storage, `products/${productId}/img_${imgIndex}.webp`);
+      const snapshot = await uploadString(storageRef, base64Data, 'data_url');
+      return await getDownloadURL(snapshot.ref);
+    } catch (e) {
+      console.warn("Storage upload failed, falling back to compressed image:", e);
+      return base64Data;
+    }
+  };
+
+  if (typeof window.initStoreFirebase === "function") window.initStoreFirebase();
+  onAuthStateChanged(auth, user => {
+    window.adminUser = user || null;
+    if (typeof window.adminAuthStateChanged === "function") window.adminAuthStateChanged(user || null);
+  });
+</script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app-hidden{display:none!important}
+
+/* ================= CUSTOMER STORE STYLES (LIGHT BLUE / WHITE) ================= */
+#customerApp{--navy:#07366c;--blue:#0756a5;--sky:#eaf5ff;--pale:#f4faff;--ink:#14263d;--muted:#65758a;--line:#d9e8f6;--white:#fff;--red:#d62828;background:var(--sky);color:var(--ink);min-height:100vh}
+#customerApp button{border:0}
+#customerApp .top{position:sticky;top:0;z-index:20;background:#fff;box-shadow:0 2px 12px #0b3b6812;padding:8px 12px}
+#customerApp .headrow{display:flex;align-items:center}
+#customerApp .search{flex:1;display:flex;align-items:center;height:32px;background:#f1f7fd;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+#customerApp .search input{width:100%;height:100%;border:0;background:transparent;padding:0 10px;font-size:12px;outline:0;color:var(--ink)}
+#customerApp .search button{height:100%;background:var(--blue);color:#fff;padding:0 12px;font-size:11px;font-weight:700}
+#customerApp .subbrand{text-align:center;font-size:11px;color:#555;font-weight:700;margin-top:4px;letter-spacing:.5px}
+#customerApp .brand{text-align:center;padding:2px 0 1px;font-weight:900;font-size:26px;letter-spacing:.4px}
+#customerApp .brand .shri{color:var(--red);text-shadow:1px 1px 0px rgba(0,0,0,0.1)}
+#customerApp .brand .estore{color:#475569}
+#customerApp .tag{text-align:center;color:#6a7e94;font-size:9.5px;letter-spacing:1.5px;font-weight:700}
+#customerApp .wrap{max-width:1100px;margin:auto;padding:14px 12px 92px}
+
+#customerApp .topShowcase{background:linear-gradient(135deg,#07366c,#1682d4,#0a58ca);color:#fff;border-radius:20px;padding:18px;margin:6px 0 18px;box-shadow:0 10px 24px #07366c25;position:relative;overflow:hidden}
+#customerApp .showcaseCard{display:grid;grid-template-columns:38% 1fr;gap:12px;align-items:center}
+#customerApp .showcaseCard img{width:100%;height:145px;object-fit:cover;border-radius:12px;background:#fff}
+#customerApp .showcaseInfo h3{margin:0 0 5px;font-size:17px}
+#customerApp .showcasePrice{font-size:16px;font-weight:800;color:#ffca28}
+#customerApp .showcaseMrp{text-decoration:line-through;color:#cbd5e1;font-size:11px;margin-left:5px}
+#customerApp .showcaseBadge{display:inline-block;background:#22c55e;color:#fff;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:5px}
+#customerApp .dots{text-align:center;margin-top:8px}
+#customerApp .dots span{display:inline-block;width:6px;height:6px;background:rgba(255,255,255,0.4);border-radius:50%;margin:0 3px}
+#customerApp .dots span.on{background:#fff;width:16px;border-radius:4px}
+
+#customerApp .section{margin:18px 0}
+#customerApp .sectionHead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}
+#customerApp .sectionHead h2{font-size:18px;margin:0;color:var(--navy)}
+#customerApp .linkBtn{background:transparent;color:var(--blue);font-weight:700;padding:7px}
+
+#customerApp .catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+#customerApp .cat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 6px;text-align:center;color:var(--navy);font-weight:700;font-size:11px;min-height:64px;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+#customerApp .cat i{display:block;font-style:normal;font-size:20px;margin-bottom:4px}
+
+#customerApp .products{display:flex;flex-direction:column;gap:11px}
+#customerApp .product{background:#fff;border:1px solid #e9e9e9;border-radius:8px;min-height:230px;min-width:0;display:grid;grid-template-columns:40% 60%;overflow:hidden;cursor:pointer;transition:box-shadow .15s}
+#customerApp .product:hover{box-shadow:0 5px 16px #123d641c}
+#customerApp .productVisual{min-width:0;min-height:230px;background:#f6f6f6;position:relative;display:flex;align-items:center;justify-content:center;padding:10px}
+#customerApp .productVisual>img{width:100%;height:100%;max-height:290px;object-fit:contain;mix-blend-mode:multiply}
+#customerApp .productActions{position:absolute;bottom:9px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+#customerApp .productAction{pointer-events:auto;width:38px;height:38px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 8px #0002;color:#222;font-size:21px;padding:0}
+#customerApp .productAction.active{color:#e21b42}
+#customerApp .productInfo{min-width:0;padding:11px 10px;display:flex;flex-direction:column;align-items:stretch}
+#customerApp .productInfo h3{font-size:clamp(16px,4.3vw,21px);font-weight:400;line-height:1.3;margin:0 0 5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#customerApp .productInfo .small{font-size:11px;margin-bottom:5px}
+#customerApp .productInfo .price{font-size:clamp(23px,6vw,31px);font-weight:500;color:#171717}
+#customerApp .productInfo .mrp{font-size:12px}
+#customerApp .productInfo .b2b-badge{margin:2px 0 5px}
+#customerApp .addCartBtn{width:100%;min-height:42px;margin-top:auto;border:0;border-radius:24px;background:#ffd814;color:#171717;font-size:15px;font-weight:600;padding:8px;cursor:pointer}
+#customerApp .addCartBtn:active{filter:brightness(.94);transform:scale(.99)}
+#customerApp .addCartBtn:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:350px){#customerApp .product{grid-template-columns:38% 62%}#customerApp .productVisual{padding:7px}#customerApp .productInfo{padding:9px 8px}#customerApp .productAction{width:34px;height:34px;font-size:19px}}
+#customerApp .small{color:var(--muted);font-size:10.5px;line-height:1.35}
+#customerApp .price{font-weight:800;color:var(--navy);font-size:15px;margin-top:3px}
+#customerApp .mrp{text-decoration:line-through;color:#8997a7;font-size:11px;margin-left:4px}
+#customerApp .discount{display:inline-block;background:#e5f7ec;color:#168047;padding:3px 6px;border-radius:6px;font-size:11px;font-weight:700;margin:4px 0}
+#customerApp .b2b-badge{background:#fef3c7;color:#b45309;padding:4px 6px;border-radius:6px;font-size:10px;font-weight:700;margin-top:4px;border:1px solid #fde68a}
+#customerApp .card-tax-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px;margin:5px 0;font-size:10px;color:#475569}
+#customerApp .variantHint{font-size:10.5px;color:#0756a5;background:#f1f7fd;border-radius:7px;padding:6px;margin-top:6px}
+#customerApp .variantChooser{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0}
+#customerApp .variantChooser label{display:block;margin:8px 0 3px;font-size:12px}
+#customerApp .primary{background:var(--blue);color:#fff;border-radius:10px;padding:9px 12px;font-weight:700;width:100%;margin-top:8px}
+#customerApp .primary:disabled{opacity:.5;cursor:not-allowed}
+#customerApp .ghostBtn{background:#eaf4ff;color:var(--navy);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-weight:700}
+
+#customerApp .bottom{position:fixed;bottom:0;left:0;right:0;z-index:22;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -4px 15px #123d6410}
+#customerApp .bottom button{background:transparent;color:#536b84;font-size:11px;font-weight:700;padding:4px}
+#customerApp .bottom b{display:block;font-size:20px;margin-bottom:2px}
+#customerApp .bottom button.active{color:var(--blue)}
+#customerApp .c-page{display:none}
+#customerApp .c-page.active{display:block}
+#customerApp .pageTitle{font-size:21px;color:var(--navy);margin:8px 0 14px}
+#customerApp .panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0}
+#customerApp .field{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;margin:5px 0 10px;background:#fff;color:var(--ink)}
+#customerApp .row{display:flex;gap:9px}#customerApp .row>*{flex:1;min-width:0}
+#customerApp .checkrow{display:flex;gap:8px;align-items:center;margin:7px 0;font-size:13px;font-weight:600}
+#customerApp .checkrow input{width:auto}
+#customerApp .itemrow{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:10px 0}
+#customerApp .itemrow img{width:62px;height:62px;object-fit:cover;border-radius:9px}
+#customerApp .qty{display:flex;gap:8px;align-items:center;margin-top:7px}
+#customerApp .qty button{background:#eaf4ff;color:var(--navy);border-radius:7px;padding:5px 10px;font-weight:700}
+#customerApp .detailImg{width:100%;max-height:330px;object-fit:contain;background:#f2f7fb;border-radius:13px}
+#customerApp .thumbs{display:flex;gap:7px;margin:8px 0}
+#customerApp .thumbs img{width:58px;height:58px;object-fit:cover;border:2px solid transparent;border-radius:8px;cursor:pointer}
+#customerApp .thumbs img.sel{border-color:var(--blue)}
+#customerApp .notice{background:#fff8e7;border:1px solid #f1dfad;padding:10px;border-radius:10px;color:#765514;font-size:12px}
+#customerApp .careBanner{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;margin:14px 0 6px;text-align:center;color:var(--navy);font-size:12px;box-shadow:0 2px 8px #123d640d}
+#customerApp .footer{text-align:center;color:#8092a6;font-size:11px;padding:10px 0 18px}
+#customerApp .empty{text-align:center;color:#71839a;padding:20px 10px;font-size:12px}
+#customerApp .total{font-size:19px;font-weight:800;color:var(--navy)}
+#customerApp .b2b-status-banner{background:#eaf4ff;color:#0756a5;border:1px solid #b6d4fe;border-radius:8px;padding:9px 12px;font-weight:700;font-size:12px;width:100%;margin:8px 0;text-align:center}
+#customerApp .b2b-status-banner.b2b-on{background:#fef3c7;color:#b45309;border-color:#fde68a}
+#customerApp .qrBox{background:#f8fafc;border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:center;margin:8px 0}
+#customerApp .qrBox img{max-width:210px;max-height:210px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;padding:6px}
+#customerApp .orderBadge{font-size:10.5px;padding:3px 8px;border-radius:12px;font-weight:700;display:inline-block}
+
+@media(min-width:700px){
+ #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
+ #customerApp .showcaseCard{grid-template-columns:30% 1fr}
+ #customerApp .showcaseCard img{height:180px}
+ #customerApp .wrap{padding-top:20px}
+ #customerApp .product{grid-template-columns:34% 66%;min-height:270px}
+ #customerApp .productVisual{min-height:270px}
+ #customerApp .productInfo{padding:16px 18px}
+ #customerApp .productInfo h3{font-size:23px}
+ #customerApp .productInfo .price{font-size:34px}
+ #customerApp .addCartBtn{max-width:360px}
+}
+
+/* ================= ADMIN PANEL STYLES (WHITE THEME) ================= */
+#adminApp{background:#f4f6f9;color:#111827;min-height:100vh}
+#adminApp .top{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;background:#ffffff;border-bottom:1px solid #e5e7eb;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+#adminApp .logo{font-size:22px;font-weight:900;letter-spacing:.5px;color:#07366c;cursor:pointer}
+ #adminApp .wrap{max-width:1100px;margin:auto;padding:18px 14px 28px}
+#adminApp .dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:8px}
+#adminApp .dashbtn{background:#ffffff;color:#111827;border:1px solid #d1d5db;border-radius:15px;min-height:118px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+#adminApp .sellerMenu{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0}
+#adminApp .sellerMenuPair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#adminApp .sellerMenu button{display:flex;align-items:center;gap:13px;min-width:0;min-height:68px;padding:11px 14px;border:1px solid #dce5fa;border-radius:15px;background:linear-gradient(180deg,#fff,#f8faff);color:#101a35;text-align:left;font-weight:750;box-shadow:0 4px 12px #153b8b12}
+#adminApp .sellerMenu button:hover{border-color:#9dbaf1;background:#f5f8ff}
+#adminApp .sellerMenu .menuIcon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:13px;background:#eaf1ff;color:#0756a5;font-size:21px}
+#adminApp .sellerMenu .menuLabel{min-width:0}
+#adminApp .sellerMenu .menuArrow{margin-left:auto;font-size:24px;color:#64748b}
+#adminApp .sellerHomeTitle{font-size:22px;color:#07366c;margin:10px 2px 4px}
+#adminApp .sellerHomeHint{margin:0 2px 14px;color:#6b7280;font-size:13px}
+@media(max-width:380px){#adminApp .sellerMenuPair{gap:7px}#adminApp .sellerMenuPair button{padding:9px 8px;gap:7px;font-size:12px}#adminApp .sellerMenuPair .menuIcon{width:34px;height:34px;flex-basis:34px;font-size:18px}}
+#adminApp .dashbtn .ico{font-size:27px}
+#adminApp .dashbtn .num{font-size:22px;color:#0756a5}
+#adminApp .a-page{display:none}
+#adminApp .a-page.active{display:block}
+#adminApp .title{font-size:21px;margin:8px 0 14px;color:#07366c}
+#adminApp .headFlex{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 14px}
+#adminApp .headFlex .title{margin:0}
+#adminApp .panel{background:#ffffff;border:1px solid #d1d5db;border-radius:13px;padding:14px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,0.03)}
+#adminApp .field{width:100%;background:#ffffff;color:#111827;border:1px solid #cbd5e1;border-radius:8px;padding:10px 11px;margin:5px 0 10px}
+#adminApp .field:focus{outline:2px solid #0756a5;border-color:#0756a5}
+#adminApp .btn{background:#0756a5;color:#ffffff;border-radius:8px;padding:10px 14px;font-weight:700;border:0}
+#adminApp .btn:disabled{opacity:0.5;cursor:not-allowed}
+#adminApp .btn.ghost{background:#f3f4f6;color:#111827;border:1px solid #d1d5db}
+#adminApp .btn.danger{background:#dc2626;color:#fff}
+#adminApp .row{display:flex;gap:9px}#adminApp .row>*{flex:1;min-width:0}
+#adminApp .muted{color:#6b7280;font-size:12px}
+#adminApp .tablewrap{overflow:auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px}
+#adminApp table{border-collapse:collapse;width:100%}
+#adminApp th,#adminApp td{padding:9px 8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:12px;color:#111827}
+#adminApp th{color:#374151;background:#f9fafb;font-weight:700}
+#adminApp .stockGood{color:#16a34a;font-weight:800}
+#adminApp .stockLow{color:#dc2626;font-weight:800}
+#adminApp .productrow{touch-action:pan-y;user-select:none;cursor:pointer}
+#adminApp .productrow:hover{background:#f8fafc}
+#adminApp .productTable{min-width:590px;table-layout:fixed}
+#adminApp .productTable th:nth-child(1),#adminApp .productTable td:nth-child(1){width:7%;text-align:center}
+#adminApp .productTable th:nth-child(2),#adminApp .productTable td:nth-child(2){width:33%}
+#adminApp .productTable th:nth-child(3),#adminApp .productTable td:nth-child(3){width:17%}
+#adminApp .productTable th:nth-child(4),#adminApp .productTable td:nth-child(4){width:19%}
+#adminApp .productTable th:nth-child(5),#adminApp .productTable td:nth-child(5){width:24%}
+#adminApp .productTable td{vertical-align:middle;padding:11px 8px}
+#adminApp .productTable td:first-child b{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+#adminApp .productTable td:nth-child(2),#adminApp .productTable td:nth-child(3),#adminApp .productTable td:nth-child(4){white-space:nowrap}
+#adminApp .productrow img{width:55px;height:55px;object-fit:cover;border-radius:8px;background:#f1f5f9}
+#adminApp .productrow b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#adminApp .productNameCell{display:flex;align-items:center;gap:9px;min-width:0}
+#adminApp .productThumb{width:48px;height:48px;flex:0 0 48px;object-fit:cover;border-radius:7px;background:#f1f5f9;border:1px solid #e5e7eb}
+#adminApp .imageGrid{display:grid;grid-template-columns:repeat(4,minmax(72px,1fr));gap:8px;margin:8px 0 14px}
+#adminApp .productStepNav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0 16px}
+#adminApp .productStepBadge{padding:9px 5px;border-radius:9px;background:#f3f4f6;color:#64748b;text-align:center;font-size:11px;font-weight:700}
+#adminApp .productStepBadge.active{background:#eaf4ff;color:#0756a5;box-shadow:inset 0 0 0 1px #93c5fd}
+#adminApp .imageSlot{position:relative}
+#adminApp .imageDrop{height:92px;border:1.5px dashed #94a3b8;border-radius:8px;background:#f8fafc;display:flex;position:relative;align-items:center;justify-content:center;overflow:hidden;text-align:center;color:#475569;font-size:11px;cursor:pointer}
+#adminApp .imageDrop.dragover{border-color:#0756a5;background:#eaf4ff}
+#adminApp .imageDrop input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+#adminApp .imageDrop img{display:none;width:100%;height:100%;object-fit:cover}
+#adminApp .imageDrop img.visible{display:block}
+#adminApp .imageDrop .dropHint{padding:4px;pointer-events:none}
+#adminApp .imageDrop img.visible+.dropHint{display:none}
+#adminApp .imageUrlField{width:100%;margin-top:5px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:11px}
+#adminApp .imgClearBtn{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:#dc2626;color:#fff;font-size:11px;font-weight:700;line-height:20px;text-align:center;padding:0;z-index:2;display:none}
+#adminApp .imgClearBtn.visible{display:block}
+#adminApp .modalShade{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:50}
+#adminApp .quick{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90%,370px);max-height:86vh;overflow:auto;background:#ffffff;border:1px solid #cbd5e1;border-radius:14px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,0.2);color:#111827}
+#adminApp .quick h3{margin:4px 6px 10px;font-size:16px;color:#07366c}
+#adminApp .quick .qsec{font-size:11px;color:#6b7280;letter-spacing:1px;margin:10px 8px 4px;font-weight:700}
+#adminApp .quick button{display:block;width:100%;padding:12px 10px;text-align:left;color:#111827;background:transparent;border:0;border-bottom:1px solid #e5e7eb;font-weight:600}
+#adminApp .quick button:hover{background:#f3f4f6}
+#adminApp .quick button:last-child{border:0}
+#adminApp .modal{background:#ffffff;border:1px solid #cbd5e1;border-radius:14px;padding:16px;width:min(94%,620px);max-height:92vh;overflow:auto;margin:3vh auto;color:#111827}
+#adminApp .close{float:right;background:#e5e7eb;color:#111827;border:0;border-radius:7px;padding:7px 10px;font-weight:700}
+#adminApp .checkrow{display:flex;gap:8px;align-items:center;margin:7px 0;font-weight:600}
+#adminApp .checkrow input{width:auto}
+#adminApp .ordercard{border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin:9px 0;background:#ffffff;touch-action:pan-y;user-select:none;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+#adminApp .orderrow{touch-action:pan-y;user-select:none;cursor:pointer}
+#adminApp .badge{font-size:11px;background:#eaf4ff;color:#07366c;padding:4px 8px;border-radius:20px;font-weight:700;display:inline-block}
+#adminApp .note{border-bottom:1px solid #e5e7eb;padding:12px 2px}
+#adminApp .hidden{display:none!important}
+#adminApp .bottom{position:fixed;bottom:0;left:0;right:0;z-index:22;background:#ffffff;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -4px 15px rgba(0,0,0,0.06)}
+#adminApp .bottom button{background:transparent;color:#6b7280;font-size:11px;font-weight:700;padding:4px;border:0}
+#adminApp .bottom b{display:block;font-size:20px;margin-bottom:2px}
+#adminApp .bottom button.active{color:#0756a5}
+#adminApp .sortHead{padding:10px 12px;border:1px dashed #94a3b8;border-radius:10px;margin:8px 0 12px;display:flex;align-items:center;justify-content:space-between;user-select:none;cursor:pointer;background:#ffffff}
+#adminApp .collapsible>summary{cursor:pointer;font-weight:800;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#adminApp .collapsible>summary::-webkit-details-marker{display:none}
+#adminApp .collapsible>summary::after{content:'+';font-size:20px;color:#6b7280}
+#adminApp .collapsible[open]>summary::after{content:'−'}
+#adminApp .collapsible[open]>summary{padding-bottom:12px;border-bottom:1px solid #e5e7eb;margin-bottom:12px}
+
+#printOverlay{display:none;position:fixed;inset:0;z-index:100;background:#e9eef5;color:#000;overflow:auto}
+#printBar{position:sticky;top:0;background:#07366c;color:#fff;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px;z-index:101;box-shadow:0 2px 10px #0004}
+#printBar button{padding:8px 10px;border-radius:8px;border:0;font-weight:700;font-size:12px;white-space:nowrap}
+#printStage{padding:10px;max-width:680px;margin:auto}
+.printBox{border:2px solid #000;padding:12px;font-family:Arial,sans-serif;color:#000;width:100%;max-width:640px;margin:auto;background:#fff;overflow:hidden}
+.printTable{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important;color:#000!important}
+.printTable th,.printTable td{border:1px solid #000!important;padding:5px 4px!important;font-size:11px!important;color:#000!important;word-wrap:break-word!important;overflow-wrap:break-word!important;vertical-align:top!important}
+@media print{
+ body>*:not(#printOverlay){display:none!important}
+ #printOverlay{display:block!important;position:static;background:#fff;overflow:visible}
+ #printBar{display:none!important}
+ #printStage{padding:0;max-width:100%}
+ .printBox{max-width:100%;border:2px solid #000}
+}
+@media(min-width:700px){
+ #adminApp .dashboard{gap:18px}
+ #adminApp .dashbtn{min-height:135px}
+ #adminApp .wrap{padding-top:24px}
+}
+
+/* Responsive, touch-friendly admin controls */
+#adminApp button:not(.bottom button):not(.imgClearBtn){min-height:46px}
+#adminApp .btn{padding:12px 16px;font-size:14px}
+#adminApp .row{flex-wrap:wrap;align-items:stretch}
+#adminApp .row>*{flex:1 1 220px}
+#adminApp .headFlex{flex-wrap:wrap}
+#adminApp .headFlex>.btn{min-width:150px}
+#adminApp .sellerMenu button{min-height:76px}
+#adminApp .bottom button{min-height:44px;padding:5px 3px}
+#adminApp .quick button{min-height:48px;padding:13px 12px}
+@media(max-width:520px){
+ #adminApp .wrap{padding:14px 10px 82px}
+ #adminApp .row>*{flex-basis:100%}
+ #adminApp .headFlex>.btn{width:100%}
+ #adminApp .sellerMenuPair{grid-template-columns:1fr}
+ #adminApp .sellerMenu button{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 1. CUSTOMER STOREFRONT ==================== -->
+<div id="customerApp">
+ <header class="top">
+  <div class="headrow">
+   <div class="search">
+    <input id="c_searchInput" placeholder="Search products, tools, SKU..." onkeydown="if(event.key==='Enter')C.searchNow()">
+    <button onclick="C.searchNow()">Search</button>
+   </div>
+  </div>
+  <div class="subbrand">Tools Hub Rajkot</div>
+  <div class="brand"><span class="shri">श्री</span><span class="estore">Estore</span></div>
+  <div class="tag">HARDWARE • HOME IMPROVEMENT • TOOLS</div>
+ </header>
+
+ <main class="wrap">
+  <section id="c_home" class="c-page active">
+   <div class="topShowcase" id="c_topShowcaseBanner"></div>
+
+   <section class="section">
+    <div class="sectionHead"><h2>Shop by Category</h2></div>
+    <div class="catgrid" id="c_homeCats"></div>
+   </section>
+
+   <section class="section">
+    <div class="sectionHead"><h2>Featured Products</h2><button class="linkBtn" onclick="C.showPage('c_all')">View All ›</button></div>
+    <div class="products" id="c_featured"></div>
+   </section>
+
+   <section class="section">
+    <div class="sectionHead"><h2>Recently Searched Products</h2></div>
+    <div class="products" id="c_recentSearched"></div>
+   </section>
+
+   <div class="careBanner" id="c_homeCareBanner">📞 Customer Care: Loading...</div>
+   <div class="footer">© श्रीEstore (Tools Hub Rajkot) • Your trusted hardware &amp; tools store</div>
+  </section>
+
+  <section id="c_all" class="c-page">
+   <h2 class="pageTitle" id="c_listingTitle">All Products</h2>
+   <div class="row">
+    <input class="field" id="c_listSearch" placeholder="Search products..." oninput="C.renderListing()">
+    <select class="field" id="c_sortBy" onchange="C.renderListing()">
+     <option value="name">Name A–Z</option>
+     <option value="priceLow">Price: Low to High</option>
+     <option value="priceHigh">Price: High to Low</option>
+    </select>
+   </div>
+   <div class="products" id="c_listing"></div>
+  </section>
+
+  <section id="c_searchPage" class="c-page">
+   <h2 class="pageTitle">Search Results</h2>
+   <div class="row" style="margin-bottom:8px">
+    <input class="field" id="c_searchPageInput" placeholder="Type product name, SKU or category..." onkeydown="if(event.key==='Enter')C.searchFromPage()">
+    <button class="primary" style="width:auto;margin-top:5px;margin-bottom:10px" onclick="C.searchFromPage()">Search</button>
+   </div>
+   <div id="c_searchResults" class="products"></div>
+  </section>
+
+  <section id="c_details" class="c-page">
+   <button class="linkBtn" onclick="C.showPage('c_home')">← Back</button>
+   <div id="c_detailContent"></div>
+  </section>
+
+  <section id="c_cart" class="c-page">
+   <h2 class="pageTitle">Shopping Cart</h2>
+   <div id="c_cartContent"></div>
+  </section>
+
+  <section id="c_checkout" class="c-page">
+   <h2 class="pageTitle">Checkout</h2>
+   <div id="c_checkoutContent"></div>
+  </section>
+
+  <section id="c_profile" class="c-page">
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <h2 class="pageTitle" style="margin:8px 0">My Profile</h2>
+    <button class="ghostBtn" id="c_editProfileToggleBtn" style="display:none;font-size:12px" onclick="C.toggleProfileForm(true)">✏️ Edit Profile</button>
+   </div>
+
+   <div class="panel" id="c_profileSummaryCard" style="display:none">
+    <div style="font-weight:800;font-size:15px" id="c_profSumName"></div>
+    <div class="small" id="c_profSumPhone"></div>
+    <div class="small" id="c_profSumAddr"></div>
+   </div>
+
+   <div class="panel" id="c_profileFormPanel">
+    <input class="field" id="c_custName" placeholder="Customer Name">
+    <input class="field" id="c_custPhone" placeholder="Mobile Number">
+    <input class="field" id="c_custEmail" placeholder="Email">
+    <textarea class="field" id="c_custAddress" placeholder="Full Delivery Address"></textarea>
+    <button class="primary" onclick="C.saveProfile()">Save Profile</button>
+   </div>
+
+   <div class="panel">
+    <h3>🛒 Cart Orders (Active &amp; In Cart)</h3>
+    <div id="c_cartOrdersBox"></div>
+   </div>
+
+   <div class="panel">
+    <h3>✅ Complete Orders (Delivered)</h3>
+    <div id="c_completedOrdersBox"></div>
+   </div>
+
+   <div class="careBanner" id="c_profileCareBanner"></div>
+  </section>
+ </main>
+
+ <nav class="bottom">
+  <button id="c_b_home" class="active" onclick="C.showPage('c_home',this)"><b>⌂</b>Home</button>
+  <button id="c_b_search" onclick="C.openSearchTab(this)"><b>🔍</b>Search</button>
+  <button id="c_b_cart" onclick="C.showPage('c_cart',this)"><b>🛒</b>Cart (<span id="c_cartCount">0</span>)</button>
+  <button id="c_b_profile" onclick="C.showPage('c_profile',this)"><b>♙</b>Profile</button>
+ </nav>
+</div>
+
+<!-- ==================== 2. ADMIN PANEL (WHITE THEME) ==================== -->
+<div id="adminApp" class="app-hidden">
+ <header class="top">
+  <div class="logo" onclick="A.showPage('a_dashboard')">Shree Estore Admin</div>
+  <button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="switchToCustomer()">View Store ↗</button>
+ </header>
+
+ <main class="wrap">
+  <!-- 1. DASHBOARD -->
+  <section id="a_dashboard" class="a-page active">
+   <h2 class="sellerHomeTitle">Seller Panel</h2>
+   <p class="sellerHomeHint">Manage orders, products and shop settings from here.</p>
+   <section class="sellerMenu" aria-label="Seller panel menu">
+    <div class="sellerMenuPair">
+     <button onclick="A.showPage('a_today')"><span class="menuIcon">✓</span><span class="menuLabel">Live Orders <small id="a_todayCount" class="muted">0</small></span><span class="menuArrow">›</span></button>
+     <button onclick="A.showPage('a_lowstock')"><span class="menuIcon">⚠</span><span class="menuLabel">Low Stock <small id="a_lowCount" class="muted">0</small></span><span class="menuArrow">›</span></button>
+    </div>
+    <button onclick="A.showPage('a_products')"><span class="menuIcon">◆</span><span class="menuLabel">Product List <small id="a_productCount" class="muted">0 products</small></span><span class="menuArrow">›</span></button>
+    <button onclick="A.openOrderList()"><span class="menuIcon">☷</span><span class="menuLabel">Order List</span><span class="menuArrow">›</span></button>
+    <button onclick="A.openGSTManagement()"><span class="menuIcon">₹</span><span class="menuLabel">GST Management</span><span class="menuArrow">›</span></button>
+    <button onclick="A.openNotebook()"><span class="menuIcon">📓</span><span class="menuLabel">Notebook</span><span class="menuArrow">›</span></button>
+    <div class="sellerMenuPair">
+     <button onclick="A.openSellerForm()"><span class="menuIcon">🏪</span><span class="menuLabel">Seller Form</span><span class="menuArrow">›</span></button>
+     <button onclick="A.openLoginPanel()"><span class="menuIcon">🔐</span><span class="menuLabel">Login</span><span class="menuArrow">›</span></button>
+    </div>
+   </section>
+  </section>
+
+  <section id="a_today" class="a-page">
+   <h2 class="title">Today's Orders</h2>
+   <p class="muted">Tip: Long-press any order for Print (Label / Invoice) &amp; Status options.</p>
+   <div id="a_todayOrders"></div>
+  </section>
+
+  <section id="a_stock" class="a-page"><h2 class="title">Total Stock</h2><div id="a_stockList"></div></section>
+  <section id="a_lowstock" class="a-page"><h2 class="title">Low Stock Products (≤ 5)</h2><div id="a_lowList"></div></section>
+
+  <!-- 2. PRODUCT LIST -->
+  <section id="a_products" class="a-page">
+   <div class="headFlex">
+    <h2 class="title">Product List &amp; B2B Rates</h2>
+    <button class="btn" onclick="A.newProduct()">+ New Product</button>
+   </div>
+   <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
+   <div class="tablewrap">
+    <table class="productTable">
+     <thead>
+      <tr>
+       <th>#</th>
+       <th>Product Name</th>
+       <th>SKU</th>
+       <th>Retail Price</th>
+       <th>B2B Wholesale</th>
+      </tr>
+     </thead>
+     <tbody id="a_productListTable"></tbody>
+    </table>
+   </div>
+  </section>
+
+  <!-- 3. MANAGER -->
+  <section id="a_manager" class="a-page">
+   <div class="sortHead" id="a_orderListHeader">
+    <div>
+     <h2 class="title" style="margin:0">Parcel Bills</h2>
+     <div class="muted" id="a_sortIndicator">Sorted by: Date • Long-press here to Sort</div>
+    </div>
+    <span class="badge">Hold to Sort ⇅</span>
+   </div>
+   <div class="row">
+    <input class="field" id="a_orderSearch" placeholder="Search Order No / Customer / SKU / Product" oninput="A.renderOrders()">
+    <select class="field" id="a_orderFilter" onchange="A.renderOrders()">
+     <option value="all">All Orders</option>
+     <option>Confirmed</option>
+     <option>Shipped</option>
+           <option>Delivered</option>
+      <option>Complete</option>
+      <option>Cancelled</option>
+     <option>Pending</option>
+    </select>
+   </div>
+   <p class="muted" style="margin:2px 0 8px">Long-press any order row for Print (Label / Invoice) &amp; Order Status menu.</p>
+   <div class="tablewrap">
+    <table>
+     <thead>
+      <tr>
+       <th>#</th>
+       <th>Order/Bill No</th>
+       <th>Date</th>
+       <th>Customer</th>
+       <th>Total</th>
+       <th>Status</th>
+      </tr>
+     </thead>
+     <tbody id="a_orderListTable"></tbody>
+    </table>
+   </div>
+
+   <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0 18px">
+   <h2 class="title">GST Management</h2>
+   <details class="panel collapsible" id="a_gstReportDetails" open>
+    <summary>GST Return Auto-Manager &amp; Reports</summary>
+    <p class="muted">Har order ko auto-check karke (Delivered vs Active, Cancelled excluded) GST Return file tayyar hoti hai. 1-click par GST Return PDF download/share ya CSV export karein.</p>
+    <div id="a_gstSummary"></div>
+    <div class="row" style="margin-top:10px">
+     <button class="btn" onclick="A.printGSTReturnPDF()">📄 1-Click GST Return PDF / Share</button>
+     <button class="btn ghost" onclick="A.exportGST()">📊 Export GST CSV</button>
+    </div>
+   </details>
+  </section>
+
+  <!-- 4. PROFILE / LOGIN / NOTEBOOK -->
+  <section id="a_login" class="a-page">
+   <div class="headFlex">
+    <h2 class="title">Admin Profile</h2>
+    <div style="display:flex;gap:6px" id="a_profileQuickBtns">
+     <button class="btn ghost" style="padding:7px 10px;font-size:12px" onclick="A.toggleProfileEditPanel()">🏪 Shop Profile</button>
+     <button class="btn ghost" style="padding:7px 10px;font-size:12px" onclick="A.toggleLoginPanel()">🔐 Login / Account</button>
+    </div>
+   </div>
+
+   <div class="panel" id="a_loginPanel">
+    <h3 style="margin:0 0 8px">Admin Login</h3>
+    <input class="field" placeholder="Admin Email" id="a_loginEmail">
+    <input class="field" placeholder="Password" id="a_loginPassword" type="password">
+    <div id="a_authStatus" class="muted" role="status">Checking Firebase authentication…</div>
+    <div class="row" style="margin-top:8px">
+     <button class="btn" onclick="A.demoLogin()">Secure Login</button>
+     <button class="btn ghost" onclick="A.logout()">Logout</button>
+    </div>
+   </div>
+
+   <div class="panel" id="a_profileFormPanel">
+    <h3 style="margin:0 0 6px">Shop Details • GST, RTO &amp; Payment QR</h3>
+    <p class="muted">Business profile, GSTIN, Care Number, UPI ID aur Payment QR Cloud (Firestore) par save honge.</p>
+    <input class="field" id="a_sellerName" placeholder="Business Name">
+    <input class="field" id="a_sellerGstin" placeholder="GSTIN">
+    <textarea class="field" id="a_sellerAddress" placeholder="Full RTO Return Address"></textarea>
+    <input class="field" id="a_sellerPhone" placeholder="Customer Care Phone Number">
+    <div class="row">
+     <input class="field" id="a_sellerState" placeholder="State">
+     <input class="field" id="a_invoicePrefix" placeholder="Invoice Prefix">
+    </div>
+    <input class="field" id="a_sellerUpi" placeholder="Admin UPI ID (e.g. shreeestore@oksbi)">
+    <label style="font-size:12px;font-weight:700;display:block;margin-top:6px">Admin Payment QR Image (UPI / PhonePe / Paytm)</label>
+    <div style="display:flex;align-items:center;gap:10px;margin:6px 0 12px">
+     <input type="file" accept="image/*" id="a_qrUploadInput" onchange="A.handleQrUpload(this)">
+     <img id="a_qrPreviewImg" style="width:64px;height:64px;object-fit:contain;border:1px solid #cbd5e1;border-radius:8px;display:none" alt="QR Preview">
+     <button type="button" class="btn ghost" style="padding:6px 10px;font-size:11px" onclick="A.clearQrImage()">Clear QR</button>
+    </div>
+    <button class="btn" onclick="A.saveGSTSettings()">Save Profile &amp; Settings</button>
+   </div>
+
+   <!-- NOTEBOOK ALWAYS VISIBLE ON PROFILE PAGE -->
+   <div class="panel" id="a_notebookSection">
+    <h3 style="margin:0 0 10px">📓 Notebook &amp; Reminders</h3>
+    <input class="field" id="a_noteTitle" placeholder="Note Title">
+    <textarea class="field" id="a_noteText" placeholder="Details"></textarea>
+    <div class="row">
+     <input class="field" id="a_noteDate" type="date">
+     <input class="field" id="a_noteTime" type="time">
+    </div>
+    <button class="btn" onclick="A.addNote()">Save Note</button>
+    <p class="muted" style="margin-top:6px">Reminders are saved locally on this device.</p>
+    <h4 style="margin:14px 0 6px">Pending</h4>
+    <div id="a_pendingNotes"></div>
+    <h4 style="margin:14px 0 6px">Completed</h4>
+    <div id="a_completedNotes"></div>
+   </div>
+  </section>
+ </main>
+
+
+ <div class="modalShade" id="a_modalShade" onclick="A.closeModal()"><div class="modal" id="a_modal" onclick="event.stopPropagation()"></div></div>
+ <div id="a_quickHost"></div>
+</div>
+
+<!-- PRINT / PDF OVERLAY (SHARED) -->
+<div id="printOverlay">
+ <div id="printBar">
+  <button onclick="A.closePrintView()" style="background:#fff;color:#07366c">← Back</button>
+  <b id="printDocTitle" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Preview</b>
+  <div style="display:flex;gap:5px">
+   <button id="dlPdfBtn" onclick="A.downloadCurrentPDF()" style="background:#25d366;color:#000">📥 Save / Share PDF</button>
+   <button onclick="A.triggerDevicePrint()" style="background:#ffca28;color:#000">🖨️ Print</button>
+  </div>
+ </div>
+ <div id="printStage"></div>
+</div>
+
+<script>
+/* ==================== SHARED HELPERS & ROUTING ==================== */
+const CATS = ['New Tools','Power Tools','Hand Tools','Home Improvement','Auto Tools','Electric','Electronic','Plumber Tools','Kitchen Tools'];
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+
+function applyRoute(){
+ const isAdmin = window.location.hash === '#admin' || new URLSearchParams(window.location.search).has('admin');
+ document.getElementById('customerApp').classList.toggle('app-hidden', isAdmin);
+ document.getElementById('adminApp').classList.toggle('app-hidden', !isAdmin);
+ document.title = isAdmin ? 'Shree Estore Admin' : 'श्रीEstore | Tools Hub Rajkot';
+ if (isAdmin && window.A) A.onOpen();
+}
+function switchToCustomer(){
+ window.location.hash = '';
+ applyRoute();
+}
+window.addEventListener('hashchange', applyRoute);
+
+/* ==================== SHARED FIRESTORE STORE DATA ==================== */
+window.storeProducts = [];
+window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',upiId:'',qrImage:''};
+
+window.initStoreFirebase = function(){
+ if (!window.db || !window.fbLib) return;
+ window.fbLib.onSnapshot(window.fbLib.collection(window.db, "products"), snap => {
+  const list = [];
+  snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+  window.storeProducts = list;
+  if (window.C) C.onProductsUpdated();
+ }, err => console.error("Customer products sync error:", err));
+
+ window.fbLib.onSnapshot(window.fbLib.doc(window.db, "settings", "store_profile"), snap => {
+  if (snap.exists()) {
+   window.storeSettings = { ...window.storeSettings, ...snap.data() };
+   if (window.C) C.onSettingsUpdated();
+   if (window.A) { A.cloudSettings = { ...A.cloudSettings, ...snap.data() }; A.renderGST(); }
+  }
+ }, err => console.error("Settings sync error:", err));
+};
+
+/* ==================== 1. CUSTOMER STOREFRONT APP (C) ==================== */
+window.C = (() => {
+ const CART = 'kestore_cart_v1', PROFILE = 'kestore_profile_v1', ORDERS = 'kestore_orders_v1', SEQ_KEY = 'kestore_daily_seq_v1', RECENT_KEY = 'kestore_recent_search_v1';
+ let showcaseIndex = 0, catFilter = '', currentDetail = null, selectedUpiApp = 'UPI';
+
+ function makeFallbackSVG(title, color='#07366c'){
+  let label = String(title||'श्रीEstore').slice(0,22).replace(/[&<>"']/g,'');
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="#eaf4ff"/><circle cx="200" cy="115" r="46" fill="${color}" opacity="0.12"/><text x="200" y="128" font-family="Arial" font-size="42" text-anchor="middle" fill="${color}">🔧</text><text x="200" y="210" font-family="Arial" font-weight="bold" font-size="18" text-anchor="middle" fill="${color}">${label}</text><text x="200" y="235" font-family="Arial" font-size="12" text-anchor="middle" fill="#65758a">Tools Hub Rajkot</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+ }
+
+ function getProducts(){ return window.storeProducts || []; }
+ function liveProducts(){ return getProducts().filter(p => p.live !== false); }
+ function discount(p){ if(!(Number(p.mrp)>0)||!(Number(p.price)>=0)||Number(p.price)>Number(p.mrp))return null; let v=Number(p.mrp)-Number(p.price); return {rs:v,pct:v/Number(p.mrp)*100}; }
+ function photo(p){ let list=(p?.images||[]).filter(Boolean); return list[0]||p?.image||makeFallbackSVG(p?.name); }
+ function imgTag(src, name, cls=''){ let fb=makeFallbackSVG(name); return `<img class="${cls}" src="${esc(src||fb)}" alt="${esc(name||'')}" onerror="this.onerror=null;this.src='${fb}'">`; }
+
+ function productCard(p){
+  let d = discount(p);
+  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
+  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+  let gstRate = p.gstRate !== undefined ? p.gstRate : 18;
+  let hsnCode = p.hsn ? p.hsn : 'N/A';
+  let b2cDel = p.deliveryChargeB2C !== undefined ? p.deliveryChargeB2C : (p.deliveryCharge || 250);
+  let b2bDel = p.deliveryChargeB2B !== undefined ? p.deliveryChargeB2B : 450;
+
+     return `<article class="product" onclick="C.openDetails('${esc(p.id)}')">
+    <div class="productVisual">
+     ${imgTag(photo(p), p.name)}
+     <div class="productActions">
+      <button class="productAction" type="button" aria-label="Compare ${esc(p.name)}" title="Compare" onclick="event.stopPropagation();C.toggleCardAction(this,'compare')">▣</button>
+      <button class="productAction" type="button" aria-label="Add ${esc(p.name)} to wishlist" title="Wishlist" onclick="event.stopPropagation();C.toggleCardAction(this,'favorite')">♡</button>
+     </div>
+    </div>
+    <div class="productInfo">
+     <h3>${esc(p.name)}</h3>
+     <div class="small">${esc(p.cat||'')} ${p.sku?`• SKU: <code>${esc(p.sku)}</code>`:''}</div>
+     <div class="price">${money(p.price)} <span class="mrp">${p.mrp?`M.R.P. <s>${money(p.mrp)}</s>`:''}</span></div>
+     ${d?`<div class="discount">(${d.pct.toFixed(0)}% off)</div>`:''}
+     <div class="b2b-badge">📦 B2B: ${money(b2bPriceVal)} (${b2bMin}+ Qty)</div>
+     <div class="small">Stock: <span style="font-weight:700;color:${p.stock<=5?'#dc2626':'#16833b'}">${p.stock<=0?'Out of stock':p.stock}</span> · GST ${gstRate}%</div>
+     <button class="addCartBtn" type="button" ${p.stock<=0?'disabled':''} onclick="event.stopPropagation();C.addFromCard('${esc(p.id)}')">Add to cart</button>
+    </div>
+   </article>`;
+ }
+
+ function renderCats(){
+  let icons=['🆕','⚡','🔧','🏠','🚗','💡','🔌','🚿','📦'];
+  document.getElementById('c_homeCats').innerHTML = CATS.map((c,i)=>`<button class="cat" onclick="C.openCategory('${c.replace(/'/g,"\\'")}')"><i>${icons[i]||'🔧'}</i>${c}</button>`).join('');
+ }
+
+ function renderTopShowcase(){
+  let arr = liveProducts().filter(p=>p.showcase===true || (Array.isArray(p.showcase)&&p.showcase.length>0));
+  if(!arr.length) arr = liveProducts();
+  let el = document.getElementById('c_topShowcaseBanner');
+  if(!el) return;
+  if(!arr.length){ el.innerHTML='<div class="empty" style="color:#fff">Loading live products...</div>'; return; }
+  showcaseIndex = showcaseIndex % arr.length;
+  let p = arr[showcaseIndex], d = discount(p);
+  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
+
+  el.innerHTML = `<div class="showcaseCard">
+   ${imgTag(photo(p), p.name)}
+   <div class="showcaseInfo">
+    <div class="showcaseBadge">⭐ FEATURED LIVE DEAL</div>
+    <h3>${esc(p.name)}</h3>
+    <div class="showcasePrice">${money(p.price)} <span class="showcaseMrp">${p.mrp?money(p.mrp):''}</span></div>
+    <div style="font-size:10.5px;background:#fef3c7;color:#d97706;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px">📦 B2B Wholesale: ${money(b2bPriceVal)} (${b2bMin}+ Qty)</div>
+    ${d?`<div style="font-size:11px;color:#86efac;margin:2px 0">Save ${money(d.rs)} (${d.pct.toFixed(0)}% OFF)</div>`:''}
+    <button class="primary" style="margin-top:8px;padding:7px 12px;font-size:12px;background:#ffca28;color:#000" onclick="C.openDetails('${esc(p.id)}')">View Details ›</button>
+   </div>
+  </div>
+  <div class="dots">${arr.map((_,n)=>`<span class="${n===showcaseIndex?'on':''}"></span>`).join('')}</div>`;
+ }
+
+ function renderCareBanners(){
+  let s = window.storeSettings || {};
+  let txt = `📞 <b>Customer Care:</b> ${s.phone ? esc(s.phone) : 'Contact Admin'} ${s.address ? ' • ' + esc(s.address) : ''}`;
+  let b1 = document.getElementById('c_homeCareBanner');
+  let b2 = document.getElementById('c_profileCareBanner');
+  if(b1) b1.innerHTML = txt;
+  if(b2) b2.innerHTML = txt;
+ }
+
+ function renderHome(){
+  renderTopShowcase();
+  renderCats();
+  let p = liveProducts();
+  document.getElementById('c_featured').innerHTML = p.slice(0,8).map(productCard).join('') || '<div class="empty">No live products available.</div>';
+  renderRecentSearched();
+  renderCareBanners();
+ }
+
+ function renderRecentSearched(){
+  let recent = JSON.parse(localStorage.getItem(RECENT_KEY)||'[]');
+  let p = liveProducts(), el = document.getElementById('c_recentSearched');
+  let matched = recent.map(id=>p.find(x=>x.id===id)).filter(Boolean);
+  el.innerHTML = matched.length ? matched.map(productCard).join('') : '<div class="empty">No recently searched or viewed products yet.</div>';
+ }
+
+ function addRecentSearch(id){
+  let recent = JSON.parse(localStorage.getItem(RECENT_KEY)||'[]').filter(x=>x!==id);
+  recent.unshift(id);
+  if(recent.length > 4) recent.pop();
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+ }
+
+ function renderListing(){
+  let q = (document.getElementById('c_listSearch')?.value||'').toLowerCase();
+  let sort = document.getElementById('c_sortBy')?.value || 'name';
+  let p = liveProducts().filter(x=>(!catFilter || x.cat===catFilter) && (`${x.name} ${x.sku} ${x.cat}`).toLowerCase().includes(q));
+  if(sort==='priceLow') p.sort((a,b)=>a.price-b.price);
+  else if(sort==='priceHigh') p.sort((a,b)=>b.price-a.price);
+  else p.sort((a,b)=>a.name.localeCompare(b.name));
+  document.getElementById('c_listing').innerHTML = p.map(productCard).join('') || '<div class="empty">No matching products found.</div>';
+ }
+
+ function openCategory(c){
+  catFilter = c;
+  document.getElementById('c_listingTitle').textContent = c;
+  document.getElementById('c_listSearch').value = '';
+  showPage('c_all');
+  renderListing();
+ }
+
+ function runSearch(q){
+  q = (q||'').trim().toLowerCase();
+  let p = liveProducts().filter(x=>(x.name+' '+x.sku+' '+x.cat).toLowerCase().includes(q));
+  p.forEach(item => addRecentSearch(item.id));
+  document.getElementById('c_searchResults').innerHTML = p.map(productCard).join('') || '<div class="empty">No products found.</div>';
+  showPage('c_searchPage', document.getElementById('c_b_search'));
+ }
+
+ function searchNow(){ runSearch(document.getElementById('c_searchInput').value); }
+ function searchFromPage(){ runSearch(document.getElementById('c_searchPageInput').value); }
+ function openSearchTab(btn){
+  showPage('c_searchPage', btn);
+  document.getElementById('c_searchPageInput').focus();
+  if(!document.getElementById('c_searchResults').innerHTML.trim()) runSearch('');
+ }
+
+ function showPage(id, btn){
+  if(id === 'c_all' && !btn) catFilter = catFilter || '';
+  document.querySelectorAll('#customerApp .c-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  document.querySelectorAll('#customerApp .bottom button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(id==='c_home'){ catFilter=''; renderHome(); document.getElementById('c_b_home')?.classList.add('active'); }
+  if(id==='c_cart'){ renderCart(); document.getElementById('c_b_cart')?.classList.add('active'); }
+  if(id==='c_profile'){ renderProfile(); document.getElementById('c_b_profile')?.classList.add('active'); }
+  window.scrollTo(0,0);
+ }
+
+ function openDetails(id){
+  let p = getProducts().find(x=>x.id===id);
+  if(!p) return;
+  addRecentSearch(id);
+  currentDetail = p;
+
+  let imgs = (p.images||[]).filter(Boolean);
+  if(p.image && !imgs.includes(p.image)) imgs.unshift(p.image);
+  if(!imgs.length) imgs = [photo(p)];
+  let fb = makeFallbackSVG(p.name);
+
+  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
+  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+
+  document.getElementById('c_detailContent').innerHTML = `<div class="panel">
+   <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" onerror="this.onerror=null;this.src='${fb}'">
+   <div class="thumbs">${imgs.slice(0,4).map((u,i)=>`<img class="${i===0?'sel':''}" src="${esc(u)}" onerror="this.onerror=null;this.src='${fb}'" onclick="document.getElementById('c_mainDetailImg').src=this.src;document.querySelectorAll('#customerApp .thumbs img').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')">`).join('')}</div>
+   <h2>${esc(p.name)}</h2>
+   <div class="small">SKU: ${esc(p.sku)} • ${esc(p.cat)} | GST: ${p.gstRate||18}% ${p.hsn?'| HSN: '+esc(p.hsn):''}</div>
+   <div class="price" id="c_detailPriceDisp">${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span></div>
+   <div id="c_modeStatusBanner" class="b2b-status-banner">🛒 B2C Retail Mode (1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery)</div>
+   ${discount(p)?`<div class="discount" id="c_detailDiscDiv">Save ${money(discount(p).rs)} • ${discount(p).pct.toFixed(0)}% OFF</div>`:''}
+   <p>${esc(p.desc||'')}</p>
+   ${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).length?`<div class="variantChooser"><b>Choose your options</b><div class="small">Apni pasand ka size, colour ya weight select karein.</div>${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).map(([k,v])=>`<label><b>${esc(k)}</b></label><select class="field variation" data-var="${esc(k)}">${v.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>`).join('')}</div>`:''}
+   <label><b>Quantity (Enter ${b2bMin}+ for Automatic B2B Wholesale Rate: ${money(b2bPriceVal)})</b></label>
+   <input class="field" id="c_detailQty" type="number" min="1" max="${Math.max(1,p.stock)}" value="1" oninput="C.handleDetailQtyChange()">
+   <div class="notice">${p.stock<=0?'Currently out of stock':p.stock<=5?'Only '+p.stock+' left in stock':p.stock+' available in stock'}</div>
+   <div class="row" style="margin-top:12px">
+    <button class="primary" ${p.stock<=0?'disabled':''} onclick="C.addToCart('${esc(p.id)}')">Add to Cart</button>
+    <button class="primary" ${p.stock<=0?'disabled':''} onclick="if(C.addToCart('${esc(p.id)}',true)){C.showPage('c_checkout');C.renderCheckout()}">Order Now</button>
+   </div>
+  </div>`;
+  showPage('c_details');
+ }
+
+ function handleDetailQtyChange(){
+  let p = currentDetail;
+  if(!p) return;
+  let q = Number(document.getElementById('c_detailQty').value) || 0;
+  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
+  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+  let priceEl = document.getElementById('c_detailPriceDisp');
+  let bannerEl = document.getElementById('c_modeStatusBanner');
+  let discEl = document.getElementById('c_detailDiscDiv');
+
+  if(q >= b2bMin){
+   let parcels = Math.ceil(q / 10);
+   priceEl.innerHTML = `${money(b2bPriceVal)} <span style="font-size:12px;color:#d97706;font-weight:700">(B2B Wholesale Price)</span>`;
+   bannerEl.className = 'b2b-status-banner b2b-on';
+   bannerEl.innerHTML = `📦 B2B Wholesale Active! (${q} items = ${parcels} Parcel${parcels>1?'s':''} × ₹450 delivery)`;
+   if(discEl) discEl.style.display = 'none';
+  } else {
+   let perItemDel = q >= 6 ? 150 : 250;
+   let totalDel = q > 0 ? q * perItemDel : 0;
+   priceEl.innerHTML = `${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span>`;
+   bannerEl.className = 'b2b-status-banner';
+   bannerEl.innerHTML = `🛒 B2C Retail Mode (${q>0 ? q+' item(s) delivery = '+money(totalDel) : '1–5 Qty: ₹250 | 6–9 Qty: ₹150'})`;
+   if(discEl && discount(p)) discEl.style.display = 'inline-block';
+  }
+ }
+
+ function addFromCard(id){
+  let p=getProducts().find(x=>x.id===id);
+  if(!p) return;
+  let hasVariations=Object.values(p.variations||{}).some(values=>Array.isArray(values)&&values.length);
+  if(hasVariations){ openDetails(id); return; }
+  addToCart(id,false,{});
+ }
+
+ function toggleCardAction(button, type){
+  let active=button.classList.toggle('active');
+  button.textContent=type==='favorite'?(active?'♥':'♡'):(active?'✓':'▣');
+  button.setAttribute('aria-pressed',String(active));
+ }
+
+ function getSelectedVariations(){
+  let v={};
+  document.querySelectorAll('#c_detailContent .variation').forEach(el=>{if(el.dataset.var&&el.value)v[el.dataset.var]=el.value});
+  return v;
+ }
+ function varText(v){ if(!v||!Object.keys(v).length)return ''; return Object.entries(v).map(([k,val])=>`${k}: ${val}`).join(' | '); }
+ function getCart(){ return JSON.parse(localStorage.getItem(CART)||'[]'); }
+ function saveCart(c){ localStorage.setItem(CART, JSON.stringify(c)); updateCartCount(); }
+ function updateCartCount(){ document.getElementById('c_cartCount').textContent = getCart().reduce((s,x)=>s+x.qty,0); }
+
+ function addToCart(id, silent, selectedVars){
+  let p = getProducts().find(x=>x.id===id);
+  if(!p) return false;
+  let q = Math.max(1, Number(document.getElementById('c_detailQty')?.value||1));
+  let c = getCart();
+  let vars = selectedVars || getSelectedVariations(), vKey = varText(vars);
+  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
+  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
+
+  let existing = c.find(x=>x.id===id && (x.vKey||'')===vKey);
+  if(existing){
+   existing.qty += q;
+   existing.isB2B = existing.qty >= b2bMin;
+   existing.unitPrice = existing.isB2B ? b2bPriceVal : p.price;
+  } else {
+   let isB2B = q >= b2bMin;
+   c.push({ cartId:id+'_'+Date.now(), id, qty:q, vars, vKey, isB2B, unitPrice:isB2B ? b2bPriceVal : p.price });
+  }
+  saveCart(c);
+  if(!silent) alert(q >= b2bMin ? 'Added to Cart (B2B Wholesale Applied!)' : 'Added to Cart (B2C Retail)');
+  return true;
+ }
+
+ function getProcessedCartOrders(cartItems){
+  let allProducts = getProducts();
+  let orders = [];
+  cartItems.forEach((it, cartIdx)=>{
+   let prod = allProducts.find(a=>a.id===it.id);
+   let b2bMin = (prod && Number(prod.b2bMinQty)>0) ? Number(prod.b2bMinQty) : 10;
+   let b2bPriceVal = (prod && Number(prod.b2bPrice)>0) ? Number(prod.b2bPrice) : Math.round((prod?.price||it.unitPrice)*0.85);
+   let retailPriceVal = prod ? prod.price : it.unitPrice;
+   let isB2B = it.qty >= b2bMin;
+   let activeUnitPrice = isB2B ? b2bPriceVal : retailPriceVal;
+   let b2bCustomDel = Number(prod?.deliveryChargeB2B) || 450;
+   let b2cCustomDel = Number(prod?.deliveryChargeB2C ?? prod?.deliveryCharge) || 0;
+
+   if(isB2B){
+    let remQty = it.qty, parcelNum = 1;
+    while(remQty > 0){
+     let chunkQty = Math.min(remQty, 10);
+     orders.push({ cartIdx, isB2B:true, parcelLabel:`B2B Parcel #${parcelNum}`, items:[{...it, qty:chunkQty, unitPrice:activeUnitPrice, isB2B:true}], deliveryFee:b2bCustomDel, subtotal:activeUnitPrice*chunkQty });
+     remQty -= chunkQty; parcelNum++;
+    }
+   } else {
+    let perItemDelivery = (it.qty >= 6) ? 150 : 250;
+    let totalDelivery = b2cCustomDel > 0 ? (b2cCustomDel * it.qty) : (it.qty * perItemDelivery);
+    orders.push({ cartIdx, isB2B:false, parcelLabel:`B2C Retail Order`, items:[{...it, qty:it.qty, unitPrice:activeUnitPrice, isB2B:false}], deliveryFee:totalDelivery, subtotal:activeUnitPrice*it.qty });
+   }
+  });
+  return orders;
+ }
+
+ function renderCart(){
+  let c = getCart(), p = getProducts(), el = document.getElementById('c_cartContent');
+  if(!c.length){ el.innerHTML='<div class="empty">Your cart is empty.</div>'; return; }
+
+  let itemsControlHtml = `<div class="panel"><h3>Cart Items (Edit Quantity)</h3>` + c.map((it, idx)=>{
+   let x = p.find(a=>a.id===it.id);
+   if(!x) return '';
+   let b2bMin = Number(x.b2bMinQty) > 0 ? Number(x.b2bMinQty) : 10;
+   let isB2B = it.qty >= b2bMin;
+   let unitP = isB2B ? (Number(x.b2bPrice)>0?Number(x.b2bPrice):Math.round(x.price*0.85)) : x.price;
+   return `<div class="itemrow">
+    ${imgTag(photo(x), x.name)}
+    <div style="flex:1">
+     <b>${esc(x.name)}</b> ${it.vKey?`<div class="small">${esc(it.vKey)}</div>`:''}
+     <div class="small">${money(unitP)} each • <b style="color:${isB2B?'#d97706':'#0756a5'}">${isB2B?'B2B Wholesale':'B2C Retail'}</b></div>
+     <div class="qty">
+      <button onclick="C.changeQty(${idx},-1)">-</button>
+      <b>${it.qty}</b>
+      <button onclick="C.changeQty(${idx},1)">+</button>
+      <button style="background:#fee2e2;color:#b91c1c;margin-left:auto" onclick="C.removeCart(${idx})">Remove</button>
+     </div>
+    </div>
+   </div>`;
+  }).join('') + `</div>`;
+
+  let orderGroups = getProcessedCartOrders(c), grandTotal = 0;
+  let parcelsHtml = orderGroups.map((grp, gIdx)=>{
+   let grpTotal = grp.subtotal + grp.deliveryFee;
+   grandTotal += grpTotal;
+   let itemsHtml = grp.items.map(it=>{
+    let x = p.find(a=>a.id===it.id);
+    return `<div style="font-size:13px;margin:4px 0"><b>${esc(x?.name||'Product')}</b> × ${it.qty} = <b>${money(it.unitPrice*it.qty)}</b></div>`;
+   }).join('');
+   return `<div class="panel" style="border:2px solid ${grp.isB2B?'#d97706':'#0756a5'};margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+     <b>📦 Order/Bill #${gIdx+1} — ${grp.parcelLabel}</b>
+     <span style="background:${grp.isB2B?'#fef3c7':'#eaf4ff'};color:${grp.isB2B?'#d97706':'#0756a5'};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Delivery: ${money(grp.deliveryFee)}</span>
+    </div>
+    ${itemsHtml}
+    <div style="margin-top:6px;font-size:12px;color:#555">Items Total: ${money(grp.subtotal)} + Delivery: ${money(grp.deliveryFee)}</div>
+    <div style="font-size:15px;font-weight:800;color:var(--navy);margin-top:4px">Bill Total: ${money(grpTotal)}</div>
+   </div>`;
+  }).join('');
+
+  el.innerHTML = itemsControlHtml + `<h3 style="margin:14px 4px 6px;color:var(--navy)">Generated Parcels &amp; Bills (${orderGroups.length})</h3>` + parcelsHtml + `<div class="panel"><div class="total">Grand Total: ${money(grandTotal)}</div><button class="primary" style="width:100%;margin-top:10px" onclick="C.showPage('c_checkout');C.renderCheckout()">Proceed to Checkout</button></div>`;
+ }
+
+ function changeQty(idx, d){
+  let c = getCart(), it = c[idx];
+  if(!it) return;
+  let p = getProducts().find(x=>x.id===it.id);
+  let totalForProd = c.filter(x=>x.id===it.id).reduce((s,x)=>s+x.qty,0);
+  if(d>0 && p && totalForProd>=p.stock){ alert('Stock limit reached'); return; }
+  let newQty = it.qty + d;
+  if(newQty<=0) c.splice(idx,1);
+  else if(p){
+   let b2bMin = Number(p.b2bMinQty)>0?Number(p.b2bMinQty):10;
+   it.qty = newQty;
+   it.isB2B = newQty >= b2bMin;
+   it.unitPrice = it.isB2B ? (Number(p.b2bPrice)>0?Number(p.b2bPrice):Math.round(p.price*0.85)) : p.price;
+  }
+  saveCart(c); renderCart();
+ }
+ function removeCart(idx){ let c=getCart(); c.splice(idx,1); saveCart(c); renderCart(); }
+
+ function getProfile(){ return JSON.parse(localStorage.getItem(PROFILE)||'{}'); }
+ function toggleProfileForm(open){
+  document.getElementById('c_profileFormPanel').style.display = open ? 'block' : 'none';
+  document.getElementById('c_profileSummaryCard').style.display = open ? 'none' : 'block';
+  document.getElementById('c_editProfileToggleBtn').style.display = open ? 'none' : 'inline-block';
+ }
+
+ function saveProfile(){
+  let p = {
+   name: document.getElementById('c_custName').value.trim(),
+   phone: document.getElementById('c_custPhone').value.trim(),
+   email: document.getElementById('c_custEmail').value.trim(),
+   address: document.getElementById('c_custAddress').value.trim()
+  };
+  if(!p.name || !p.phone || !p.address){ alert('Name, Mobile Number aur Address bharna zaroori hai.'); return; }
+  localStorage.setItem(PROFILE, JSON.stringify(p));
+  alert('Profile saved!');
+  renderProfile();
+ }
+
+ function renderProfile(){
+  let p = getProfile();
+  document.getElementById('c_custName').value = p.name||'';
+  document.getElementById('c_custPhone').value = p.phone||'';
+  document.getElementById('c_custEmail').value = p.email||'';
+  document.getElementById('c_custAddress').value = p.address||'';
+
+  if(p.name && p.phone && p.address){
+   document.getElementById('c_profSumName').textContent = p.name;
+   document.getElementById('c_profSumPhone').textContent = `📱 ${p.phone} ${p.email ? '• ' + p.email : ''}`;
+   document.getElementById('c_profSumAddr').textContent = `📍 ${p.address}`;
+   toggleProfileForm(false);
+  } else {
+   toggleProfileForm(true);
+   document.getElementById('c_profileSummaryCard').style.display = 'none';
+   document.getElementById('c_editProfileToggleBtn').style.display = 'none';
+  }
+
+  let orders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
+  let cart = getCart(), allP = getProducts();
+     let activeOrders = orders.filter(o => !['Delivered','Complete','Cancelled'].includes(o.status));
+   let completedOrders = orders.filter(o => ['Delivered','Complete'].includes(o.status));
+
+  let cartHtml = cart.length ? `<div class="notice" style="margin-bottom:8px"><b>In Cart (${cart.reduce((s,x)=>s+x.qty,0)} items):</b> ` + cart.map(it=>{
+   let pr = allP.find(a=>a.id===it.id);
+   return `${esc(pr?.name||'Item')} × ${it.qty}`;
+  }).join(', ') + ` <button class="linkBtn" style="padding:2px 6px" onclick="C.showPage('c_cart')">Go to Cart ›</button></div>` : '';
+
+  let activeHtml = activeOrders.map(o=>`<div class="itemrow"><div style="flex:1">
+   <div style="display:flex;justify-content:space-between;align-items:center">
+    <b>Order No: ${esc(o.number)}</b>
+    <span class="orderBadge" style="background:#eaf4ff;color:#0756a5">${esc(o.status||'Pending')}</span>
+   </div>
+   <div class="small">${esc(o.date)} • Payment: <b>${esc(o.paymentMethod||'COD')}</b></div>
+   <div class="small">${(o.items||[]).map(i=>esc((i.name||'')+(i.vKey?' ('+i.vKey+')':'')+' × '+i.qty)).join(', ')}</div>
+   <div><b>${money(o.total)}</b> (Delivery: ${money(o.deliveryFee||0)})</div>
+  </div></div>`).join('');
+
+  document.getElementById('c_cartOrdersBox').innerHTML = (cartHtml + activeHtml) || '<div class="small">No active cart or pending orders.</div>';
+
+  document.getElementById('c_completedOrdersBox').innerHTML = completedOrders.map(o=>`<div class="itemrow"><div style="flex:1">
+   <div style="display:flex;justify-content:space-between;align-items:center">
+    <b>Order No: ${esc(o.number)}</b>
+    <span class="orderBadge" style="background:#dcfce7;color:#166534">${esc(o.status)}</span>
+   </div>
+   <div class="small">${esc(o.date)} • Payment: <b>${esc(o.paymentMethod||'COD')}</b></div>
+   <div class="small">${(o.items||[]).map(i=>esc((i.name||'')+' × '+i.qty)).join(', ')}</div>
+   <div><b>${money(o.total)}</b></div>
+  </div></div>`).join('') || '<div class="small">No completed orders yet.</div>';
+
+  renderCareBanners();
+ }
+
+ function renderCheckout(){
+  let c = getCart();
+  let orderGroups = getProcessedCartOrders(c);
+  let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
+  let pr = getProfile();
+
+  document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
+   <h3>Delivery Details</h3>
+   <input class="field" id="c_coName" placeholder="Customer Name" value="${esc(pr.name||'')}">
+   <input class="field" id="c_coPhone" placeholder="Mobile Number" value="${esc(pr.phone||'')}">
+   <textarea class="field" id="c_coAddress" placeholder="Full Address">${esc(pr.address||'')}</textarea>
+
+   <h3>Payment Option</h3>
+   <div style="margin:8px 0 12px">
+    <label class="checkrow"><input type="radio" name="c_payOpt" value="COD" checked onclick="C.togglePaymentFields('COD')"> 💵 Cash on Delivery (COD)</label>
+    <label class="checkrow"><input type="radio" name="c_payOpt" value="UPI" onclick="C.togglePaymentFields('UPI')"> 📱 UPI Scan &amp; Pay</label>
+    <label class="checkrow"><input type="radio" name="c_payOpt" value="PhonePe / Paytm" onclick="C.togglePaymentFields('PhonePe / Paytm')"> 📲 PhonePe / Paytm</label>
+   </div>
+   <div id="c_payExtraFields" style="margin-bottom:12px"></div>
+
+   <h3>Order Summary (${orderGroups.length} Separate Bills/Parcels)</h3>
+   ${orderGroups.map((grp, gIdx)=>{
+    let grpTotal = grp.subtotal + grp.deliveryFee;
+    return `<div style="border-bottom:1px solid #ddd;padding:6px 0">
+     <b>Bill #${gIdx+1} (${grp.parcelLabel})</b> — Delivery: ${money(grp.deliveryFee)}<br>
+     ${grp.items.map(i=>`${i.qty} × item(s) @ ${money(i.unitPrice)}`).join(', ')} — <b>Total: ${money(grpTotal)}</b>
+    </div>`;
+   }).join('')}
+   <div class="total" style="margin-top:10px">Grand Total: ${money(grandTotal)}</div>
+   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.placeOrder()">Confirm All Orders</button>
+  </div>`;
+  togglePaymentFields('COD');
+ }
+
+ function togglePaymentFields(mode){
+  selectedUpiApp = mode;
+  let box = document.getElementById('c_payExtraFields');
+  if(!box) return;
+  let s = window.storeSettings || {};
+  let upiId = (s.upiId || '').trim();
+  let qrImg = s.qrImage || '';
+  let c = getCart(), orderGroups = getProcessedCartOrders(c);
+  let grandTotal = orderGroups.reduce((sum, grp) => sum + grp.subtotal + grp.deliveryFee, 0);
+
+  if(mode === 'UPI' || mode === 'PhonePe / Paytm'){
+   let upiLink = upiId ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(s.name||'Shree Estore')}&am=${grandTotal.toFixed(2)}&cu=INR` : '';
+   // यदि Admin ने QR अपलोड नहीं किया है, तो UPI ID से ऑटो-QR बनेगा
+   let displayQr = qrImg || (upiLink ? `https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(upiLink)}` : '');
+
+   box.innerHTML = `<div class="qrBox">
+    <div style="font-weight:800;color:var(--navy);margin-bottom:6px">${esc(mode)} — Pay ${money(grandTotal)}</div>
+    ${displayQr ? `<img src="${esc(displayQr)}" alt="Payment QR" style="margin:6px auto;display:block">` : `<div class="notice">Admin UPI ID set nahi hai. Please COD chunein ya Care par call karein.</div>`}
+    ${upiId ? `<div style="margin-top:8px;font-size:13px"><b>UPI ID:</b> <code>${esc(upiId)}</code></div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+     <a class="ghostBtn" style="text-decoration:none;font-size:12px;background:#5f259f;color:#fff;border:0" href="${esc(upiLink)}">PhonePe / UPI App ↗</a>
+     <a class="ghostBtn" style="text-decoration:none;font-size:12px;background:#00baf2;color:#fff;border:0" href="${esc(upiLink)}">Paytm / GPay ↗</a>
+    </div>` : ''}
+    <input class="field" id="c_payRef" maxlength="20" style="margin-top:10px;margin-bottom:0" placeholder="Payment ke baad 12-digit UTR / Ref No. dalein">
+   </div>`;
+  } else {
+   box.innerHTML = `<p class="small">💵 Order delivery ke samay cash payment karein (COD).</p>`;
+  }
+ }
+
+ function generateOrderNumber(firstSku){
+  let cleanSku = String(firstSku||'KESTR').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
+  let sku5 = cleanSku.padEnd(5,'0').slice(0,5);
+  let now = new Date();
+  let dd = String(now.getDate()).padStart(2,'0');
+  let mm = String(now.getMonth()+1).padStart(2,'0');
+  let dateKey = dd+mm+'_'+now.getFullYear();
+  let seqObj = JSON.parse(localStorage.getItem(SEQ_KEY)||'{}');
+  let nextNum = (seqObj.date===dateKey?(Number(seqObj.count)||0):0)+1;
+  localStorage.setItem(SEQ_KEY, JSON.stringify({date:dateKey,count:nextNum}));
+  let seq3 = String(nextNum).padStart(3,'0').slice(-3);
+  return sku5 + dd + mm + seq3;
+ }
+
+ async function placeOrder(){
+  let c = getCart(), p = getProducts();
+  let name = document.getElementById('c_coName').value.trim();
+  let phone = document.getElementById('c_coPhone').value.trim();
+  let address = document.getElementById('c_coAddress').value.trim();
+  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
+  let payRef = document.getElementById('c_payRef')?.value.trim() || '';
+
+  if(!name||!phone||!address){ alert('Please enter name, mobile and address.'); return; }
+  if(!c.length){ alert('Your cart is empty.'); return; }
+  if((payOpt==='UPI' || payOpt==='PhonePe / Paytm') && payRef.length < 8){
+   alert('Please payment complete karke sahi UPI / UTR Transaction ID (kam se kam 8-12 ank) dalein.'); return;
+  }
+
+  let btn = document.getElementById('c_confirmOrderBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Placing Order...'; }
+
+  let orderGroups = getProcessedCartOrders(c);
+  let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
+  let localOrders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
+
+  try {
+   for (const grp of orderGroups) {
+    let groupTotalWithDelivery = grp.subtotal + grp.deliveryFee;
+    let orderItems = [];
+    for (const it of grp.items) {
+     let x = p.find(a=>a.id===it.id);
+     let newStock = x ? Math.max(0, Number(x.stock) - it.qty) : 0;
+     if(x && window.db && window.fbLib){
+      await window.fbLib.updateDoc(window.fbLib.doc(window.db, "products", String(x.id)), { stock: newStock });
+     }
+     let eff = it.unitPrice || x?.price || 0;
+     orderItems.push({...it, name:x?.name||'Product', sku:x?.sku||'', price:eff, originalPrice:x?.price||0, gstRate:x?.gstRate??18, hsn:x?.hsn||''});
+    }
+
+    let firstSku = orderItems[0]?.sku || 'KESTR';
+    let num = generateOrderNumber(firstSku);
+    let orderObj = {
+     number: num,
+     date: new Date().toLocaleString(),
+     timestamp: Date.now(),
+     status: 'Pending',
+     total: groupTotalWithDelivery,
+     deliveryFee: grp.deliveryFee,
+     paymentMethod: payOpt,
+     paymentRef: payRef,
+     isB2B: grp.isB2B,
+     customer: { name, phone, address },
+     items: orderItems
+    };
+
+    if(window.db && window.fbLib){
+     await window.fbLib.setDoc(window.fbLib.doc(window.db, "orders", String(num)), orderObj);
+    }
+    localOrders.unshift(orderObj);
+   }
+
+   localStorage.setItem(ORDERS, JSON.stringify(localOrders));
+   localStorage.setItem(PROFILE, JSON.stringify({ name, phone, address, email:getProfile().email||'' }));
+   saveCart([]);
+
+   document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
+    <h2>Orders Confirmed Successfully!</h2>
+    <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to Shree Estore.</p>
+    <p>Grand Total: <b>${money(grandTotal)}</b> via <b>${esc(payOpt)}</b>${payRef ? ` (Ref: <code>${esc(payRef)}</code>)` : ''}</p>
+    <button class="primary" onclick="C.showPage('c_profile')">View My Orders</button>
+   </div>`;
+  } catch(err){
+   console.error('Place order failed:', err);
+   alert('Order failed: ' + err.message);
+   if(btn){ btn.disabled = false; btn.textContent = 'Confirm All Orders'; }
+  }
+ }
+
+ setInterval(()=>{
+  let arr = liveProducts().filter(p=>p.showcase===true || (Array.isArray(p.showcase)&&p.showcase.length>0));
+  if(!arr.length) arr = liveProducts();
+  if(arr.length>1){ showcaseIndex=(showcaseIndex+1)%arr.length; renderTopShowcase(); }
+ }, 3500);
+
+ return {
+  onProductsUpdated(){ renderHome(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
+  onSettingsUpdated(){ renderCareBanners(); },
+  showPage, openDetails, handleDetailQtyChange, addToCart, addFromCard, toggleCardAction, changeQty, removeCart,
+  renderCart, renderCheckout, togglePaymentFields, placeOrder, openCategory,
+  searchNow, searchFromPage, openSearchTab, renderListing, saveProfile, toggleProfileForm,
+  init(){ renderCats(); renderHome(); updateCartCount(); }
+ };
+})();
+C.init();
+
+/* ==================== 2. ADMIN PANEL APP (A - WHITE THEME) ==================== */
+window.A = (() => {
+ const NOTES = 'kestore_notes_v1';
+ let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'Shree Estore',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',upiId:'',qrImage:''};
+ let orderSort = 'date', currentPdfFileName = 'Document.pdf';
+ let unsubProducts = null, unsubOrders = null;
+ let productUploadImages = Array(4).fill('');
+ let tempQrImage = '';
+ let imagePressTimer = null, imagePressTriggered = false;
+
+ function products(){ return cloudProducts; }
+ function readOrders(){ return cloudOrders; }
+ function getSellerSettings(){ return cloudSettings; }
+
+ function startFirebaseListeners(){
+  if(!window.db || !window.fbLib) return;
+  if(!unsubProducts){
+   unsubProducts = window.fbLib.onSnapshot(window.fbLib.collection(window.db, "products"), snap => {
+    let list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+    cloudProducts = list;
+    refresh();
+   }, err => console.error("Admin products error:", err));
+  }
+  if(!unsubOrders){
+   unsubOrders = window.fbLib.onSnapshot(window.fbLib.collection(window.db, "orders"), snap => {
+    let list = [];
+    snap.forEach(d => list.push({ number: d.id, ...d.data() }));
+    list.sort((a,b)=>(b.timestamp||new Date(b.date).getTime()||0)-(a.timestamp||new Date(a.date).getTime()||0));
+    cloudOrders = list;
+    refresh();
+    renderLiveFrontOrders();
+    renderToday();
+    if(document.getElementById('a_manager').classList.contains('active')){ renderOrders(); renderGST(); }
+   }, err => console.error("Admin orders error:", err));
+  }
+  window.fbLib.getDoc(window.fbLib.doc(window.db, "settings", "store_profile")).then(snap => {
+   if(snap.exists()){
+    cloudSettings = { ...cloudSettings, ...snap.data() };
+    tempQrImage = cloudSettings.qrImage || '';
+    renderGST();
+    syncProfileVisibility();
+   }
+  }).catch(err => console.error("Settings fetch error:", err));
+ }
+
+ function stopFirebaseListeners(){
+  if(unsubProducts){ unsubProducts(); unsubProducts=null; }
+  if(unsubOrders){ unsubOrders(); unsubOrders=null; }
+  cloudProducts=[]; cloudOrders=[];
+ }
+
+ async function saveSingleProductToFirebase(productObj){
+  if(!window.db || !window.fbLib) throw new Error("Firebase not initialized");
+  const payloadSize = new Blob([JSON.stringify(productObj)]).size;
+  if(payloadSize > 950000) throw new Error("Total photo size too large. Please remove 1 photo or use smaller images.");
+  await window.fbLib.setDoc(window.fbLib.doc(window.db, "products", String(productObj.id)), productObj);
+ }
+
+ async function deleteProductFromFirebase(id){
+  if(!window.db || !window.fbLib) throw new Error("Firebase not initialized");
+  await window.fbLib.deleteDoc(window.fbLib.doc(window.db, "products", String(id)));
+ }
+
+ async function saveOrderToFirebase(orderData){
+  if(!window.db || !window.fbLib) return;
+  try{ await window.fbLib.setDoc(window.fbLib.doc(window.db, "orders", String(orderData.number)), orderData); }
+  catch(err){ console.error("Error saving order:", err); alert("Firebase order update failed!"); }
+ }
+
+ function smartCompressImage(file, maxDim=720){
+  return new Promise((resolve, reject) => {
+   let reader = new FileReader();
+   reader.onerror = () => reject(reader.error);
+   reader.onload = () => {
+    let image = new Image();
+    image.onerror = () => reject(new Error('Invalid image'));
+    image.onload = () => {
+     let scale = Math.min(1, maxDim / Math.max(image.naturalWidth, image.naturalHeight));
+     let canvas = document.createElement('canvas');
+     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+     canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+     let ctx = canvas.getContext('2d');
+     ctx.fillStyle = '#ffffff';
+     ctx.fillRect(0, 0, canvas.width, canvas.height);
+     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+     let quality = 0.75;
+     let dataUrl = canvas.toDataURL('image/webp', quality);
+     if(!dataUrl.startsWith('data:image/webp')) dataUrl = canvas.toDataURL('image/jpeg', quality);
+     while(dataUrl.length > 130000 && quality > 0.35){
+      quality -= 0.1;
+      dataUrl = dataUrl.startsWith('data:image/webp') ? canvas.toDataURL('image/webp', quality) : canvas.toDataURL('image/jpeg', quality);
+     }
+     resolve(dataUrl);
+    };
+    image.src = reader.result;
+   };
+   reader.readAsDataURL(file);
+  });
+ }
+
+ function showPage(id){
+  if(id !== 'a_login' && window.adminUser === null && window.firebaseAuthChecked) id = 'a_login';
+  document.querySelectorAll('#adminApp .a-page').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  document.querySelectorAll('#adminApp .bottom button').forEach(b=>b.classList.remove('active'));
+  let navMap = {a_dashboard:'a_nav_dashboard',a_today:'a_nav_dashboard',a_stock:'a_nav_dashboard',a_lowstock:'a_nav_dashboard',a_products:'a_nav_products',a_manager:'a_nav_manager',a_login:'a_nav_login'};
+  if(navMap[id]) document.getElementById(navMap[id])?.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='a_dashboard') renderLiveFrontOrders();
+  if(id==='a_products') renderProducts();
+  if(id==='a_stock') renderStock();
+  if(id==='a_lowstock') renderLow();
+  if(id==='a_manager'){ renderOrders(); renderGST(); }
+  if(id==='a_today') renderToday();
+  if(id==='a_login'){ renderGST(); syncProfileVisibility(); renderNotes(); }
+ }
+
+ function syncProfileVisibility(){
+  const loginPanel = document.getElementById('a_loginPanel');
+  const profPanel = document.getElementById('a_profileFormPanel');
+  const quickBtns = document.getElementById('a_profileQuickBtns');
+  if(!window.adminUser){
+   loginPanel.classList.remove('hidden');
+   profPanel.classList.add('hidden');
+   quickBtns.classList.add('hidden');
+  } else {
+   quickBtns.classList.remove('hidden');
+   loginPanel.classList.add('hidden');
+   const hasShopDetails = Boolean(cloudSettings.name && cloudSettings.phone && cloudSettings.address);
+   if(hasShopDetails) profPanel.classList.add('hidden');
+   else profPanel.classList.remove('hidden');
+  }
+ }
+ function toggleProfileEditPanel(){
+  document.getElementById('a_loginPanel').classList.add('hidden');
+  document.getElementById('a_profileFormPanel').classList.toggle('hidden');
+ }
+ function toggleLoginPanel(){
+  document.getElementById('a_profileFormPanel').classList.add('hidden');
+  document.getElementById('a_loginPanel').classList.toggle('hidden');
+ }
+ function openLoginPanel(){
+  showPage('a_login');
+  document.getElementById('a_profileFormPanel').classList.add('hidden');
+  document.getElementById('a_loginPanel').classList.remove('hidden');
+ }
+ function openSellerForm(){
+  showPage('a_login');
+  if(window.adminUser){
+   document.getElementById('a_loginPanel').classList.add('hidden');
+   document.getElementById('a_profileFormPanel').classList.remove('hidden');
+   document.getElementById('a_profileFormPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  } else {
+   document.getElementById('a_loginPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+ }
+ function openNotebook(){
+  showPage('a_login');
+  document.getElementById('a_notebookSection').scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ function openOrderList(){
+  showPage('a_manager');
+  document.getElementById('a_orderListHeader').scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ function openGSTManagement(){
+  showPage('a_manager');
+  document.getElementById('a_gstReportDetails').scrollIntoView({behavior:'smooth',block:'start'});
+ }
+
+ function refresh(){
+  let p = products(), orders = readOrders();
+  const productCount = document.getElementById('a_productCount');
+  const lowCount = document.getElementById('a_lowCount');
+  const todayCount = document.getElementById('a_todayCount');
+  if(productCount) productCount.textContent = `${p.length} products`;
+  if(lowCount) lowCount.textContent = p.filter(x=>(+x.stock||0)<=5).length;
+  if(todayCount) todayCount.textContent = orders.filter(o=>new Date(o.timestamp||o.date).toDateString()===new Date().toDateString()&&!['Shipped','Delivered','Complete','Cancelled'].includes(o.status)).length;
+  renderLiveFrontOrders();
+  if(document.getElementById('a_products').classList.contains('active')) renderProducts();
+ }
+
+ function renderLiveFrontOrders(){
+  let el = document.getElementById('a_liveFrontOrders');
+  if(!el) return;
+  let live = readOrders().filter(x=>!['Delivered','Complete','Cancelled'].includes(x.status)).slice(0,10);
+  el.innerHTML = live.map(orderCardHTML).join('') || '<p class="muted">No active live orders right now.</p>';
+  bindOrderCardLongPress();
+ }
+
+ function renderProducts(){
+  let q = (document.getElementById('a_productSearch').value||'').toLowerCase();
+  let filtered = products().filter(p=>(p.name+' '+p.sku+' '+p.cat).toLowerCase().includes(q));
+  document.getElementById('a_productListTable').innerHTML = filtered.map((p,idx)=>rowHTML(p,idx+1)).join('') || '<tr><td colspan="5" class="muted" style="text-align:center">No products found.</td></tr>';
+  bindProductLongPress();
+ }
+
+ function rowHTML(p, index=1){
+  let b2bVal = Number(p.b2bPrice) || Math.round(p.price * 0.85);
+  let mrpTxt = p.mrp ? `<div style="text-decoration:line-through;color:#9ca3af">₹${p.mrp}</div>` : '';
+  let image = (p.images||[]).find(Boolean) || p.image || '';
+  let imageHTML = image ? `<img class="productThumb" src="${esc(image)}" alt="${esc(p.name)}" onerror="this.hidden=true">` : `<span class="productThumb" aria-hidden="true"></span>`;
+  return `<tr class="productrow" data-id="${esc(p.id)}" onclick="A.editProduct('${esc(p.id)}')">
+   <td>${index}</td>
+   <td><div class="productNameCell">${imageHTML}<div style="min-width:0"><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} • Stock: <span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out':p.stock}</span> ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></div></div></td>
+   <td><code>${esc(p.sku)}</code></td>
+   <td>₹${p.price}${mrpTxt}</td>
+   <td><b style="color:#d97706">₹${b2bVal}</b><div class="muted">${p.b2bMinQty||10}+ Qty</div></td>
+  </tr>`;
+ }
+
+ function renderStock(){
+  document.getElementById('a_productListTable').innerHTML = products().map((p,i)=>rowHTML(p,i+1)).join('') || '<tr><td colspan="5" class="muted" style="text-align:center">No products.</td></tr>';
+  bindProductLongPress(); showPage('a_products');
+ }
+ function renderLow(){
+  let lowProducts = products().filter(p=>(+p.stock||0)<=5);
+  document.getElementById('a_lowList').innerHTML = lowProducts.length ? `<div class="tablewrap"><table class="productTable"><thead><tr><th>#</th><th>Product Name</th><th>SKU</th><th>Retail Price</th><th>B2B Wholesale</th></tr></thead><tbody>${lowProducts.map((p,i)=>rowHTML(p,i+1)).join('')}</tbody></table></div>` : '<div class="panel muted" style="text-align:center">No low stock products.</div>';
+  bindProductLongPress();
+ }
+
+ let pressTimer=null, longTriggered=false;
+ function bindProductLongPress(){
+  document.querySelectorAll('#adminApp .productrow').forEach(el=>{
+   el.addEventListener('touchstart',()=>{longTriggered=false;pressTimer=setTimeout(()=>{longTriggered=true;quickMenu(el.dataset.id)},850)},{passive:true});
+   el.addEventListener('touchend',()=>clearTimeout(pressTimer));
+   el.addEventListener('touchmove',()=>clearTimeout(pressTimer));
+   el.addEventListener('contextmenu',e=>{e.preventDefault();quickMenu(el.dataset.id)});
+   el.addEventListener('click',e=>{if(longTriggered){e.stopImmediatePropagation();longTriggered=false}},true);
+  });
+ }
+
+ function isShowcased(product){ return Array.isArray(product.showcase)?product.showcase.length>0:product.showcase===true; }
+
+ function quickMenu(id){
+  let p = products().find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
+   <div class="quick" onclick="event.stopPropagation()">
+    <h3>Product Actions</h3>
+    <div class="qsec">PRICE &amp; STOCK</div>
+    <button onclick="A.priceChange('${esc(id)}')">💰 Price Change / Stock Change</button>
+    <div class="qsec">DELIVERY</div>
+    <button onclick="A.deliveryChargeChange('${esc(id)}')">🚚 Delivery Charges</button>
+    <div class="qsec">PRODUCT VISIBILITY &amp; LISTING</div>
+    <button onclick="A.toggleLive('${esc(id)}')">${p.live===false?'⚪ Enable Live Product':'🟢 Disable Live Product'}</button>
+    <button onclick="A.toggleShowcase('${esc(id)}')">${isShowcased(p)?'⭐ Disable Showcase':'☆ Enable Showcase'}</button>
+    <button onclick="A.duplicateProduct('${esc(id)}')">🔘 Duplicate Listing</button>
+    <button style="color:#dc2626" onclick="A.deleteProd('${esc(id)}')">🗑️ Delete Product</button>
+   </div>
+  </div>`;
+ }
+ function closeQuick(){ document.getElementById('a_quickHost').innerHTML=''; }
+
+ async function deleteProd(id){
+  if(!confirm('Delete this product permanently?')) return;
+  closeQuick();
+  try{ await deleteProductFromFirebase(id); }catch(err){ alert('Delete failed: '+err.message); }
+ }
+ async function toggleShowcase(id){
+  let x = products().find(a=>a.id===id); if(!x) return;
+  closeQuick(); await saveSingleProductToFirebase({...x, showcase:!isShowcased(x)});
+ }
+ async function toggleLive(id){
+  let x = products().find(a=>a.id===id); if(!x) return;
+  closeQuick(); await saveSingleProductToFirebase({...x, live:x.live===false?true:false});
+ }
+ function duplicateProduct(id){
+  closeQuick();
+  let x = products().find(a=>a.id===id);
+  if(!x) return;
+  let copy = { ...x, id:'p'+Date.now(), name:x.name+' (Copy)', sku:x.sku+'-COPY' };
+  productForm(copy, true);
+ }
+
+ function priceChange(id){
+  closeQuick(); let x=products().find(a=>a.id===id); if(!x) return;
+  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Price Change</h3><p class="muted">Changes will sync directly to Firebase.</p>
+  <label>MRP (₹)</label><input class="field" id="a_newMrp" type="number" min="0" step=".01" value="${Number(x.mrp)||0}">
+  <label>B2C Retail Price (₹)</label><input class="field" id="a_newPrice" type="number" min="0" step=".01" value="${Number(x.price)||0}">
+  <label>B2B Wholesale Price (₹)</label><input class="field" id="a_newB2bPrice" type="number" min="0" step=".01" value="${Number(x.b2bPrice)||Math.round((Number(x.price)||0)*0.85)}">
+  <label>Stock</label><input class="field" id="a_newStock" type="number" min="0" step="1" value="${Number(x.stock)||0}">
+  <button class="btn" onclick="A.saveQuickPrices('${esc(id)}')">Save Price &amp; Stock</button>`);
+ }
+ async function saveQuickPrices(id){
+  let x=products().find(a=>a.id===id); if(!x) return;
+  let mrp=Number(document.getElementById('a_newMrp').value), pr=Number(document.getElementById('a_newPrice').value), b2b=Number(document.getElementById('a_newB2bPrice').value), stock=Number(document.getElementById('a_newStock').value);
+  if([mrp,pr,b2b,stock].some(v=>!Number.isFinite(v)||v<0)){ alert('Enter valid MRP, B2C, B2B prices and stock'); return; }
+  try{ await saveSingleProductToFirebase({...x, mrp, price:pr, b2bPrice:b2b, stock}); closeModal(); }
+  catch(err){ alert('Price and stock could not be saved: '+err.message); }
+ }
+
+ function deliveryChargeChange(id){
+  closeQuick(); let x=products().find(a=>a.id===id); if(!x) return;
+  let legacy=Number(x.deliveryCharge)||0;
+  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Product Delivery Charges</h3><p class="muted">B2C aur B2B ke delivery charges alag set karein.</p>
+  <label>B2C Delivery Charge (₹)</label><input class="field" id="a_newDelB2C" type="number" min="0" step="0.01" value="${Number(x.deliveryChargeB2C??legacy)}">
+  <label>B2B Delivery Charge (₹)</label><input class="field" id="a_newDelB2B" type="number" min="0" step="0.01" value="${Number(x.deliveryChargeB2B??legacy)}">
+  <button class="btn" onclick="A.saveDeliveryCharge('${esc(id)}')">Save Delivery Charges</button>`);
+ }
+ async function saveDeliveryCharge(id){
+  let x=products().find(a=>a.id===id); if(!x) return;
+  let b2c=Number(document.getElementById('a_newDelB2C').value), b2b=Number(document.getElementById('a_newDelB2B').value);
+  if([b2c,b2b].some(c=>!Number.isFinite(c)||c<0)){ alert('Enter valid delivery charges'); return; }
+  try{ await saveSingleProductToFirebase({...x, deliveryChargeB2C:b2c, deliveryChargeB2B:b2b, deliveryCharge:b2c}); closeModal(); }
+  catch(err){ alert('Delivery charges could not be saved: '+err.message); }
+ }
+
+ function stockChange(id){
+  closeQuick(); let x=products().find(a=>a.id===id); if(!x) return;
+  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Stock Change</h3><p>Current Stock: ${x.stock}</p><input class="field" id="a_newStock" type="number" min="0" step="1" value="${x.stock}"><button class="btn" onclick="A.saveQuickStock('${esc(id)}')">Confirm Stock</button>`);
+ }
+ async function saveQuickStock(id){
+  let x=products().find(a=>a.id===id), v=Number(document.getElementById('a_newStock').value);
+  if(!Number.isFinite(v)||v<0){ alert('Enter a valid value'); return; }
+  try{ await saveSingleProductToFirebase({...x, stock:v}); closeModal(); }catch(err){ alert('Stock update failed: '+err.message); }
+ }
+
+ function openModal(html){ document.getElementById('a_modal').innerHTML=html; document.getElementById('a_modalShade').style.display='block'; }
+ function closeModal(){ document.getElementById('a_modalShade').style.display='none'; document.getElementById('a_modal').innerHTML=''; }
+ function newProduct(){ productForm(null); }
+ function editProduct(id){ productForm(products().find(x=>x.id===id)); }
+
+   function productForm(p, isDuplicate=false){
+   let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],desc:'',live:true,showcase:false,variations:{}};
+   let b2bDefault = x.b2bPrice || (x.price ? Math.round(x.price * 0.85) : '');
+   let defaultPct = (x.price && x.b2bPrice) ? (((x.price - x.b2bPrice)/x.price)*100).toFixed(1) : '15';
+   let hasVariations = Object.values(x.variations||{}).some(v=>Array.isArray(v)&&v.length);
+
+   productUploadImages = Array(4).fill('');
+   let savedImages = [...(x.images||[])];
+   if(x.image && !savedImages.includes(x.image)) savedImages.unshift(x.image);
+   savedImages.filter(Boolean).slice(0,4).forEach((src,i)=>{ productUploadImages[i]=src; });
+
+   openModal(`<button class="close" onclick="A.closeModal()">×</button><h2>${p && !isDuplicate ? 'Edit Product' : 'New Product Listing'}</h2>
+    <div class="productStepNav"><div class="productStepBadge active" data-product-step-label="1">1. Details</div><div class="productStepBadge" data-product-step-label="2">2. GST &amp; Price</div><div class="productStepBadge" data-product-step-label="3">3. Photos</div></div>
+    <section data-product-step="1">
+     <label>Product Name *</label><input class="field" id="a_fName" value="${esc(x.name)}" required>
+     <label>SKU Code *</label><input class="field" id="a_fSku" value="${esc(x.sku)}" required>
+     <label>Description</label><textarea class="field" id="a_fDesc">${esc(x.desc||'')}</textarea>
+     <label>Stock *</label><input class="field" id="a_fStock" type="number" min="0" step="1" value="${x.stock}" required>
+     <label>Categories *</label><select class="field" id="a_fCat" required>${CATS.map(c=>`<option ${c===x.cat?'selected':''}>${c}</option>`).join('')}</select>
+     <button type="button" class="btn ghost" style="margin:8px 0" onclick="A.toggleVariationFields()">＋ Add / Edit Variations</button>
+     <div id="a_variationFields" style="display:${hasVariations?'block':'none'}">
+      <label>Colour (comma-separated)</label><input class="field" id="a_fColour" placeholder="e.g. Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}">
+      <label>Size (comma-separated)</label><input class="field" id="a_fSize" placeholder="e.g. S, M, L" value="${esc((x.variations?.Size||[]).join(','))}">
+      <label>Weight (comma-separated)</label><input class="field" id="a_fWeight" placeholder="e.g. 500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}">
+      <label>Combo (comma-separated)</label><input class="field" id="a_fCombo" placeholder="e.g. Tool Only, Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}">
+     </div>
+     <div class="row" style="margin-top:10px"><button type="button" class="btn" onclick="A.goProductStep(2)">Continue to Step 2 →</button></div>
+    </section>
+    <section data-product-step="2" style="display:none">
+     <label>GST Rate *</label><select class="field" id="a_fGst">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
+     <label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN code" required>
+     <label>MRP (₹) *</label><input class="field" id="a_fMrp" type="number" min="0" step=".01" value="${x.mrp??''}" required>
+     <label>B2C Price (₹) *</label><input class="field" id="a_fPrice" type="number" min="0" step=".01" value="${x.price??''}" oninput="A.calcB2bPercent()" required>
+     <label>B2B Price (₹)</label><input class="field" id="a_fB2bPrice" type="number" min="0" step=".01" value="${b2bDefault}" oninput="A.calcB2bPercent()">
+     <label>B2B Discount (%)</label><input class="field" id="a_fB2bPct" type="number" min="0" max="100" value="${defaultPct}" oninput="A.calcB2bPriceFromPct()">
+     <label>B2B Min Qty</label><input class="field" id="a_fB2bMin" type="number" min="1" value="${x.b2bMinQty||10}">
+     <div class="row" style="margin-top:10px;flex-wrap:wrap">
+      <button type="button" class="btn ghost" onclick="A.goProductStep(1)">← Back</button>
+      <button type="button" class="btn ghost" id="a_saveNoPhotoBtn" onclick="A.saveProduct('${esc(x.id)}',false)">Save Product (Add Photos Later)</button>
+      <button type="button" class="btn" onclick="A.goProductStep(3)">Continue to Photos →</button>
+     </div>
+     ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
+    </section>
+    <section data-product-step="3" style="display:none">
+     <label>Product Photos * (at least 1 photo; maximum 4)</label>
+     <p class="muted" style="margin:6px 0 10px">One photo is required to save this step. Tap a box for one photo; long-press for multiple photos or a folder. Selected photos are processed one at a time.</p>
+     <input type="file" id="a_bulkImagesInput" accept="image/*" multiple style="display:none" onchange="A.handleBulkProductImages(this)">
+     <input type="file" id="a_folderImagesInput" accept="image/*" multiple webkitdirectory directory style="display:none" onchange="A.handleBulkProductImages(this)">
+     <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="imageSlot">
+      <button type="button" class="imgClearBtn" id="a_imgClear${i}" onclick="A.clearProductImage(${i})">×</button>
+      <div class="imageDrop" id="a_imageDrop${i}" onclick="A.imageBoxClick(event,${i})" onpointerdown="A.startImageBoxPress(event,${i})" onpointerup="A.endImageBoxPress()" onpointercancel="A.endImageBoxPress()" onpointerleave="A.endImageBoxPress()" oncontextmenu="A.imageBoxContextMenu(event,${i})" ondragover="A.imageDragOver(event,${i})" ondragleave="A.imageDragLeave(event,${i})" ondrop="A.imageDropFile(event,${i})">
+       <img id="a_uploadPreview${i}" alt="Upload preview"><span class="dropHint">＋<br>Photo ${i+1}<br>Tap / hold</span>
+       <input id="a_singleImageInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleProductImage(this,${i})">
+      </div>
+      <input class="imageUrlField" id="a_imageUrl${i}" type="text" placeholder="Ya image URL paste karein" value="${esc(productUploadImages[i]&&!productUploadImages[i].startsWith('data:image/')?productUploadImages[i]:'')}" oninput="A.handleImageUrlInput(this,${i})">
+     </div>`).join('')}</div>
+     <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button><button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true)">Save Product &amp; Photos</button></div>
+     ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
+    </section>`);
+
+   productUploadImages.forEach((src,i)=>{
+    if(src){
+     showUploadPreview(i, src);
+     let urlInput=document.getElementById(`a_imageUrl${i}`);
+     if(urlInput&&!src.startsWith('data:image/')) urlInput.value=src;
+    }
+   });
+  }
+
+  function goProductStep(step){
+   if(step===2){
+    const name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
+    const stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
+    if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); return; }
+   }
+   if(step===3 && !validateProductPricing()) return;
+   document.querySelectorAll('#a_modal [data-product-step]').forEach(el=>el.style.display=el.getAttribute('data-product-step')===String(step)?'block':'none');
+   document.querySelectorAll('#a_modal [data-product-step-label]').forEach(el=>el.classList.toggle('active',el.getAttribute('data-product-step-label')===String(step)));
+   document.getElementById('a_modal').scrollTop=0;
+  }
+
+  function validateProductPricing(){
+   const hsn=document.getElementById('a_fHsn').value.trim();
+   const mrpInput=document.getElementById('a_fMrp').value.trim(), priceInput=document.getElementById('a_fPrice').value.trim();
+   const mrp=Number(mrpInput), price=Number(priceInput);
+   if(!hsn||mrpInput===''||priceInput===''){ alert('GST Rate, HSN Code, MRP and B2C Price are required.'); return false; }
+   if(!Number.isFinite(mrp)||mrp<0||!Number.isFinite(price)||price<0){ alert('Enter valid MRP and B2C Price.'); return false; }
+   const pct=Number(document.getElementById('a_fB2bPct').value);
+   if(!Number.isFinite(pct)||pct<0||pct>100){ alert('B2B Discount must be between 0 and 100%.'); return false; }
+   const minQty=Number(document.getElementById('a_fB2bMin').value);
+   if(!Number.isFinite(minQty)||minQty<1){ alert('B2B Min Qty must be at least 1.'); return false; }
+   const b2bInput=document.getElementById('a_fB2bPrice').value.trim();
+   if(b2bInput!==''&&(!Number.isFinite(Number(b2bInput))||Number(b2bInput)<0)){ alert('Enter a valid B2B Price.'); return false; }
+   return true;
+  }
+
+ function toggleVariationFields(){
+  let box=document.getElementById('a_variationFields');
+  if(box) box.style.display=box.style.display==='none'?'block':'none';
+ }
+
+ function calcB2bPercent(){
+  let retail = Number(document.getElementById('a_fPrice').value) || 0;
+  let b2b = Number(document.getElementById('a_fB2bPrice').value) || 0;
+  if(retail > 0 && b2b > 0) document.getElementById('a_fB2bPct').value = (((retail-b2b)/retail)*100).toFixed(1);
+ }
+ function calcB2bPriceFromPct(){
+  let retail = Number(document.getElementById('a_fPrice').value) || 0;
+  let pct = Number(document.getElementById('a_fB2bPct').value) || 0;
+  if(retail > 0) document.getElementById('a_fB2bPrice').value = Math.round(retail - (retail*(pct/100)));
+ }
+
+ function showUploadPreview(index, src){
+  let img = document.getElementById(`a_uploadPreview${index}`);
+  let clr = document.getElementById(`a_imgClear${index}`);
+  if(!img) return;
+  if(src){ img.src=src; img.classList.add('visible'); clr?.classList.add('visible'); }
+  else { img.src=''; img.classList.remove('visible'); clr?.classList.remove('visible'); }
+ }
+ function clearProductImage(index){
+  productUploadImages[index]='';
+  let urlInput=document.getElementById(`a_imageUrl${index}`);
+  if(urlInput) urlInput.value='';
+  showUploadPreview(index,'');
+ }
+ function handleImageUrlInput(input,index){
+  let url=String(input?.value||'').trim();
+  productUploadImages[index]=url;
+  showUploadPreview(index,url);
+ }
+ function imageDragOver(event,index){ event.preventDefault(); document.getElementById(`a_imageDrop${index}`)?.classList.add('dragover'); }
+ function imageDragLeave(event,index){ event.preventDefault(); document.getElementById(`a_imageDrop${index}`)?.classList.remove('dragover'); }
+ function imageDropFile(event,index){ event.preventDefault(); imageDragLeave(event,index); let file=event.dataTransfer?.files?.[0]; if(file) processProductImage(file,index); }
+ function handleProductImage(input,index){ let file=input.files?.[0]; if(file) processProductImage(file,index); input.value=''; }
+
+ function imageBoxClick(event,index){
+  if(imagePressTriggered){ imagePressTriggered=false; return; }
+  if(event.target.closest('.imgClearBtn')) return;
+  document.getElementById(`a_singleImageInput${index}`)?.click();
+ }
+ function startImageBoxPress(event,index){
+  if(event.pointerType==='mouse' && event.button!==0) return;
+  imagePressTriggered=false;
+  clearTimeout(imagePressTimer);
+  imagePressTimer=setTimeout(()=>{
+   imagePressTriggered=true;
+   imageBoxMenu(index);
+  },600);
+ }
+ function endImageBoxPress(){ clearTimeout(imagePressTimer); }
+ function imageBoxContextMenu(event,index){ event.preventDefault(); imagePressTriggered=true; imageBoxMenu(index); }
+ function imageBoxMenu(index){
+  document.getElementById('a_quickHost').innerHTML=`<div class="modalShade" style="display:block" onclick="A.closeQuick()">
+   <div class="quick" onclick="event.stopPropagation()">
+    <h3>Upload Photos</h3>
+    <button onclick="A.pickBulkImages('multiple')">📷 Select Multiple Photos</button>
+    <button onclick="A.pickBulkImages('folder')">📁 Select Photo Folder</button>
+    <button onclick="A.closeQuick()" style="color:#6b7280;text-align:center">Cancel</button>
+   </div>
+  </div>`;
+ }
+ function pickBulkImages(type){
+  closeQuick();
+  document.getElementById(type==='folder'?'a_folderImagesInput':'a_bulkImagesInput')?.click();
+ }
+
+ async function handleBulkProductImages(input){
+  let files=Array.from(input.files||[]).filter(file=>file.type.startsWith('image/'));
+  input.value='';
+  let slots=productUploadImages.map((value,index)=>value? -1:index).filter(index=>index>=0);
+  if(!files.length){ alert('No image files found.'); return; }
+  if(files.length>slots.length) alert(`Only ${slots.length} photo slot(s) available. Extra files will be ignored.`);
+  for(let i=0;i<Math.min(files.length,slots.length);i++) await processProductImage(files[i],slots[i]);
+ }
+
+ async function processProductImage(file, index){
+  if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
+  if(file.size > 20*1024*1024){ alert('Image too large (max 20 MB).'); return; }
+  try{
+   let compressed = await smartCompressImage(file);
+   productUploadImages[index] = compressed;
+   let urlInput=document.getElementById(`a_imageUrl${index}`);
+   if(urlInput) urlInput.value='';
+   showUploadPreview(index, compressed);
+  }catch(err){ console.error(err); alert('Could not read image.'); }
+ }
+
+   async function saveProduct(id, withPhotos=true){
+   let old = products().find(x=>x.id===id);
+   let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
+   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
+   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
+   if(!validateProductPricing()){ goProductStep(2); return; }
+   if(withPhotos&&!productUploadImages.some(Boolean)){ alert('At least one product photo is required. You can save without photos from Step 2 and add them later.'); goProductStep(3); return; }
+
+   let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
+   let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
+   let b2bPrice=b2bInput===''?Math.round(price*(1-Number(document.getElementById('a_fB2bPct').value)/100)):Number(b2bInput);
+   const btn=document.getElementById(withPhotos?'a_saveProdBtn':'a_saveNoPhotoBtn');
+   if(btn){ btn.disabled=true; btn.textContent=withPhotos?'⏳ Uploading Photos...':'⏳ Saving Product...'; }
+
+   try{
+    let finalImages=[];
+    if(withPhotos){
+     for(let i=0;i<productUploadImages.length;i++){
+      if(productUploadImages[i]) finalImages.push(await window.uploadProductImage(productUploadImages[i],id,i));
+     }
+    }else{
+     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:productUploadImages.filter(src=>src&&!src.startsWith('data:image/')));
+     finalImages=keepImages.slice(0,4);
+    }
+    let x={
+     id,name,sku,cat:document.getElementById('a_fCat').value,
+     mrp,price,b2bPrice,
+     b2bMinQty:Number(document.getElementById('a_fB2bMin').value)||10,
+     gstRate:Number(document.getElementById('a_fGst').value),stock,
+     deliveryCharge:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
+     deliveryChargeB2C:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
+     deliveryChargeB2B:Number(old?.deliveryChargeB2B??old?.deliveryCharge)||0,
+     images:finalImages,image:finalImages[0]||'',desc:document.getElementById('a_fDesc').value,
+     hsn,
+     live:old?old.live!==false:true,
+     showcase:old?isShowcased(old):false,
+     variations:{
+      Size:document.getElementById('a_fSize').value.split(',').map(s=>s.trim()).filter(Boolean),
+      Colour:document.getElementById('a_fColour').value.split(',').map(s=>s.trim()).filter(Boolean),
+      Weight:document.getElementById('a_fWeight').value.split(',').map(s=>s.trim()).filter(Boolean),
+      'Combo Kit':document.getElementById('a_fCombo').value.split(',').map(s=>s.trim()).filter(Boolean)
+     }
+    };
+    await saveSingleProductToFirebase(x);
+    closeModal();
+    showPage('a_products');
+   }catch(err){
+    console.error('Save product error:',err);
+    alert('Could not save product: '+err.message);
+    if(btn){ btn.disabled=false; btn.textContent=withPhotos?'Save Product & Photos':'Save Product (Add Photos Later)'; }
+   }
+  }
+
+ /* ORDERS & LONG PRESS */
+ function renderToday(){
+  let o = readOrders().filter(x=>!['Shipped','Delivered','Complete','Cancelled'].includes(x.status));
+  document.getElementById('a_todayOrders').innerHTML = o.map(orderCardHTML).join('') || '<p class="muted">No active orders.</p>';
+  bindOrderCardLongPress();
+ }
+
+ function orderCardHTML(o){
+  let itemsText = (o.items||[]).map(i=>{
+   let p = products().find(x=>x.id===i.id);
+   let nm = i.name||p?.name||'Product', sk = i.sku||p?.sku||'';
+   return `${esc(nm)} ${sk?`<span class="muted">[${esc(sk)}]</span>`:''}${i.vKey?' ('+esc(i.vKey)+')':''} × <b>${i.qty}</b> ${i.isB2B?'<span class="badge" style="background:#fef3c7;color:#b45309">B2B</span>':'<span class="badge">B2C</span>'}`;
+  }).join('<br>');
+  return `<div class="ordercard" data-num="${esc(o.number)}">
+   <div style="display:flex;justify-content:space-between;align-items:center">
+    <b>Order No: ${esc(o.number)}</b>
+    <span class="badge">${esc(o.status||'Pending')}</span>
+   </div>
+   <div class="muted" style="margin-top:4px">${esc(o.date)} • Pay: <b>${esc(o.paymentMethod||'COD')}</b>${o.paymentRef?` (${esc(o.paymentRef)})`:''} • Del: ${money(o.deliveryFee||0)}</div>
+   <p style="margin:8px 0 4px"><b>${esc(o.customer?.name||'Customer')}</b> • ${esc(o.customer?.phone||'')}</p>
+   <p class="muted" style="margin:0 0 8px">${esc(o.customer?.address||'')}</p>
+   <p style="margin:6px 0">${itemsText}</p>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+    <b>Total: ${money(o.total)}</b>
+    <span class="muted">Hold for Print &amp; Actions ⋮</span>
+   </div>
+  </div>`;
+ }
+
+ function orderRowHTML(o, index=1){
+  return `<tr class="orderrow" data-num="${esc(o.number)}">
+   <td>${index}</td>
+   <td><b>${esc(o.number)}</b>${o.isB2B?' <span class="badge" style="background:#fef3c7;color:#b45309;font-size:9px">B2B</span>':''}</td>
+   <td><span class="muted">${esc(o.date)}</span></td>
+   <td><b>${esc(o.customer?.name||'Customer')}</b><br><span class="muted">${esc(o.customer?.phone||'')}</span></td>
+   <td><b>${money(o.total)}</b></td>
+   <td><span class="badge">${esc(o.status||'Pending')}</span></td>
+  </tr>`;
+ }
+
+ function getOrderFirstName(o){ let fi=o.items?.[0], p=products().find(a=>a.id===fi?.id); return String(fi?.name||p?.name||o.customer?.name||'').toLowerCase(); }
+ function getOrderFirstSku(o){ let fi=o.items?.[0], p=products().find(a=>a.id===fi?.id); return String(fi?.sku||p?.sku||'').toLowerCase(); }
+
+ function renderOrders(){
+  let q = (document.getElementById('a_orderSearch').value||'').toLowerCase(), f = document.getElementById('a_orderFilter').value;
+  let o = readOrders().filter(x=>{
+   let stMatch = (f==='all') || (x.status||'Pending').toLowerCase().includes(f.toLowerCase());
+   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
+   return stMatch && searchStr.includes(q);
+  });
+  if(orderSort==='name') o.sort((a,b)=>getOrderFirstName(a).localeCompare(getOrderFirstName(b)));
+  else if(orderSort==='sku') o.sort((a,b)=>getOrderFirstSku(a).localeCompare(getOrderFirstSku(b)));
+  else if(orderSort==='number') o.sort((a,b)=>String(a.number||'').localeCompare(String(b.number||'')));
+  else o.sort((a,b)=>(b.timestamp||new Date(b.date).getTime()||0)-(a.timestamp||new Date(a.date).getTime()||0));
+  let sortLabels = {name:'Name',sku:'SKU',date:'Date',number:'Order Number'};
+  let ind = document.getElementById('a_sortIndicator');
+  if(ind) ind.textContent = `Sorted by: "${sortLabels[orderSort]||'Date'}" • Long-press here to Sort`;
+  document.getElementById('a_orderListTable').innerHTML = o.map((ord,i)=>orderRowHTML(ord,i+1)).join('') || '<tr><td colspan="6" class="muted" style="text-align:center">No parcel bills found.</td></tr>';
+  bindOrderRowLongPress();
+ }
+
+ let orderTimer = null;
+ function bindOrderRowLongPress(){
+  document.querySelectorAll('#adminApp .orderrow').forEach(el=>{
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),500)},{passive:true});
+   el.addEventListener('touchend',()=>clearTimeout(orderTimer));
+   el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
+   el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
+  });
+ }
+ function bindOrderCardLongPress(){
+  document.querySelectorAll('#adminApp .ordercard').forEach(el=>{
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),500)},{passive:true});
+   el.addEventListener('touchend',()=>clearTimeout(orderTimer));
+   el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
+   el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
+  });
+ }
+
+ function initHeaderSortLongPress(){
+  let hd = document.getElementById('a_orderListHeader');
+  if(!hd) return;
+  let hTimer = null;
+  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),480)},{passive:true});
+  hd.addEventListener('touchend',()=>clearTimeout(hTimer));
+  hd.addEventListener('touchmove',()=>clearTimeout(hTimer));
+  hd.addEventListener('contextmenu',e=>{e.preventDefault();openSortPopup()});
+  hd.addEventListener('click',()=>openSortPopup());
+ }
+
+ function openSortPopup(){
+  let cur = orderSort||'date';
+  document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
+   <div class="quick" onclick="event.stopPropagation()">
+    <h3>Sort Order List</h3>
+    <button onclick="A.applyOrderSort('name')">Sort by "Name" ${cur==='name'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('sku')">Sort by "SKU" ${cur==='sku'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('date')">Sort by "Date" ${cur==='date'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('number')">Sort by "Order Number" ${cur==='number'?'✓':''}</button>
+   </div>
+  </div>`;
+ }
+ function applyOrderSort(k){ orderSort=k; closeQuick(); renderOrders(); }
+
+ function openOrderMenu(num){
+  let o = readOrders().find(x=>x.number===num);
+  if(!o) return;
+  document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
+   <div class="quick" onclick="event.stopPropagation()">
+    <h3>Order No: ${esc(o.number)}</h3>
+    <div class="qsec">PRINT</div>
+    <button onclick="A.closeQuick();A.printParcelLabel('${esc(o.number)}')">1. 🏷️ Label Print</button>
+    <button onclick="A.closeQuick();A.printBillInvoice('${esc(o.number)}')">2. 🧾 Bill Print</button>
+    <div class="qsec">ORDER STATUS</div>
+    <button onclick="A.setOrderStatus('${esc(o.number)}','Pending')">3. ⏳ Pending ${(o.status==='Pending')?'✓':''}</button>
+    <button onclick="A.setOrderStatus('${esc(o.number)}','Confirmed')">4. ✅ Confirm ${(o.status==='Confirmed')?'✓':''}</button>
+    <button onclick="A.setOrderStatus('${esc(o.number)}','Shipped')">5. 🚚 Shipped ${(o.status==='Shipped')?'✓':''}</button>
+    <button onclick="A.setOrderStatus('${esc(o.number)}','Delivered')">6. 📦 Delivered ${(o.status==='Delivered')?'✓':''}</button>
+    <button onclick="A.setOrderStatus('${esc(o.number)}','Complete')">7. ✅ Complete ${(o.status==='Complete')?'✓':''}</button>
+    <button onclick="A.setOrderStatus('${esc(o.number)}','Cancelled')">8. ❌ Cancel ${(o.status==='Cancelled')?'✓':''}</button>
+    <button style="color:#dc2626" onclick="A.deleteOrder('${esc(o.number)}')">9. 🗑️ Delete</button>
+   </div>
+  </div>`;
+ }
+
+ function openAutoPrintChoice(num){
+  document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
+   <div class="quick" onclick="event.stopPropagation()">
+    <h3>✅ Order ${esc(num)} Confirmed!</h3>
+    <p class="muted" style="margin:0 6px 10px">Select document to Print / Download PDF:</p>
+    <button onclick="A.closeQuick();A.printParcelLabel('${esc(num)}')">🏷️ Parcel Label</button>
+    <button onclick="A.closeQuick();A.printBillInvoice('${esc(num)}')">🧾 Bill Invoice</button>
+    <button onclick="A.closeQuick()" style="color:#6b7280;text-align:center">Close</button>
+   </div>
+  </div>`;
+ }
+
+ async function setOrderStatus(num, st){
+  const target = readOrders().find(x=>x.number===num);
+  if(!target) return;
+  closeQuick();
+  await saveOrderToFirebase({...target, status:st, updatedAt:Date.now()});
+  if(st==='Confirmed') openAutoPrintChoice(num);
+ }
+
+ async function deleteOrder(num){
+  if(!confirm('Delete Order '+num+' permanently from Firebase?')) return;
+  closeQuick();
+  if(window.db && window.fbLib){
+   try{ await window.fbLib.deleteDoc(window.fbLib.doc(window.db,'orders',String(num))); }
+   catch(err){ console.error('Firebase order delete failed:',err); alert('Order delete failed: '+err.message); }
+  }
+ }
+
+ /* 100% OFFLINE SVG BARCODE & QR CODE */
+ function generateBarcodeSVG(codeStr){
+  let s=String(codeStr||'SHREEESTORE00001'), bars=[], x=4;
+  bars.push(`<rect x="${x}" y="2" width="3" height="38" fill="#000"/>`); x+=5;
+  bars.push(`<rect x="${x}" y="2" width="1.5" height="38" fill="#000"/>`); x+=4;
+  for(let i=0;i<s.length;i++){
+   let c=s.charCodeAt(i), w1=(c%3)+1.2, g1=((c>>1)%2)+1.5, w2=((c>>2)%3)+1.2, g2=2;
+   bars.push(`<rect x="${x}" y="2" width="${w1}" height="38" fill="#000"/>`); x+=w1+g1;
+   bars.push(`<rect x="${x}" y="2" width="${w2}" height="38" fill="#000"/>`); x+=w2+g2;
+  }
+  bars.push(`<rect x="${x}" y="2" width="3" height="38" fill="#000"/>`); x+=5;
+  return `<svg viewBox="0 0 ${Math.ceil(x+4)} 42" style="width:100%;max-width:210px;height:40px;display:block">${bars.join('')}</svg>`;
+ }
+
+ function generateOfflineQRSVG(codeStr){
+  let s=String(codeStr||'SHREEESTORE00001'), size=13, cells=[];
+  function finder(rx,ry){
+   cells.push(`<rect x="${rx}" y="${ry}" width="3" height="3" fill="#000"/>`);
+   cells.push(`<rect x="${rx+0.6}" y="${ry+0.6}" width="1.8" height="1.8" fill="#fff"/>`);
+   cells.push(`<rect x="${rx+1.1}" y="${ry+1.1}" width="0.8" height="0.8" fill="#000"/>`);
+  }
+  finder(1,1); finder(size-4,1); finder(1,size-4);
+  for(let y=1;y<size-1;y++){
+   for(let x=1;x<size-1;x++){
+    if((x<5&&y<5)||(x>=size-5&&y<5)||(x<5&&y>=size-5))continue;
+    let v=(s.charCodeAt((x*3+y*5)%s.length)+(x*11)+(y*7))%3;
+    if(v===0)cells.push(`<rect x="${x}" y="${y}" width="0.92" height="0.92" fill="#000"/>`);
+   }
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" style="width:62px;height:62px;border:1.5px solid #000;padding:2px;background:#fff;display:block">${cells.join('')}</svg>`;
+ }
+
+ function openPrintStage(title, fileName, html){
+  currentPdfFileName = fileName;
+  document.getElementById('printDocTitle').textContent = title;
+  document.getElementById('printStage').innerHTML = html;
+  document.getElementById('printOverlay').style.display = 'block';
+  window.scrollTo(0,0);
+ }
+ function closePrintView(){
+  document.getElementById('printOverlay').style.display='none';
+  document.getElementById('printStage').innerHTML='';
+ }
+
+ async function downloadCurrentPDF(){
+  let el = document.getElementById('pdfPrintableArea');
+  if(!el) return;
+  let btn = document.getElementById('dlPdfBtn'), oldText = btn.textContent;
+  btn.textContent = '⏳ Saving...';
+  let fName = currentPdfFileName || 'Order.pdf';
+  try{
+   if(window.html2pdf){
+    let opt = { margin:[6,6,6,6], filename:fName, image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+    let pdfBlob = await html2pdf().set(opt).from(el).outputPdf('blob');
+    let pdfFile = new File([pdfBlob], fName, { type:'application/pdf' });
+    if(navigator.canShare && navigator.canShare({ files:[pdfFile] })){
+     await navigator.share({ files:[pdfFile], title:fName });
+     btn.textContent = oldText; return;
+    }
+    let blobUrl = URL.createObjectURL(pdfBlob), a = document.createElement('a');
+    a.href = blobUrl; a.download = fName; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 5000);
+    btn.textContent = oldText; return;
+   }
+  }catch(err){ console.log('PDF fallback:', err); }
+  btn.textContent = oldText;
+  triggerDevicePrint();
+ }
+ function triggerDevicePrint(){ try{ window.print(); }catch(e){} }
+
+ function printParcelLabel(num){
+  let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
+  if(!o) return;
+  let bName = s.name || 'Shree Estore';
+  let totalQty = (o.items||[]).reduce((sum,i)=>sum+(+i.qty||0),0);
+  let itemRows = (o.items||[]).map((i,idx)=>{
+   let p=products().find(x=>x.id===i.id), nm=i.name||p?.name||'Product', sk=i.sku||p?.sku||'';
+   return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(nm)}</b>${sk?` <span>[${esc(sk)}]</span>`:''}${i.vKey?`<br><span style="font-size:10px">${esc(i.vKey)}</span>`:''}</td><td style="text-align:center;font-size:13px;font-weight:900">${i.qty}</td></tr>`;
+  }).join('');
+  let html = `<div id="pdfPrintableArea" class="printBox">
+   <div style="border-bottom:2px solid #000;padding-bottom:8px">
+    <div style="font-size:22px;font-weight:900">${esc(bName)}</div>
+    <div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:17px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B PARCEL</span>':''}</div>
+    <div style="font-size:11px;margin-top:2px">Date: ${esc(o.date)} | Delivery Fee: ${money(o.deliveryFee||0)}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
+     <div style="flex:1;min-width:0">${generateBarcodeSVG(o.number)}<div style="font-family:monospace;font-size:11px;font-weight:900;letter-spacing:1.5px;margin-top:2px">${esc(o.number)}</div></div>
+     <div>${generateOfflineQRSVG(o.number)}</div>
+    </div>
+   </div>
+   <div style="padding:10px 0;border-bottom:2px solid #000;font-size:13px;line-height:1.45">
+    <div style="font-size:10px;font-weight:900;letter-spacing:.8px">DELIVER TO (CUSTOMER):</div>
+    <div style="font-size:17px;font-weight:900;margin-top:2px">${esc(o.customer?.name||'Customer')}</div>
+    <div><b>Address:</b> ${esc(o.customer?.address||'')}</div>
+    <div style="font-size:14px;font-weight:900;margin-top:2px">Mobile: ${esc(o.customer?.phone||'')}</div>
+   </div>
+   <div style="padding:10px 0;border-bottom:2px solid #000">
+    <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;margin-bottom:5px"><span>ITEM DETAILS</span><span>TOTAL QTY: ${totalQty}</span></div>
+    <table class="printTable"><colgroup><col style="width:10%"><col style="width:74%"><col style="width:16%"></colgroup><thead><tr style="background:#eee"><th style="text-align:center">#</th><th>Product Name</th><th style="text-align:center">Qty</th></tr></thead><tbody>${itemRows}</tbody></table>
+   </div>
+   <div style="padding-top:8px;font-size:11px;line-height:1.45">
+    <div style="font-weight:900;text-transform:uppercase">If Undelivered, Return To (RTO Address):</div>
+    <div><b>${esc(bName)}</b></div>
+    <div>${esc(s.address||'Rajkot, Gujarat')} ${s.state?'('+esc(s.state)+')':''}</div>
+    <div style="margin-top:3px;font-size:12px;font-weight:900">Customer Care No: ${esc(s.phone||'-')}</div>
+   </div>
+  </div>`;
+  openPrintStage('Parcel Label - ' + o.number, 'Label_' + o.number + '.pdf', html);
+ }
+
+ function printBillInvoice(num){
+  let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
+  if(!o) return;
+  let bName = s.name || 'Shree Estore', totalTaxable=0, totalGst=0;
+  let rows = (o.items||[]).map((i,idx)=>{
+   let pr=Number(i.price||0), rate=Number(i.gstRate??18), lineTotal=pr*i.qty, taxable=rate===0?lineTotal:lineTotal/(1+rate/100), gstAmt=lineTotal-taxable;
+   totalTaxable+=taxable; totalGst+=gstAmt;
+   return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(i.name)}</b>${i.vKey?`<div style="font-size:10px">${esc(i.vKey)}</div>`:''}</td><td style="text-align:center"><b>${i.qty}</b><div style="font-size:10px">× ${money(pr)}</div></td><td style="text-align:center"><b>${rate}%</b></td><td style="text-align:right;font-weight:900">${money(lineTotal)}</td></tr>`;
+  }).join('');
+  let html = `<div id="pdfPrintableArea" class="printBox">
+   <div style="border-bottom:2px solid #000;padding-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+     <div><div style="font-size:22px;font-weight:900;color:#07366c">${esc(bName)}</div><div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:16px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B INVOICE</span>':''}</div><div style="font-size:11px;margin-top:2px"><b>Date:</b> ${esc(o.date)}</div>${s.gstin?`<div style="font-size:11px;margin-top:2px"><b>GSTIN:</b> ${esc(s.gstin)}</div>`:''}</div>
+     <div style="font-size:11px;font-weight:900;border:1.5px solid #000;padding:3px 6px;white-space:nowrap">TAX INVOICE</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
+     <div style="flex:1;min-width:0">${generateBarcodeSVG(o.number)}<div style="font-family:monospace;font-size:11px;font-weight:900;letter-spacing:1.5px;margin-top:2px">${esc(o.number)}</div></div>
+     <div>${generateOfflineQRSVG(o.number)}</div>
+    </div>
+   </div>
+   <div style="padding:10px 0;border-bottom:2px solid #000;font-size:13px;line-height:1.45">
+    <div style="font-size:10px;font-weight:900;letter-spacing:.8px">CUSTOMER DETAILS (BILL TO):</div>
+    <div style="font-size:17px;font-weight:900;margin-top:2px">${esc(o.customer?.name||'Customer')}</div>
+    <div><b>Address:</b> ${esc(o.customer?.address||'')}</div>
+    <div style="font-size:14px;font-weight:900;margin-top:2px">Mobile: ${esc(o.customer?.phone||'')}</div>
+   </div>
+   <div style="padding:10px 0;border-bottom:2px solid #000">
+    <div style="font-size:11px;font-weight:900;margin-bottom:5px">BILL DETAILS:</div>
+    <table class="printTable"><colgroup><col style="width:8%"><col style="width:42%"><col style="width:16%"><col style="width:16%"><col style="width:18%"></colgroup><thead><tr style="background:#eaf4ff"><th style="text-align:center">#</th><th>Item Name</th><th style="text-align:center">Qty/Rate</th><th style="text-align:center">GST</th><th style="text-align:right">Total</th></tr></thead><tbody>${rows}</tbody></table>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px"><div style="width:220px;font-size:12px">
+     <div style="display:flex;justify-content:space-between;padding:2px 0"><span>Taxable Amount:</span><b>${money(totalTaxable)}</b></div>
+     <div style="display:flex;justify-content:space-between;padding:2px 0"><span>Total GST:</span><b>${money(totalGst)}</b></div>
+     <div style="display:flex;justify-content:space-between;padding:2px 0"><span>Delivery Charge:</span><b>${money(o.deliveryFee||0)}</b></div>
+     <div style="display:flex;justify-content:space-between;padding:6px 0;margin-top:3px;border-top:2px solid #000;font-size:15px;font-weight:900"><span>Grand Total:</span><span>${money(o.total)}</span></div>
+    </div></div>
+   </div>
+   <div style="padding-top:8px;display:flex;justify-content:space-between;align-items:flex-end;gap:8px;font-size:11px;line-height:1.45">
+    <div style="flex:1"><div style="font-weight:900;text-transform:uppercase">If Undelivered, Return To (RTO):</div><div><b>${esc(bName)}</b></div><div>${esc(s.address||'Rajkot, Gujarat')} ${s.state?'('+esc(s.state)+')':''}</div><div style="font-weight:900;margin-top:2px">Customer Care No: ${esc(s.phone||'-')}</div></div>
+    <div style="text-align:right;white-space:nowrap"><b>For ${esc(bName)}</b><br><br>Signatory</div>
+   </div>
+  </div>`;
+  openPrintStage('Bill Invoice - ' + o.number, 'Invoice_' + o.number + '.pdf', html);
+ }
+
+ /* GST AUTO-RETURN ENGINE */
+ function computeGSTStats(){
+  let all = readOrders();
+  let cancelled = all.filter(x=>x.status==='Cancelled');
+     let completed = all.filter(x=>['Delivered','Complete'].includes(x.status));
+  let active = all.filter(x=>x.status!=='Cancelled');
+  let total=0, taxableTotal=0, taxTotal=0, hsnMap={};
+
+  active.forEach(ord=>{
+   (ord.items||[]).forEach(i=>{
+    let pr=Number(i.price||0), rate=Number(i.gstRate??18), qty=Number(i.qty||0), lt=pr*qty;
+    let tx = rate===0 ? lt : lt/(1+rate/100), gst = lt-tx;
+    total+=lt; taxableTotal+=tx; taxTotal+=gst;
+    let hsnKey = (i.hsn||'N/A') + ' (' + rate + '%)';
+    if(!hsnMap[hsnKey]) hsnMap[hsnKey] = { hsn:i.hsn||'N/A', rate, qty:0, taxable:0, gst:0, total:0 };
+    hsnMap[hsnKey].qty += qty; hsnMap[hsnKey].taxable += tx; hsnMap[hsnKey].gst += gst; hsnMap[hsnKey].total += lt;
+   });
+  });
+     return { active, completed, cancelled, total, taxableTotal, taxTotal, hsnRows:Object.values(hsnMap) };
+ }
+
+ function renderGST(){
+  let st = computeGSTStats();
+  document.getElementById('a_gstSummary').innerHTML = `
+       <p>Completed Orders: <b style="color:#16a34a">${st.completed.length}</b> • Total Taxable Orders: <b>${st.active.length}</b> • Cancelled (Excluded): <b style="color:#dc2626">${st.cancelled.length}</b></p>
+   <p>Taxable Value: <b>${money(st.taxableTotal)}</b></p>
+   <p>CGST: <b>${money(st.taxTotal/2)}</b> • SGST: <b>${money(st.taxTotal/2)}</b> (Total GST: <b>${money(st.taxTotal)}</b>)</p>
+   <p>Total Order Value (Incl. GST): <b>${money(st.total)}</b></p>`;
+
+  let s = getSellerSettings();
+  document.getElementById('a_sellerName').value = s.name||'Shree Estore';
+  document.getElementById('a_sellerGstin').value = s.gstin||'';
+  document.getElementById('a_sellerAddress').value = s.address||'';
+  document.getElementById('a_sellerPhone').value = s.phone||'';
+  document.getElementById('a_sellerState').value = s.state||'';
+  document.getElementById('a_invoicePrefix').value = s.prefix||'';
+  document.getElementById('a_sellerUpi').value = s.upiId||'';
+  let qrPrev = document.getElementById('a_qrPreviewImg');
+  if(s.qrImage){ qrPrev.src=s.qrImage; qrPrev.style.display='block'; tempQrImage=s.qrImage; }
+  else { qrPrev.style.display='none'; tempQrImage=''; }
+ }
+
+ function printGSTReturnPDF(){
+  let st = computeGSTStats(), s = getSellerSettings();
+  let hsnHtml = st.hsnRows.map((h,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${esc(h.hsn)}</td><td style="text-align:center">${h.rate}%</td><td style="text-align:center">${h.qty}</td><td style="text-align:right">${money(h.taxable)}</td><td style="text-align:right">${money(h.gst/2)}</td><td style="text-align:right">${money(h.gst/2)}</td><td style="text-align:right"><b>${money(h.total)}</b></td></tr>`).join('') || '<tr><td colspan="8" style="text-align:center">No taxable items</td></tr>';
+  let ordHtml = st.active.map((o,i)=>{
+   let tx=0, gst=0;
+   (o.items||[]).forEach(it=>{ let pr=Number(it.price||0),r=Number(it.gstRate??18),lt=pr*(Number(it.qty)||0),t=r===0?lt:lt/(1+r/100); tx+=t; gst+=(lt-t); });
+   return `<tr><td style="text-align:center">${i+1}</td><td><b>${esc(o.number)}</b></td><td>${esc(o.date)}</td><td>${esc(o.status||'Pending')}</td><td style="text-align:right">${money(tx)}</td><td style="text-align:right">${money(gst)}</td><td style="text-align:right"><b>${money(o.total)}</b></td></tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center">No active orders</td></tr>';
+
+  let html = `<div id="pdfPrintableArea" class="printBox">
+   <div style="border-bottom:2px solid #000;padding-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+     <div style="font-size:20px;font-weight:900;color:#07366c">${esc(s.name||'Shree Estore')} — GST RETURN STATEMENT</div>
+     <div style="font-size:11px;margin-top:3px"><b>GSTIN:</b> ${esc(s.gstin||'Not Configured')} | <b>State:</b> ${esc(s.state||'Gujarat')}</div>
+     <div style="font-size:11px"><b>Generated On:</b> ${new Date().toLocaleString()}</div>
+    </div>
+    <div style="border:1.5px solid #000;padding:4px 8px;font-size:11px;font-weight:900">GSTR SUMMARY</div>
+   </div>
+   <div style="padding:8px 0;border-bottom:1.5px solid #000;font-size:12px">
+         <b>Completed Orders:</b> ${st.completed.length} | <b>Total Valid Orders:</b> ${st.active.length} | <b>Cancelled (Excluded):</b> ${st.cancelled.length}<br>
+    <b>Total Taxable Value:</b> ${money(st.taxableTotal)} | <b>CGST:</b> ${money(st.taxTotal/2)} | <b>SGST:</b> ${money(st.taxTotal/2)} | <b>Total Invoice Value:</b> ${money(st.total)}
+   </div>
+   <div style="padding:8px 0;border-bottom:1.5px solid #000">
+    <div style="font-size:11px;font-weight:900;margin-bottom:4px">HSN-WISE SUMMARY</div>
+    <table class="printTable"><thead><tr style="background:#eaf4ff"><th>#</th><th>HSN</th><th>Rate</th><th>Qty</th><th>Taxable</th><th>CGST</th><th>SGST</th><th>Total</th></tr></thead><tbody>${hsnHtml}</tbody></table>
+   </div>
+   <div style="padding:8px 0">
+    <div style="font-size:11px;font-weight:900;margin-bottom:4px">ORDER-WISE TAX REGISTER (CANCELLED EXCLUDED)</div>
+    <table class="printTable"><thead><tr style="background:#eaf4ff"><th>#</th><th>Order No</th><th>Date</th><th>Status</th><th>Taxable</th><th>GST</th><th>Total</th></tr></thead><tbody>${ordHtml}</tbody></table>
+   </div>
+  </div>`;
+  openPrintStage('GST Return Report', 'ShreeEstore_GST_Return_' + new Date().toISOString().slice(0,10) + '.pdf', html);
+ }
+
+ function exportGST(){
+  let st = computeGSTStats();
+  const cell = v=>{ let t=String(v??''); if(/^[=+@\-]/.test(t)) t="'"+t; return '"'+t.replaceAll('"','""')+'"'; };
+  let csv = 'Order Number,Date,Customer,Mobile,Taxable Value,CGST,SGST,Total GST,Total,Status\n' + st.active.map(x=>{
+   let tx=0, gst=0; (x.items||[]).forEach(i=>{ let pr=Number(i.price)||0,rate=Number(i.gstRate??18),qty=Number(i.qty)||0,lt=pr*qty,t=rate===0?lt:lt/(1+rate/100); tx+=t; gst+=(lt-t); });
+   return [x.number,x.date,x.customer?.name,x.customer?.phone,tx.toFixed(2),(gst/2).toFixed(2),(gst/2).toFixed(2),gst.toFixed(2),x.total,x.status].map(cell).join(',');
+  }).join('\n');
+  let blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='Shree-Estore-GST-Return.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }
+
+ async function handleQrUpload(input){
+  let file = input.files?.[0];
+  if(!file) return;
+  try{
+   tempQrImage = await smartCompressImage(file, 500);
+   let img = document.getElementById('a_qrPreviewImg');
+   img.src = tempQrImage; img.style.display='block';
+  }catch(err){ alert('Could not load QR image'); }
+  input.value='';
+ }
+ function clearQrImage(){
+  tempQrImage = '';
+  let img = document.getElementById('a_qrPreviewImg');
+  img.src=''; img.style.display='none';
+ }
+
+ async function saveGSTSettings(){
+  const newSettings = {
+   name: document.getElementById('a_sellerName').value.trim() || 'Shree Estore',
+   gstin: document.getElementById('a_sellerGstin').value.trim(),
+   address: document.getElementById('a_sellerAddress').value.trim(),
+   phone: document.getElementById('a_sellerPhone').value.trim(),
+   state: document.getElementById('a_sellerState').value.trim(),
+   prefix: document.getElementById('a_invoicePrefix').value.trim(),
+   upiId: document.getElementById('a_sellerUpi').value.trim(),
+   qrImage: tempQrImage
+  };
+  try{
+   await window.fbLib.setDoc(window.fbLib.doc(window.db, "settings", "store_profile"), newSettings);
+   cloudSettings = newSettings;
+   window.storeSettings = { ...window.storeSettings, ...newSettings };
+   syncProfileVisibility();
+   alert('Profile & settings saved to Firebase!');
+  }catch(err){ alert('Failed to save settings: '+err.message); }
+ }
+
+ /* LOCAL NOTES */
+ function notes(){ return JSON.parse(localStorage.getItem(NOTES)||'[]'); }
+ function addNote(){
+  let t=document.getElementById('a_noteTitle').value.trim();
+  if(!t){ alert('Enter note title'); return; }
+  let n=notes();
+  n.unshift({id:Date.now(),title:t,text:document.getElementById('a_noteText').value,date:document.getElementById('a_noteDate').value,time:document.getElementById('a_noteTime').value,done:false});
+  localStorage.setItem(NOTES,JSON.stringify(n));
+  document.getElementById('a_noteTitle').value=''; document.getElementById('a_noteText').value='';
+  renderNotes();
+ }
+ function renderNotes(){
+  let n=notes();
+  document.getElementById('a_pendingNotes').innerHTML = n.filter(x=>!x.done).map(noteHTML).join('') || '<p class="muted">No pending notes.</p>';
+  document.getElementById('a_completedNotes').innerHTML = n.filter(x=>x.done).map(noteHTML).join('') || '<p class="muted">No completed notes.</p>';
+ }
+ function noteHTML(x){ return `<div class="note"><b>${esc(x.title)}</b><p style="margin:4px 0">${esc(x.text)}</p><span class="muted">${x.date||''} ${x.time||''}</span><div class="row" style="margin-top:6px"><button class="btn ghost" onclick="A.completeNote(${x.id})">${x.done?'Reopen':'Completed'}</button><button class="btn danger" onclick="A.deleteNote(${x.id})">Delete</button></div></div>`; }
+ function completeNote(id){ localStorage.setItem(NOTES,JSON.stringify(notes().map(x=>x.id===id?{...x,done:!x.done}:x))); renderNotes(); }
+ function deleteNote(id){ if(confirm('Delete this note?')){ localStorage.setItem(NOTES,JSON.stringify(notes().filter(x=>x.id!==id))); renderNotes(); } }
+
+ /* AUTHENTICATION */
+ async function demoLogin(){
+  const email=document.getElementById('a_loginEmail').value.trim(), password=document.getElementById('a_loginPassword').value;
+  if(!email||!password){ alert('Enter email and password'); return; }
+  if(!window.adminAuthApi||!window.adminAuth){ alert('Firebase Authentication is not ready.'); return; }
+  const status=document.getElementById('a_authStatus');
+  if(status) status.textContent='Signing in…';
+  try{
+   await window.adminAuthApi.signInWithEmailAndPassword(window.adminAuth, email, password);
+   document.getElementById('a_loginPassword').value='';
+  }catch(err){
+   console.error('Firebase login failed:',err);
+   const messages={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check internet connection.'};
+   const msg = messages[err.code]||('Login failed: '+(err.message||err.code));
+   if(status) status.textContent=msg; alert(msg);
+  }
+ }
+ async function logout(){
+  if(!confirm('Logout from Admin?')) return;
+  try{ if(window.adminAuthApi&&window.adminAuth) await window.adminAuthApi.signOut(window.adminAuth); }
+  catch(err){ console.error('Firebase logout failed:',err); alert('Logout failed. Please retry.'); }
+ }
+
+ initHeaderSortLongPress();
+ renderNotes();
+
+ return {
+  get cloudSettings(){ return cloudSettings; },
+  set cloudSettings(v){ cloudSettings = v; },
+  onOpen(){
+   if(window.adminUser){ startFirebaseListeners(); }
+   else showPage('a_login');
+  },
+  authChanged(user){
+   const status = document.getElementById('a_authStatus');
+   if(user){
+    if(status) status.textContent = 'Signed in: ' + (user.email||'Firebase admin');
+    startFirebaseListeners();
+    syncProfileVisibility();
+    showPage('a_dashboard');
+   } else {
+    if(status) status.textContent = 'Not signed in. Use your Firebase admin email and password.';
+    stopFirebaseListeners();
+    syncProfileVisibility();
+    if(window.location.hash === '#admin') showPage('a_login');
+   }
+  },
+  showPage,   toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
+  newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep, handleBulkProductImages,
+  clearProductImage, handleImageUrlInput, imageDragOver, imageDragLeave, imageDropFile, handleProductImage, imageBoxClick, startImageBoxPress, endImageBoxPress, imageBoxContextMenu, pickBulkImages, saveProduct,
+  closeModal, closeQuick, toggleShowcase, toggleLive, priceChange, saveQuickPrices,
+  deliveryChargeChange, saveDeliveryCharge, stockChange, saveQuickStock, deleteProd,
+  renderProducts, renderOrders, applyOrderSort, setOrderStatus, deleteOrder,
+  printParcelLabel, printBillInvoice, printGSTReturnPDF, exportGST,
+  closePrintView, downloadCurrentPDF, triggerDevicePrint,
+  handleQrUpload, clearQrImage, saveGSTSettings, renderGST,
+  addNote, completeNote, deleteNote, demoLogin, logout
+ };
+})();
+
+window.firebaseAuthChecked = false;
+window.adminUser = null;
+window.adminAuthStateChanged = function(user){
+ window.firebaseAuthChecked = true;
+ A.authChanged(user);
+};
+
+applyRoute();
+</script>
+</body>
+</html>
