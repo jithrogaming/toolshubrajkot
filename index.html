@@ -125,6 +125,7 @@ button{cursor:pointer}
 #customerApp .pageTitle{font-size:21px;color:var(--navy);margin:8px 0 14px}
 #customerApp .panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0}
 #customerApp .field{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;margin:5px 0 10px;background:#fff;color:var(--ink)}
+#customerApp .addrLbl{display:block;font-size:11.5px;font-weight:700;color:var(--navy);margin-top:4px}
 #customerApp .row{display:flex;gap:9px}#customerApp .row>*{flex:1;min-width:0}
 #customerApp .checkrow{display:flex;gap:8px;align-items:center;margin:7px 0;font-size:13px;font-weight:600}
 #customerApp .checkrow input{width:auto}
@@ -400,11 +401,29 @@ button{cursor:pointer}
    </div>
 
    <div class="panel" id="c_profileFormPanel">
-    <input class="field" id="c_custName" placeholder="Customer Name">
-    <input class="field" id="c_custPhone" placeholder="Mobile Number">
+    <label class="addrLbl">Full Name *</label>
+    <input class="field" id="c_custName" placeholder="Customer Full Name">
+    <label class="addrLbl">10-Digit Mobile Number *</label>
+    <input class="field" id="c_custPhone" type="tel" maxlength="10" placeholder="10-digit Mobile Number">
+    <label class="addrLbl">Email (Optional)</label>
     <input class="field" id="c_custEmail" placeholder="Email">
-    <textarea class="field" id="c_custAddress" placeholder="Full Delivery Address"></textarea>
-    <button class="primary" onclick="C.saveProfile()">Save Profile</button>
+    <label class="addrLbl">House / Flat / Shop / Street No. *</label>
+    <input class="field" id="c_custStreet" placeholder="e.g. Shop 12, Shanti Complex, Street 4">
+    <label class="addrLbl">Area / Colony &amp; Nearby Landmark (Opp / Near) *</label>
+    <input class="field" id="c_custLandmark" placeholder="e.g. Kalawad Road, Opp. SBI Bank / Near Bus Stand">
+    <div class="row">
+     <div>
+      <label class="addrLbl">6-Digit Pincode *</label>
+      <input class="field" id="c_custPincode" type="tel" maxlength="6" placeholder="e.g. 360001">
+     </div>
+     <div>
+      <label class="addrLbl">City *</label>
+      <input class="field" id="c_custCity" placeholder="e.g. Rajkot / Mumbai">
+     </div>
+    </div>
+    <label class="addrLbl">State *</label>
+    <input class="field" id="c_custState" placeholder="e.g. Gujarat / Maharashtra">
+    <button class="primary" onclick="C.saveProfile()">Save Profile &amp; Address</button>
    </div>
 
    <div class="panel">
@@ -1040,6 +1059,23 @@ window.C = (() => {
  }
  function removeCart(idx){ let c=getCart(); c.splice(idx,1); saveCart(c); renderCart(); }
 
+ function buildFullAddress({street, landmark, city, state, pincode}){
+  return `${street}, ${landmark}, ${city}, ${state} - ${pincode}`;
+ }
+
+ function validateCustomerAddress({name, phone, street, landmark, pincode, city, state}){
+  if(!name || name.length < 2) return 'Please customer ka pura naam (Full Name) dalein.';
+  let cleanPhone = phone.replace(/\D/g,'');
+  if(cleanPhone.length !== 10) return 'Please sahi 10-digit Mobile Number dalein.';
+  if(!street || street.length < 4) return 'Please House / Flat / Shop / Street No. pura dalein.';
+  if(!landmark || landmark.length < 4) return 'Please Area / Colony aur Nearby Landmark (Opp / Near) zaroor dalein.';
+  let cleanPin = pincode.replace(/\D/g,'');
+  if(cleanPin.length !== 6) return 'Please sahi 6-digit Pincode dalein.';
+  if(!city || city.length < 2) return 'Please City (Shehar) ka naam dalein.';
+  if(!state || state.length < 2) return 'Please State (Rajya) ka naam dalein.';
+  return '';
+ }
+
  function getProfile(){ return JSON.parse(localStorage.getItem(PROFILE)||'{}'); }
  function toggleProfileForm(open){
   document.getElementById('c_profileFormPanel').style.display = open ? 'block' : 'none';
@@ -1048,15 +1084,22 @@ window.C = (() => {
  }
 
  function saveProfile(){
-  let p = {
-   name: document.getElementById('c_custName').value.trim(),
-   phone: document.getElementById('c_custPhone').value.trim(),
-   email: document.getElementById('c_custEmail').value.trim(),
-   address: document.getElementById('c_custAddress').value.trim()
-  };
-  if(!p.name || !p.phone || !p.address){ alert('Name, Mobile Number aur Address bharna zaroori hai.'); return; }
+  let name = document.getElementById('c_custName').value.trim();
+  let phone = document.getElementById('c_custPhone').value.trim().replace(/\D/g,'');
+  let email = document.getElementById('c_custEmail').value.trim();
+  let street = document.getElementById('c_custStreet').value.trim();
+  let landmark = document.getElementById('c_custLandmark').value.trim();
+  let pincode = document.getElementById('c_custPincode').value.trim().replace(/\D/g,'');
+  let city = document.getElementById('c_custCity').value.trim();
+  let state = document.getElementById('c_custState').value.trim();
+
+  let err = validateCustomerAddress({name, phone, street, landmark, pincode, city, state});
+  if(err){ alert(err); return; }
+
+  let fullAddr = buildFullAddress({street, landmark, city, state, pincode});
+  let p = { name, phone, email, street, landmark, pincode, city, state, address: fullAddr };
   localStorage.setItem(PROFILE, JSON.stringify(p));
-  alert('Profile saved!');
+  alert('Profile & full address saved!');
   renderProfile();
  }
 
@@ -1065,12 +1108,17 @@ window.C = (() => {
   document.getElementById('c_custName').value = p.name||'';
   document.getElementById('c_custPhone').value = p.phone||'';
   document.getElementById('c_custEmail').value = p.email||'';
-  document.getElementById('c_custAddress').value = p.address||'';
+  document.getElementById('c_custStreet').value = p.street||'';
+  document.getElementById('c_custLandmark').value = p.landmark||'';
+  document.getElementById('c_custPincode').value = p.pincode||'';
+  document.getElementById('c_custCity').value = p.city||'';
+  document.getElementById('c_custState').value = p.state||'';
 
-  if(p.name && p.phone && p.address){
+  let isComplete = p.name && p.phone && p.street && p.landmark && p.pincode && p.city && p.state;
+  if(isComplete){
    document.getElementById('c_profSumName').textContent = p.name;
    document.getElementById('c_profSumPhone').textContent = `📱 ${p.phone} ${p.email ? '• ' + p.email : ''}`;
-   document.getElementById('c_profSumAddr').textContent = `📍 ${p.address}`;
+   document.getElementById('c_profSumAddr').textContent = `📍 ${buildFullAddress(p)}`;
    toggleProfileForm(false);
   } else {
    toggleProfileForm(true);
@@ -1127,10 +1175,27 @@ window.C = (() => {
   let codAdv = getCodAdvanceAmount();
 
   document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
-   <h3>Delivery Details</h3>
-   <input class="field" id="c_coName" placeholder="Customer Name" value="${esc(pr.name||'')}">
-   <input class="field" id="c_coPhone" placeholder="Mobile Number" value="${esc(pr.phone||'')}">
-   <textarea class="field" id="c_coAddress" placeholder="Full Address">${esc(pr.address||'')}</textarea>
+   <h3>Complete Delivery Address (All Fields Required *)</h3>
+   <label class="addrLbl">Customer Full Name *</label>
+   <input class="field" id="c_coName" placeholder="Customer Full Name" value="${esc(pr.name||'')}">
+   <label class="addrLbl">10-Digit Mobile Number *</label>
+   <input class="field" id="c_coPhone" type="tel" maxlength="10" placeholder="10-digit Mobile Number" value="${esc(pr.phone||'')}">
+   <label class="addrLbl">House / Flat / Shop / Street No. *</label>
+   <input class="field" id="c_coStreet" placeholder="e.g. Shop 12, Shanti Complex, Street 4" value="${esc(pr.street||'')}">
+   <label class="addrLbl">Area / Colony &amp; Nearby Landmark (Opp / Near) *</label>
+   <input class="field" id="c_coLandmark" placeholder="e.g. Andheri West, Opp. Metro Station / Near Temple" value="${esc(pr.landmark||'')}">
+   <div class="row">
+    <div>
+     <label class="addrLbl">6-Digit Pincode *</label>
+     <input class="field" id="c_coPincode" type="tel" maxlength="6" placeholder="e.g. 400058" value="${esc(pr.pincode||'')}">
+    </div>
+    <div>
+     <label class="addrLbl">City *</label>
+     <input class="field" id="c_coCity" placeholder="e.g. Mumbai / Rajkot" value="${esc(pr.city||'')}">
+    </div>
+   </div>
+   <label class="addrLbl">State *</label>
+   <input class="field" id="c_coState" placeholder="e.g. Maharashtra / Gujarat" value="${esc(pr.state||'')}">
 
    <h3>Payment Option (Select to Open Full-Screen QR)</h3>
    <div style="margin:8px 0 12px">
@@ -1160,13 +1225,23 @@ window.C = (() => {
   </div>`;
  }
 
+ function getCheckoutAddressData(){
+  let name = document.getElementById('c_coName')?.value.trim() || '';
+  let phone = (document.getElementById('c_coPhone')?.value.trim() || '').replace(/\D/g,'');
+  let street = document.getElementById('c_coStreet')?.value.trim() || '';
+  let landmark = document.getElementById('c_coLandmark')?.value.trim() || '';
+  let pincode = (document.getElementById('c_coPincode')?.value.trim() || '').replace(/\D/g,'');
+  let city = document.getElementById('c_coCity')?.value.trim() || '';
+  let state = document.getElementById('c_coState')?.value.trim() || '';
+  let err = validateCustomerAddress({name, phone, street, landmark, pincode, city, state});
+  return { err, name, phone, street, landmark, pincode, city, state, fullAddress: buildFullAddress({street, landmark, city, state, pincode}) };
+ }
+
  function openFullQrPayment(mode){
   selectedPayMode = mode;
-  let name = document.getElementById('c_coName')?.value.trim() || '';
-  let phone = document.getElementById('c_coPhone')?.value.trim() || '';
-  let address = document.getElementById('c_coAddress')?.value.trim() || '';
-  if(!name || !phone || !address){
-   alert('Pehle apna Name, Mobile Number aur Delivery Address bharein.');
+  let addr = getCheckoutAddressData();
+  if(addr.err){
+   alert(addr.err);
    document.querySelectorAll('input[name="c_payOpt"]').forEach(r => r.checked = false);
    return;
   }
@@ -1214,6 +1289,8 @@ window.C = (() => {
  }
 
  function handleCheckoutSubmit(){
+  let addr = getCheckoutAddressData();
+  if(addr.err){ alert(addr.err); return; }
   let chosen = document.querySelector('input[name="c_payOpt"]:checked')?.value;
   if(!chosen){
    alert('Please COD ya Online Payment mein se ek option chunein.');
@@ -1238,13 +1315,12 @@ window.C = (() => {
 
  async function placeOrder(){
   let c = getCart(), p = getProducts();
-  let name = document.getElementById('c_coName')?.value.trim() || '';
-  let phone = document.getElementById('c_coPhone')?.value.trim() || '';
-  let address = document.getElementById('c_coAddress')?.value.trim() || '';
+  let addr = getCheckoutAddressData();
+  if(addr.err){ alert(addr.err); return; }
+
   let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || selectedPayMode;
   let payRef = document.getElementById('c_payRef')?.value.trim() || '';
 
-  if(!name||!phone||!address){ alert('Please enter name, mobile and address.'); return; }
   if(!c.length){ alert('Your cart is empty.'); return; }
   if(!payOpt){ alert('Please COD ya Online Payment option chunein.'); return; }
   if(payRef.length < 8){
@@ -1295,7 +1371,16 @@ window.C = (() => {
      advancePaid: advancePaid,
      codBalanceDue: codDue,
      isB2B: grp.isB2B,
-     customer: { name, phone, address },
+     customer: {
+      name: addr.name,
+      phone: addr.phone,
+      street: addr.street,
+      landmark: addr.landmark,
+      pincode: addr.pincode,
+      city: addr.city,
+      state: addr.state,
+      address: addr.fullAddress
+     },
      items: orderItems
     };
 
@@ -1306,7 +1391,17 @@ window.C = (() => {
    }
 
    localStorage.setItem(ORDERS, JSON.stringify(localOrders));
-   localStorage.setItem(PROFILE, JSON.stringify({ name, phone, address, email:getProfile().email||'' }));
+   localStorage.setItem(PROFILE, JSON.stringify({
+    name: addr.name,
+    phone: addr.phone,
+    email: getProfile().email||'',
+    street: addr.street,
+    landmark: addr.landmark,
+    pincode: addr.pincode,
+    city: addr.city,
+    state: addr.state,
+    address: addr.fullAddress
+   }));
    saveCart([]);
    closeFullQrModal();
 
@@ -1315,6 +1410,7 @@ window.C = (() => {
     <h2>Orders Confirmed Successfully!</h2>
     <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to KEstore.</p>
     <p>Grand Total: <b>${money(grandTotal)}</b> • Paid Online: <b>${money(paidNowSummary)}</b> (${esc(payOpt)}) • UTR Ref: <code>${esc(payRef)}</code></p>
+    <p class="small"><b>Delivery Address:</b> ${esc(addr.fullAddress)}</p>
     <button class="primary" onclick="C.showPage('c_profile')">View My Orders</button>
    </div>`;
   } catch(err){
@@ -1950,7 +2046,7 @@ window.A = (() => {
   let q = (document.getElementById('a_orderSearch').value||'').toLowerCase(), f = document.getElementById('a_orderFilter').value;
   let o = readOrders().filter(x=>{
    let stMatch = (f==='all') || (x.status||'Pending').toLowerCase().includes(f.toLowerCase());
-   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.paymentRef||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
+   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.customer?.address||'')+' '+(x.paymentRef||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
    return stMatch && searchStr.includes(q);
   });
   if(orderSort==='name') o.sort((a,b)=>getOrderFirstName(a).localeCompare(getOrderFirstName(b)));
