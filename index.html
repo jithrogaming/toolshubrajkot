@@ -228,23 +228,14 @@ button{cursor:pointer}
 #adminApp .productStepNav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0 16px}
 #adminApp .productStepBadge{padding:9px 5px;border-radius:9px;background:#f3f4f6;color:#64748b;text-align:center;font-size:11px;font-weight:700}
 #adminApp .productStepBadge.active{background:#eaf4ff;color:#0756a5;box-shadow:inset 0 0 0 1px #93c5fd}
-#adminApp .imageSlot{position:relative}
-#adminApp .imageDrop{height:92px;border:1.5px dashed #94a3b8;border-radius:8px;background:#f8fafc;display:flex;position:relative;align-items:center;justify-content:center;overflow:hidden;text-align:center;color:#475569;font-size:11px;cursor:pointer}
-#adminApp .imageDrop.dragover{border-color:#0756a5;background:#eaf4ff}
-#adminApp .imageDrop input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-#adminApp .imageDrop img{display:none;width:100%;height:100%;object-fit:cover}
-#adminApp .imageDrop img.visible{display:block}
-#adminApp .imageDrop .dropHint{padding:4px;pointer-events:none}
-#adminApp .imageDrop img.visible+.dropHint{display:none}
-#adminApp .imageUrlField{width:100%;margin-top:5px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:11px}
-#adminApp .r2PhotoSlot{min-width:0}
-#adminApp .r2PhotoSlot label{display:block;font-size:12px;font-weight:700;margin:2px 0 5px}
-#adminApp .r2PhotoRow{display:flex;gap:6px;align-items:stretch}
-#adminApp .r2PhotoRow .imageUrlField{flex:1;min-width:0;margin:0}
-#adminApp .r2UploadBtn{min-height:36px!important;padding:6px 9px!important;font-size:11px!important;white-space:nowrap}
-#adminApp .r2PhotoPreview{display:none;width:100%;height:72px;object-fit:contain;margin-top:6px;border:1px solid #d1d5db;border-radius:7px;background:#fff}
-#adminApp .r2PhotoPreview.visible{display:block}
-#adminApp .imgClearBtn{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:#dc2626;color:#fff;font-size:11px;font-weight:700;line-height:20px;text-align:center;padding:0;z-index:2;display:none}
+#adminApp .bulkPhotoBox{border:2px dashed #0756a5;border-radius:12px;background:#f4faff;padding:14px;text-align:center;margin:8px 0 12px;cursor:pointer}
+#adminApp .bulkPhotoBox:hover{background:#eaf4ff}
+#adminApp .imageSlot{position:relative;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc;height:105px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#adminApp .imageSlot img{width:100%;height:100%;object-fit:contain;background:#fff;display:none}
+#adminApp .imageSlot img.visible{display:block}
+#adminApp .imageSlot .slotLbl{font-size:11px;color:#64748b;font-weight:700;text-align:center;padding:4px}
+#adminApp .imageSlot img.visible+.slotLbl{display:none}
+#adminApp .imgClearBtn{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;background:#dc2626;color:#fff;font-size:12px;font-weight:700;line-height:22px;text-align:center;padding:0;z-index:2;display:none}
 #adminApp .imgClearBtn.visible{display:block}
 #adminApp .modalShade{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:50}
 #adminApp .quick{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90%,370px);max-height:86vh;overflow:auto;background:#ffffff;border:1px solid #cbd5e1;border-radius:14px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,0.2);color:#111827}
@@ -1444,8 +1435,6 @@ window.A = (() => {
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
- // Set this to your Cloudflare Worker endpoint; never put R2 credentials in browser code.
- const CLOUDFLARE_WORKER_UPLOAD_URL = '';
  let tempQrImage = '';
 
  function products(){ return cloudProducts; }
@@ -1493,7 +1482,7 @@ window.A = (() => {
  async function saveSingleProductToFirebase(productObj){
   if(!window.db || !window.fbLib) throw new Error("Firebase not initialized");
   const payloadSize = new Blob([JSON.stringify(productObj)]).size;
-  if(payloadSize > 950000) throw new Error("Total photo size too large. Please remove 1 photo or use smaller images.");
+  if(payloadSize > 950000) throw new Error("Total photo size too large. Please remove 1 photo.");
   await window.fbLib.setDoc(window.fbLib.doc(window.db, "products", String(productObj.id)), productObj);
  }
 
@@ -1508,28 +1497,47 @@ window.A = (() => {
   catch(err){ console.error("Error saving order:", err); alert("Firebase order update failed!"); }
  }
 
- function smartCompressImage(file, maxDim=720){
+ function smartCompressImage(file, maxDim=800, targetBytes=26000){
   return new Promise((resolve, reject) => {
    let reader = new FileReader();
-   reader.onerror = () => reject(reader.error);
+   reader.onerror = () => reject(reader.error || new Error('Could not read file'));
    reader.onload = () => {
     let image = new Image();
     image.onerror = () => reject(new Error('Invalid image'));
     image.onload = () => {
      let scale = Math.min(1, maxDim / Math.max(image.naturalWidth, image.naturalHeight));
+     let w = Math.max(1, Math.round(image.naturalWidth * scale));
+     let h = Math.max(1, Math.round(image.naturalHeight * scale));
      let canvas = document.createElement('canvas');
-     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-     canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+     canvas.width = w;
+     canvas.height = h;
      let ctx = canvas.getContext('2d');
      ctx.fillStyle = '#ffffff';
-     ctx.fillRect(0, 0, canvas.width, canvas.height);
-     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-     let quality = 0.75;
+     ctx.fillRect(0, 0, w, h);
+     ctx.drawImage(image, 0, 0, w, h);
+
+     let quality = 0.80;
      let dataUrl = canvas.toDataURL('image/webp', quality);
      if(!dataUrl.startsWith('data:image/webp')) dataUrl = canvas.toDataURL('image/jpeg', quality);
-     while(dataUrl.length > 130000 && quality > 0.35){
-      quality -= 0.1;
-      dataUrl = dataUrl.startsWith('data:image/webp') ? canvas.toDataURL('image/webp', quality) : canvas.toDataURL('image/jpeg', quality);
+
+     let maxLen = Math.round(targetBytes * 1.37);
+     let tries = 0;
+     while(dataUrl.length > maxLen && tries < 10){
+      tries++;
+      if(quality > 0.35){
+       quality -= 0.1;
+      } else {
+       canvas.width = Math.max(200, Math.round(canvas.width * 0.8));
+       canvas.height = Math.max(200, Math.round(canvas.height * 0.8));
+       ctx = canvas.getContext('2d');
+       ctx.fillStyle = '#ffffff';
+       ctx.fillRect(0, 0, canvas.width, canvas.height);
+       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+       quality = 0.65;
+      }
+      dataUrl = dataUrl.startsWith('data:image/webp')
+       ? canvas.toDataURL('image/webp', quality)
+       : canvas.toDataURL('image/jpeg', quality);
      }
      resolve(dataUrl);
     };
@@ -1805,29 +1813,108 @@ window.A = (() => {
     ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
    </section>
    <section data-product-step="3" style="display:none">
-    <label>Product Photos (up to 4; URL paste is fastest)</label>
-    <p class="muted" style="margin:6px 0 10px">Paste a public Cloudflare image URL, or choose Upload File to compress and send it to your configured Worker.</p>
-    <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="r2PhotoSlot">
-     <label for="a_imageUrl${i}">Photo ${i+1} URL${i===0?' (Main)':''}</label>
-     <div class="r2PhotoRow">
-      <input class="imageUrlField" id="a_imageUrl${i}" type="url" placeholder="https://..." value="${esc(productUploadImages[i]&&!productUploadImages[i].startsWith('data:image/')?productUploadImages[i]:'')}" oninput="A.handleImageUrlInput(this,${i})">
-      <button type="button" class="btn ghost r2UploadBtn" onclick="document.getElementById('a_singleImageInput${i}').click()">Upload File</button>
-      <input id="a_singleImageInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleProductImage(this,${i})">
-     </div>
-     <img class="r2PhotoPreview" id="a_uploadPreview${i}" alt="Photo ${i+1} live preview" loading="lazy">
+    <label>Product Photos (Select or Paste up to 4 Photos at Once)</label>
+    <div class="bulkPhotoBox" onclick="document.getElementById('a_bulkPhotoInput').click()">
+     <div style="font-size:24px;margin-bottom:4px">📸</div>
+     <b style="color:#07366c;font-size:14px">Tap Here to Select 1 to 4 Photos Together</b>
+     <div class="muted" style="margin-top:3px">Auto-compressed to ~25 KB HD • Or paste (Ctrl+V) image directly</div>
+     <input id="a_bulkPhotoInput" type="file" accept="image/*" multiple style="display:none" onchange="A.handleBulkProductImages(this)">
+    </div>
+    <div id="a_photoCompressStatus" class="muted" style="text-align:center;margin-bottom:6px"></div>
+    <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="imageSlot" onclick="document.getElementById('a_singlePhotoInput${i}').click()" title="Tap to replace Photo ${i+1}">
+     <button type="button" class="imgClearBtn" id="a_imgClear${i}" onclick="event.stopPropagation();A.clearProductImage(${i})">×</button>
+     <img id="a_uploadPreview${i}" alt="Photo ${i+1}">
+     <div class="slotLbl">Photo ${i+1}${i===0?'<br>(Main)':''}</div>
+     <input id="a_singlePhotoInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleSingleSlotImage(this,${i})">
     </div>`).join('')}</div>
     <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button><button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true)">Save Product &amp; Photos</button></div>
     ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
    </section>`);
 
-  productUploadImages.forEach((src,i)=>{
-   if(src){
-    let urlInput=document.getElementById(`a_imageUrl${i}`);
-    if(urlInput&&!src.startsWith('data:image/')) urlInput.value=src;
-    if(!src.startsWith('data:image/')) showUploadPreview(i, src);
-   }
-  });
+  renderAllPhotoSlots();
  }
+
+ function renderAllPhotoSlots(){
+  for(let i=0;i<4;i++){
+   let img = document.getElementById(`a_uploadPreview${i}`);
+   let clr = document.getElementById(`a_imgClear${i}`);
+   let src = productUploadImages[i] || '';
+   if(img){
+    if(src){ img.src = src; img.classList.add('visible'); }
+    else { img.removeAttribute('src'); img.classList.remove('visible'); }
+   }
+   if(clr) clr.classList.toggle('visible', Boolean(src));
+  }
+ }
+
+ async function handleBulkProductImages(input){
+  let files = Array.from(input.files || []).filter(f => f.type.startsWith('image/'));
+  input.value = '';
+  if(!files.length) return;
+  let statusEl = document.getElementById('a_photoCompressStatus');
+  if(statusEl) statusEl.textContent = '⏳ Compressing & loading photos...';
+
+  let fileIdx = 0;
+  for(let slot = 0; slot < 4 && fileIdx < files.length; slot++){
+   if(!productUploadImages[slot]){
+    try{
+     productUploadImages[slot] = await smartCompressImage(files[fileIdx], 800, 26000);
+     renderAllPhotoSlots();
+    }catch(err){ console.error(err); }
+    fileIdx++;
+   }
+  }
+  // If all 4 were already filled, replace from slot 0 onwards
+  if(fileIdx === 0){
+   for(let slot = 0; slot < Math.min(4, files.length); slot++){
+    try{
+     productUploadImages[slot] = await smartCompressImage(files[slot], 800, 26000);
+     renderAllPhotoSlots();
+    }catch(err){ console.error(err); }
+   }
+  }
+  if(statusEl) statusEl.textContent = '✅ Photos ready!';
+ }
+
+ async function handleSingleSlotImage(input, index){
+  let file = input.files?.[0];
+  input.value = '';
+  if(!file || !file.type.startsWith('image/')) return;
+  let statusEl = document.getElementById('a_photoCompressStatus');
+  if(statusEl) statusEl.textContent = '⏳ Compressing photo...';
+  try{
+   productUploadImages[index] = await smartCompressImage(file, 800, 26000);
+   renderAllPhotoSlots();
+   if(statusEl) statusEl.textContent = '✅ Photo ready!';
+  }catch(err){
+   alert('Could not load photo: ' + err.message);
+  }
+ }
+
+ function clearProductImage(index){
+  productUploadImages[index] = '';
+  renderAllPhotoSlots();
+ }
+
+ // Support direct Ctrl+V image paste on Step 3
+ document.addEventListener('paste', async (e) => {
+  const modal = document.getElementById('a_modal');
+  const step3 = modal?.querySelector('[data-product-step="3"]');
+  if(!step3 || step3.style.display === 'none') return;
+  const items = Array.from(e.clipboardData?.items || []);
+  const imgFiles = items.filter(it => it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean);
+  if(!imgFiles.length) return;
+  e.preventDefault();
+  let statusEl = document.getElementById('a_photoCompressStatus');
+  if(statusEl) statusEl.textContent = '⏳ Pasting & compressing...';
+  for(const file of imgFiles){
+   let emptyIdx = productUploadImages.findIndex(x => !x);
+   if(emptyIdx === -1) emptyIdx = 0;
+   productUploadImages[emptyIdx] = await smartCompressImage(file, 800, 26000);
+   renderAllPhotoSlots();
+  }
+  if(statusEl) statusEl.textContent = '✅ Pasted & ready!';
+ });
 
  function goProductStep(step){
   if(step===2){
@@ -1872,95 +1959,19 @@ window.A = (() => {
   if(retail > 0) document.getElementById('a_fB2bPrice').value = Math.round(retail - (retail*(pct/100)));
  }
 
- function showUploadPreview(index, src){
-  let img = document.getElementById(`a_uploadPreview${index}`);
-  if(!img) return;
-  if(src){ img.src=src; img.classList.add('visible'); }
-  else { img.removeAttribute('src'); img.classList.remove('visible'); }
- }
- function clearProductImage(index){
-  productUploadImages[index]='';
-  let urlInput=document.getElementById(`a_imageUrl${index}`);
-  if(urlInput) urlInput.value='';
-  showUploadPreview(index,'');
- }
- function handleImageUrlInput(input,index){
-  let url=String(input?.value||'').trim();
-  productUploadImages[index]=url;
-  showUploadPreview(index,url);
- }
- function handleProductImage(input,index){
-  let file=input.files?.[0];
-  if(file) processProductImage(file,index);
-  input.value='';
- }
-
- async function processProductImage(file,index){
-  if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
-  if(file.size>20*1024*1024){ alert('Image too large (max 20 MB).'); return; }
-  if(!CLOUDFLARE_WORKER_UPLOAD_URL){ alert('Set CLOUDFLARE_WORKER_UPLOAD_URL in the admin code before uploading files. You can paste a public image URL instead.'); return; }
-  try{
-   const compressed=await compressForWorker(file);
-   const formData=new FormData();
-   formData.append('file',compressed,`product_${Date.now()}_${index+1}.webp`);
-   formData.append('productId',String(document.getElementById('a_fSku')?.value||'product'));
-   formData.append('imageIndex',String(index));
-   const response=await fetch(CLOUDFLARE_WORKER_UPLOAD_URL,{method:'POST',body:formData});
-   if(!response.ok) throw new Error(`Worker upload failed (${response.status})`);
-   const result=await response.json();
-   const publicUrl=result.url||result.publicUrl||result.imageUrl;
-   if(!publicUrl||!/^https?:\/\//i.test(publicUrl)) throw new Error('Worker response must contain a public HTTP/HTTPS URL.');
-   productUploadImages[index]=publicUrl;
-   const urlInput=document.getElementById(`a_imageUrl${index}`);
-   if(urlInput) urlInput.value=publicUrl;
-   showUploadPreview(index,publicUrl);
-  }catch(err){ console.error('Cloudflare Worker upload failed:',err); alert('Photo upload failed: '+err.message); }
- }
- function compressForWorker(file){
-  return new Promise((resolve,reject)=>{
-   const reader=new FileReader();
-   reader.onerror=()=>reject(reader.error||new Error('Could not read image'));
-   reader.onload=()=>{
-    const image=new Image();
-    image.onerror=()=>reject(new Error('Invalid image'));
-    image.onload=async()=>{
-     const scale=Math.min(1,1200/Math.max(image.naturalWidth,image.naturalHeight));
-     const canvas=document.createElement('canvas');
-     canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
-     canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-     const ctx=canvas.getContext('2d');
-     ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
-     ctx.drawImage(image,0,0,canvas.width,canvas.height);
-     let quality=.82, blob=null;
-     for(let attempt=0;attempt<10;attempt++){
-      blob=await new Promise(resolveBlob=>canvas.toBlob(resolveBlob,'image/webp',quality));
-      if(!blob) return reject(new Error('WebP compression is not supported in this browser'));
-      if(blob.size<=35*1024) break;
-      quality=Math.max(.25,quality-.08);
-      if(attempt===5){ canvas.width=Math.max(1,Math.round(canvas.width*.75)); canvas.height=Math.max(1,Math.round(canvas.height*.75)); }
-     }
-     resolve(blob);
-    };
-    image.src=reader.result;
-   };
-   reader.readAsDataURL(file);
-  });
- }
-
  async function saveProduct(id, withPhotos=true){
   let old = products().find(x=>x.id===id);
   let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
   if(!validateProductPricing()){ goProductStep(2); return; }
-  if(withPhotos && productUploadImages.some(src=>src && !/^https?:\/\//i.test(src))){ alert('Photo URLs must be public HTTP/HTTPS links.'); goProductStep(3); return; }
 
   let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
   let hsn=document.getElementById('a_fHsn').value.trim();
   let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
   let b2bPrice=b2bInput===''?Math.round(price*(1-Number(document.getElementById('a_fB2bPct').value)/100)):Number(b2bInput);
   const btn=document.getElementById(withPhotos?'a_saveProdBtn':'a_saveNoPhotoBtn');
-  if(btn){ btn.disabled=true; btn.textContent=withPhotos?'⏳ Uploading Photos...':'⏳ Saving Product...'; }
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Saving...'; }
 
   try{
    let finalImages=[];
@@ -1968,7 +1979,7 @@ window.A = (() => {
     finalImages=productUploadImages.filter(Boolean).slice(0,4);
    }else{
     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:[]);
-    finalImages=keepImages.filter(src=>typeof src==='string'&&/^https?:\/\//i.test(src)).slice(0,4);
+    finalImages=keepImages.filter(Boolean).slice(0,4);
    }
    let x={
     id,name,sku,cat:document.getElementById('a_fCat').value,
@@ -2398,7 +2409,7 @@ window.A = (() => {
   let file = input.files?.[0];
   if(!file) return;
   try{
-   tempQrImage = await smartCompressImage(file, 500);
+   tempQrImage = await smartCompressImage(file, 500, 45000);
    let img = document.getElementById('a_qrPreviewImg');
    img.src = tempQrImage; img.style.display='block';
   }catch(err){ alert('Could not load QR image'); }
@@ -2505,7 +2516,7 @@ window.A = (() => {
   },
   showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
   newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep,
-  clearProductImage, handleImageUrlInput, handleProductImage, saveProduct,
+  clearProductImage, handleBulkProductImages, handleSingleSlotImage, saveProduct,
   closeModal, closeQuick, toggleShowcase, toggleLive, priceChange, saveQuickPrices,
   deliveryChargeChange, saveDeliveryCharge, stockChange, saveQuickStock, deleteProd,
   renderProducts, renderOrders, applyOrderSort, setOrderStatus, deleteOrder,
