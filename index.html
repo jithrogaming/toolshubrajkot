@@ -490,20 +490,20 @@ button{cursor:pointer}
 
   <section id="a_today" class="a-page">
    <h2 class="title">Today's Orders</h2>
-   <p class="muted">Tip: Long-press (3.5s) any order for Print (Label / Invoice) &amp; Status options.</p>
+   <p class="muted">Tip: Long-press (5s) any order for Print (Label / Invoice) &amp; Status options.</p>
    <div id="a_todayOrders"></div>
   </section>
 
   <section id="a_stock" class="a-page"><h2 class="title">Total Stock</h2><div id="a_stockList"></div></section>
   <section id="a_lowstock" class="a-page"><h2 class="title">Low Stock Products (≤ 5)</h2><div id="a_lowList"></div></section>
 
-  <!-- 2. PRODUCT LIST (11 COLUMNS + SINGLE-CELL LONG PRESS AUTO-SAVE + KRAM MOVE) -->
+  <!-- 2. PRODUCT LIST (11 COLUMNS + SINGLE-CELL LONG PRESS AUTO-SAVE + KRAM ACTIONS & MOVE) -->
   <section id="a_products" class="a-page">
    <div class="headFlex">
     <h2 class="title">Product List (11-Column Sheet)</h2>
     <button class="btn" onclick="A.newProduct()">+ New Product</button>
    </div>
-   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>3.5s long-press</b> karke product ko upar-neeche (↑/↓) move karein. Kisi bhi column box par <b>3.5s long-press</b> karke sirf usi box ko edit karein — bahar tap karte hi auto-save ho jayega.</p>
+   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>5 sec long-press</b> karne se Move, Live, Showcase, Duplicate &amp; Delete options khulenge. Kisi bhi column box par <b>5 sec long-press</b> karke sirf usi box ko edit karein.</p>
    <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
    <div class="tablewrap">
     <table class="productTable">
@@ -548,7 +548,7 @@ button{cursor:pointer}
      <option>Pending</option>
     </select>
    </div>
-   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 3.5 sec Long-press karein.</p>
+   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 5 sec Long-press karein.</p>
    <div class="tablewrap">
     <table>
      <thead>
@@ -1652,7 +1652,7 @@ window.A = (() => {
   bindOrderCardLongPress();
  }
 
- /* ==================== 11-COLUMN PRODUCT LIST: SINGLE-CELL EDIT & KRAM MOVE ==================== */
+ /* ==================== 11-COLUMN PRODUCT LIST: SINGLE-CELL EDIT & KRAM ACTIONS/MOVE ==================== */
  function getCustomProdSeq(){
   return JSON.parse(localStorage.getItem(PROD_SEQ_KEY) || '[]');
  }
@@ -1677,6 +1677,7 @@ window.A = (() => {
  }
 
  function selectProductForMove(id){
+  closeQuick();
   activeCellEdit = null;
   selectedMoveProdId = (selectedMoveProdId === id) ? null : id;
   renderProducts();
@@ -1737,10 +1738,10 @@ window.A = (() => {
        <b>${index}</b>
        <button type="button" class="moveBtn" ${index===1?'disabled':''} onclick="event.stopPropagation();A.moveProductPosition('${id}',-1)" title="Move Up">↑</button>
        <button type="button" class="moveBtn" ${index===totalCount?'disabled':''} onclick="event.stopPropagation();A.moveProductPosition('${id}',1)" title="Move Down">↓</button>
-       <button type="button" class="moveBtn" style="background:#dc2626" onclick="event.stopPropagation();A.selectProductForMove('${id}')" title="Done">✓</button>
+       <button type="button" class="moveBtn" style="background:#16a34a" onclick="event.stopPropagation();A.selectProductForMove('${id}')" title="Done">✓</button>
       </div>
      </td>`
-   : `<td class="openFormCell kramCell" data-id="${id}" onclick="A.editProduct('${id}')" title="Tap: Full Form | Hold 3.5s: Move Row"><b>${index}</b></td>`;
+   : `<td class="openFormCell kramCell" data-id="${id}" onclick="A.editProduct('${id}')" title="Tap: Full Form | Hold 5s: Actions &amp; Move"><b>${index}</b></td>`;
 
   let nameCell = isEd('name')
    ? `<td class="colName editingCell"><input class="inlineInp wide" id="singleCellInp" value="${esc(p.name)}" onblur="A.commitSingleCellEdit('${id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
@@ -1868,41 +1869,43 @@ window.A = (() => {
 
  let pressTimer=null, longTriggered=false;
  function bindProductLongPress(){
-  // 1. Long press (3.5s) on individual editable cells -> edits ONLY that box
+  // 1. Long press (5.0s = 5000ms) on individual editable cells -> edits ONLY that box
   document.querySelectorAll('#adminApp .editCell').forEach(cell=>{
    let pid = cell.dataset.id, fld = cell.dataset.field;
    cell.addEventListener('touchstart',()=>{
     longTriggered = false;
-    pressTimer = setTimeout(()=>{ longTriggered = true; startSingleCellEdit(pid, fld); }, 3500);
+    pressTimer = setTimeout(()=>{ longTriggered = true; startSingleCellEdit(pid, fld); }, 5000);
    },{passive:true});
    cell.addEventListener('touchend',()=>clearTimeout(pressTimer));
    cell.addEventListener('touchmove',()=>clearTimeout(pressTimer));
    cell.addEventListener('contextmenu',e=>{ e.preventDefault(); startSingleCellEdit(pid, fld); });
   });
 
-  // 2. Long press (3.5s) on 1. Kram -> selects product to move Up/Down
+  // 2. Long press (5.0s = 5000ms) on 1. Kram -> opens Product Actions menu (Move, Live, Showcase, Duplicate, Delete)
   document.querySelectorAll('#adminApp .kramCell').forEach(cell=>{
    let pid = cell.dataset.id;
    cell.addEventListener('touchstart',()=>{
     longTriggered = false;
-    pressTimer = setTimeout(()=>{ longTriggered = true; selectProductForMove(pid); }, 3500);
+    pressTimer = setTimeout(()=>{ longTriggered = true; quickMenu(pid); }, 5000);
    },{passive:true});
    cell.addEventListener('touchend',()=>clearTimeout(pressTimer));
    cell.addEventListener('touchmove',()=>clearTimeout(pressTimer));
-   cell.addEventListener('contextmenu',e=>{ e.preventDefault(); selectProductForMove(pid); });
+   cell.addEventListener('contextmenu',e=>{ e.preventDefault(); quickMenu(pid); });
    cell.addEventListener('click',e=>{ if(longTriggered){ e.stopImmediatePropagation(); longTriggered = false; } }, true);
   });
  }
 
  function isShowcased(product){ return Array.isArray(product.showcase)?product.showcase.length>0:product.showcase===true; }
 
+ /* Product Actions Menu on 1. Kram Long Press (Move + Live + Showcase + Duplicate + Delete) */
  function quickMenu(id){
   let p = products().find(x=>x.id===id);
   if(!p) return;
   document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
    <div class="quick" onclick="event.stopPropagation()">
     <h3>Product Actions</h3>
-    <div class="qsec">PRODUCT VISIBILITY &amp; LISTING</div>
+    <div class="qsec">ORDER &amp; VISIBILITY</div>
+    <button onclick="A.selectProductForMove('${esc(id)}')">↕️ Move Product (Up / Down)</button>
     <button onclick="A.toggleLive('${esc(id)}')">${p.live===false?'⚪ Enable Live Product':'🟢 Disable Live Product'}</button>
     <button onclick="A.toggleShowcase('${esc(id)}')">${isShowcased(p)?'⭐ Disable Showcase':'☆ Enable Showcase'}</button>
     <button onclick="A.duplicateProduct('${esc(id)}')">🔘 Duplicate Listing</button>
@@ -2257,7 +2260,7 @@ window.A = (() => {
    <p style="margin:6px 0">${itemsText}</p>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
     <b>Total: ${money(o.total)}</b>
-    <span class="muted">Hold 3.5s for Print &amp; Actions ⋮</span>
+    <span class="muted">Hold 5s for Print &amp; Actions ⋮</span>
    </div>
   </div>`;
  }
@@ -2295,7 +2298,7 @@ window.A = (() => {
  let orderTimer = null;
  function bindOrderRowLongPress(){
   document.querySelectorAll('#adminApp .orderrow').forEach(el=>{
-   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),3500)},{passive:true});
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),5000)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(orderTimer));
    el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
@@ -2303,7 +2306,7 @@ window.A = (() => {
  }
  function bindOrderCardLongPress(){
   document.querySelectorAll('#adminApp .ordercard').forEach(el=>{
-   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),3500)},{passive:true});
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),5000)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(orderTimer));
    el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
@@ -2314,7 +2317,7 @@ window.A = (() => {
   let hd = document.getElementById('a_orderListHeader');
   if(!hd) return;
   let hTimer = null;
-  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),3500)},{passive:true});
+  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),5000)},{passive:true});
   hd.addEventListener('touchend',()=>clearTimeout(hTimer));
   hd.addEventListener('touchmove',()=>clearTimeout(hTimer));
   hd.addEventListener('contextmenu',e=>{e.preventDefault();openSortPopup()});
