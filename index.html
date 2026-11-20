@@ -203,27 +203,30 @@ button{cursor:pointer}
 #adminApp .btn.danger{background:#dc2626;color:#fff}
 #adminApp .row{display:flex;gap:9px}#adminApp .row>*{flex:1;min-width:0}
 #adminApp .muted{color:#6b7280;font-size:12px}
-#adminApp .tablewrap{overflow:auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px}
+#adminApp .tablewrap{overflow-x:auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;-webkit-overflow-scrolling:touch}
 #adminApp table{border-collapse:collapse;width:100%}
 #adminApp th,#adminApp td{padding:9px 8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:12px;color:#111827}
-#adminApp th{color:#374151;background:#f9fafb;font-weight:700}
+#adminApp th{color:#374151;background:#f9fafb;font-weight:700;white-space:nowrap}
 #adminApp .stockGood{color:#16a34a;font-weight:800}
 #adminApp .stockLow{color:#dc2626;font-weight:800}
-#adminApp .productrow{touch-action:pan-y;user-select:none;cursor:pointer}
+
+/* 11-COLUMN WIDE PRODUCT TABLE & INLINE ROW EDITING */
+#adminApp .productrow{touch-action:pan-x pan-y;user-select:none;cursor:pointer}
 #adminApp .productrow:hover{background:#f8fafc}
-#adminApp .productTable{min-width:590px;table-layout:fixed}
-#adminApp .productTable th:nth-child(1),#adminApp .productTable td:nth-child(1){width:7%;text-align:center}
-#adminApp .productTable th:nth-child(2),#adminApp .productTable td:nth-child(2){width:33%}
-#adminApp .productTable th:nth-child(3),#adminApp .productTable td:nth-child(3){width:17%}
-#adminApp .productTable th:nth-child(4),#adminApp .productTable td:nth-child(4){width:19%}
-#adminApp .productTable th:nth-child(5),#adminApp .productTable td:nth-child(5){width:24%}
-#adminApp .productTable td{vertical-align:middle;padding:11px 8px}
-#adminApp .productTable td:first-child b{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-#adminApp .productTable td:nth-child(2),#adminApp .productTable td:nth-child(3),#adminApp .productTable td:nth-child(4){white-space:nowrap}
-#adminApp .productrow img{width:55px;height:55px;object-fit:cover;border-radius:8px;background:#f1f5f9}
-#adminApp .productrow b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#adminApp .productNameCell{display:flex;align-items:center;gap:9px;min-width:0}
-#adminApp .productThumb{width:48px;height:48px;flex:0 0 48px;object-fit:cover;border-radius:7px;background:#f1f5f9;border:1px solid #e5e7eb}
+#adminApp .productrow.editingRow{background:#fffbeb;cursor:default;user-select:auto}
+#adminApp .productTable{min-width:1280px;width:max-content}
+#adminApp .productTable th,#adminApp .productTable td{vertical-align:middle;padding:9px 8px;white-space:nowrap}
+#adminApp .productTable td.colName{min-width:210px;max-width:260px;white-space:normal}
+#adminApp .productThumb{width:46px;height:46px;object-fit:cover;border-radius:7px;background:#f1f5f9;border:1px solid #e5e7eb;display:block}
+#adminApp .inlineInp{width:100%;min-width:74px;padding:6px 7px;border:1.5px solid #0756a5;border-radius:6px;background:#fff;color:#111827;font-size:12px;font-weight:600}
+#adminApp .inlineInp.wide{min-width:185px}
+#adminApp .inlineInp.med{min-width:105px}
+#adminApp .inlineActBtn{min-height:32px!important;padding:5px 9px!important;font-size:11px!important;border-radius:6px;border:0;font-weight:700}
+
+/* ORDER MOVE BUTTONS */
+#adminApp .moveBtn{min-height:30px!important;padding:4px 8px!important;font-size:12px!important;background:#eaf4ff;color:#07366c;border:1px solid #bfdbfe;border-radius:6px;font-weight:800}
+#adminApp .moveBtn:disabled{opacity:0.35;cursor:not-allowed}
+
 #adminApp .imageGrid{display:grid;grid-template-columns:repeat(4,minmax(72px,1fr));gap:8px;margin:8px 0 14px}
 #adminApp .productStepNav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0 16px}
 #adminApp .productStepBadge{padding:9px 5px;border-radius:9px;background:#f3f4f6;color:#64748b;text-align:center;font-size:11px;font-weight:700}
@@ -249,7 +252,7 @@ button{cursor:pointer}
 #adminApp .checkrow{display:flex;gap:8px;align-items:center;margin:7px 0;font-weight:600}
 #adminApp .checkrow input{width:auto}
 #adminApp .ordercard{border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin:9px 0;background:#ffffff;touch-action:pan-y;user-select:none;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
-#adminApp .orderrow{touch-action:pan-y;user-select:none;cursor:pointer}
+#adminApp .orderrow{touch-action:pan-x pan-y;user-select:none;cursor:pointer}
 #adminApp .badge{font-size:11px;background:#eaf4ff;color:#07366c;padding:4px 8px;border-radius:20px;font-weight:700;display:inline-block}
 #adminApp .note{border-bottom:1px solid #e5e7eb;padding:12px 2px}
 #adminApp .hidden{display:none!important}
@@ -285,7 +288,7 @@ button{cursor:pointer}
 }
 
 /* Responsive, touch-friendly admin controls */
-#adminApp button:not(.bottom button):not(.imgClearBtn){min-height:46px}
+#adminApp button:not(.bottom button):not(.imgClearBtn):not(.inlineActBtn):not(.moveBtn){min-height:46px}
 #adminApp .btn{padding:12px 16px;font-size:14px}
 #adminApp .row{flex-wrap:wrap;align-items:stretch}
 #adminApp .row>*{flex:1 1 220px}
@@ -492,22 +495,29 @@ button{cursor:pointer}
   <section id="a_stock" class="a-page"><h2 class="title">Total Stock</h2><div id="a_stockList"></div></section>
   <section id="a_lowstock" class="a-page"><h2 class="title">Low Stock Products (≤ 5)</h2><div id="a_lowList"></div></section>
 
-  <!-- 2. PRODUCT LIST -->
+  <!-- 2. PRODUCT LIST (11 COLUMNS + LONG PRESS INLINE ROW EDIT) -->
   <section id="a_products" class="a-page">
    <div class="headFlex">
-    <h2 class="title">Product List &amp; B2B Rates</h2>
+    <h2 class="title">Product List (11-Column Sheet)</h2>
     <button class="btn" onclick="A.newProduct()">+ New Product</button>
    </div>
+   <p class="muted" style="margin:0 0 8px">💡 <b>Long-press (dabakar rakhein)</b> kisi bhi row par poori row (Name, SKU, Stock, Seller Price, MRP, B2C, B2B, GST, Delivery) ko wahin edit karne ke liye. Normal tap se full form khulega.</p>
    <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
    <div class="tablewrap">
     <table class="productTable">
      <thead>
       <tr>
-       <th>#</th>
-       <th>Product Name</th>
-       <th>SKU</th>
-       <th>Retail Price</th>
-       <th>B2B Wholesale</th>
+       <th>1. Kram</th>
+       <th>2. Image</th>
+       <th>3. Product Name</th>
+       <th>4. SKU</th>
+       <th>5. Stock</th>
+       <th>6. Seller Price</th>
+       <th>7. MRP</th>
+       <th>8. B2C Price</th>
+       <th>9. B2B Price</th>
+       <th>10. GST / Pc</th>
+       <th>11. Delivery (B2C / B2B)</th>
       </tr>
      </thead>
      <tbody id="a_productListTable"></tbody>
@@ -520,9 +530,9 @@ button{cursor:pointer}
    <div class="sortHead" id="a_orderListHeader">
     <div>
      <h2 class="title" style="margin:0">Parcel Bills</h2>
-     <div class="muted" id="a_sortIndicator">Sorted by: Date • Long-press here to Sort</div>
+     <div class="muted" id="a_sortIndicator">Sorted by: Date &amp; Time • Click/Hold here to Sort</div>
     </div>
-    <span class="badge">Hold to Sort ⇅</span>
+    <span class="badge">Sort / Move ⇅</span>
    </div>
    <div class="row">
     <input class="field" id="a_orderSearch" placeholder="Search Order No / Customer / SKU / Product" oninput="A.renderOrders()">
@@ -536,15 +546,16 @@ button{cursor:pointer}
      <option>Pending</option>
     </select>
    </div>
-   <p class="muted" style="margin:2px 0 8px">Long-press any order row for Print (Label / Invoice) &amp; Order Status menu.</p>
+   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par Long-press karein.</p>
    <div class="tablewrap">
     <table>
      <thead>
       <tr>
        <th>#</th>
+       <th>Move</th>
        <th>Order/Bill No</th>
-       <th>Date</th>
-       <th>Customer</th>
+       <th>Date &amp; Time</th>
+       <th>Customer / Product</th>
        <th>Total</th>
        <th>Status</th>
       </tr>
@@ -1354,6 +1365,7 @@ window.C = (() => {
      number: num,
      date: new Date().toLocaleString(),
      timestamp: Date.now(),
+     sortOrder: Date.now(),
      status: 'Pending',
      total: groupTotalWithDelivery,
      deliveryFee: grp.deliveryFee,
@@ -1430,12 +1442,13 @@ C.init();
 
 /* ==================== 2. ADMIN PANEL APP (A - WHITE THEME) ==================== */
 window.A = (() => {
- const NOTES = 'kestore_notes_v1';
+ const NOTES = 'kestore_notes_v1', ORDER_SEQ_KEY = 'kestore_custom_order_seq_v1';
  let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,upiId:'',qrImage:''};
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
  let tempQrImage = '';
+ let inlineEditingProductId = null;
 
  function products(){ return cloudProducts; }
  function readOrders(){ return cloudOrders; }
@@ -1556,7 +1569,7 @@ window.A = (() => {
   if(navMap[id]) document.getElementById(navMap[id])?.classList.add('active');
   window.scrollTo(0,0);
   if(id==='a_dashboard') renderLiveFrontOrders();
-  if(id==='a_products') renderProducts();
+  if(id==='a_products'){ inlineEditingProductId = null; renderProducts(); }
   if(id==='a_stock') renderStock();
   if(id==='a_lowstock') renderLow();
   if(id==='a_manager'){ renderOrders(); renderGST(); }
@@ -1625,7 +1638,7 @@ window.A = (() => {
   if(lowCount) lowCount.textContent = p.filter(x=>(+x.stock||0)<=5).length;
   if(todayCount) todayCount.textContent = orders.filter(o=>new Date(o.timestamp||o.date).toDateString()===new Date().toDateString()&&!['Shipped','Delivered','Complete','Cancelled'].includes(o.status)).length;
   renderLiveFrontOrders();
-  if(document.getElementById('a_products').classList.contains('active')) renderProducts();
+  if(document.getElementById('a_products').classList.contains('active') && !inlineEditingProductId) renderProducts();
  }
 
  function renderLiveFrontOrders(){
@@ -1636,61 +1649,170 @@ window.A = (() => {
   bindOrderCardLongPress();
  }
 
+ /* ==================== 11-COLUMN PRODUCT LIST & INLINE EDIT ==================== */
+ function calcGstPerPiece(price, gstRate){
+  let pr = Number(price) || 0;
+  let r = Number(gstRate ?? 18);
+  if(r <= 0 || pr <= 0) return 0;
+  return pr - (pr / (1 + r / 100));
+ }
+
  function renderProducts(){
   let q = (document.getElementById('a_productSearch').value||'').toLowerCase();
   let filtered = products().filter(p=>(p.name+' '+p.sku+' '+p.cat).toLowerCase().includes(q));
-  document.getElementById('a_productListTable').innerHTML = filtered.map((p,idx)=>rowHTML(p,idx+1)).join('') || '<tr><td colspan="5" class="muted" style="text-align:center">No products found.</td></tr>';
+  document.getElementById('a_productListTable').innerHTML = filtered.map((p,idx)=>rowHTML(p,idx+1)).join('') || '<tr><td colspan="11" class="muted" style="text-align:center">No products found.</td></tr>';
   bindProductLongPress();
  }
 
  function rowHTML(p, index=1){
-  let b2bVal = Number(p.b2bPrice) || Math.round(p.price * 0.85);
-  let mrpTxt = p.mrp ? `<div style="text-decoration:line-through;color:#9ca3af">₹${p.mrp}</div>` : '';
+  let id = esc(p.id);
   let image = (p.images||[]).find(Boolean) || p.image || '';
   let imageHTML = image ? `<img class="productThumb" src="${esc(image)}" alt="${esc(p.name)}" onerror="this.hidden=true">` : `<span class="productThumb" aria-hidden="true"></span>`;
-  return `<tr class="productrow" data-id="${esc(p.id)}" onclick="A.editProduct('${esc(p.id)}')">
-   <td>${index}</td>
-   <td><div class="productNameCell">${imageHTML}<div style="min-width:0"><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} • Stock: <span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out':p.stock}</span> ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></div></div></td>
+  let sellerPriceVal = Number(p.sellerPrice ?? p.costPrice ?? 0);
+  let mrpVal = Number(p.mrp || 0);
+  let b2cVal = Number(p.price || 0);
+  let b2bVal = Number(p.b2bPrice) || Math.round(b2cVal * 0.85);
+  let gstRateVal = Number(p.gstRate ?? 18);
+  let gstPerPc = calcGstPerPiece(b2cVal, gstRateVal);
+  let delB2c = Number(p.deliveryChargeB2C ?? p.deliveryCharge ?? 0);
+  let delB2b = Number(p.deliveryChargeB2B ?? p.deliveryCharge ?? 0);
+
+  if(inlineEditingProductId === p.id){
+   return `<tr class="productrow editingRow" data-id="${id}">
+    <td><b>${index}</b><div style="margin-top:4px;display:flex;gap:4px">
+     <button type="button" class="inlineActBtn" style="background:#16a34a;color:#fff" onclick="event.stopPropagation();A.saveInlineProduct('${id}')" title="Save Row">✓ Save</button>
+     <button type="button" class="inlineActBtn" style="background:#e5e7eb;color:#111" onclick="event.stopPropagation();A.cancelInlineEdit()" title="Cancel">✕</button>
+    </div></td>
+    <td>${imageHTML}</td>
+    <td class="colName"><input class="inlineInp wide" id="inl_name_${id}" value="${esc(p.name)}" placeholder="Product Name"></td>
+    <td><input class="inlineInp med" id="inl_sku_${id}" value="${esc(p.sku)}" placeholder="SKU"></td>
+    <td><input class="inlineInp" id="inl_stock_${id}" type="number" min="0" step="1" value="${Number(p.stock)||0}"></td>
+    <td><input class="inlineInp" id="inl_seller_${id}" type="number" min="0" step=".01" value="${sellerPriceVal}"></td>
+    <td><input class="inlineInp" id="inl_mrp_${id}" type="number" min="0" step=".01" value="${mrpVal}"></td>
+    <td><input class="inlineInp" id="inl_b2c_${id}" type="number" min="0" step=".01" value="${b2cVal}" oninput="A.updateInlineGstPreview('${id}')"></td>
+    <td><input class="inlineInp" id="inl_b2b_${id}" type="number" min="0" step=".01" value="${b2bVal}"></td>
+    <td>
+     <select class="inlineInp" id="inl_gst_${id}" onchange="A.updateInlineGstPreview('${id}')">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==gstRateVal?'selected':''}>${v}%</option>`).join('')}</select>
+     <div class="muted" id="inl_gstPc_${id}" style="margin-top:2px">₹${gstPerPc.toFixed(2)}/pc</div>
+    </td>
+    <td>
+     <div style="display:flex;gap:4px;align-items:center">
+      <input class="inlineInp" id="inl_delB2c_${id}" type="number" min="0" step=".01" value="${delB2c}" title="B2C Delivery">
+      <input class="inlineInp" id="inl_delB2b_${id}" type="number" min="0" step=".01" value="${delB2b}" title="B2B Delivery">
+     </div>
+     <div class="muted" style="font-size:10px">B2C | B2B</div>
+    </td>
+   </tr>`;
+  }
+
+  return `<tr class="productrow" data-id="${id}" onclick="A.editProduct('${id}')">
+   <td><b>${index}</b></td>
+   <td>${imageHTML}</td>
+   <td class="colName"><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></td>
    <td><code>${esc(p.sku)}</code></td>
-   <td>₹${p.price}${mrpTxt}</td>
+   <td><span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out (0)':p.stock}</span></td>
+   <td><b>₹${sellerPriceVal}</b></td>
+   <td><span style="text-decoration:line-through;color:#6b7280">₹${mrpVal}</span></td>
+   <td><b style="color:#07366c">₹${b2cVal}</b></td>
    <td><b style="color:#d97706">₹${b2bVal}</b><div class="muted">${p.b2bMinQty||10}+ Qty</div></td>
+   <td><b>₹${gstPerPc.toFixed(2)}</b><div class="muted">(${gstRateVal}%)</div></td>
+   <td><b>₹${delB2c}</b> / <span style="color:#d97706">₹${delB2b}</span><div class="muted">B2C / B2B</div></td>
   </tr>`;
  }
 
+ function updateInlineGstPreview(id){
+  let b2c = Number(document.getElementById(`inl_b2c_${id}`)?.value) || 0;
+  let gst = Number(document.getElementById(`inl_gst_${id}`)?.value) || 0;
+  let el = document.getElementById(`inl_gstPc_${id}`);
+  if(el) el.textContent = '₹' + calcGstPerPiece(b2c, gst).toFixed(2) + '/pc';
+ }
+
+ function startInlineRowEdit(id){
+  inlineEditingProductId = id;
+  renderProducts();
+ }
+
+ function cancelInlineEdit(){
+  inlineEditingProductId = null;
+  renderProducts();
+ }
+
+ async function saveInlineProduct(id){
+  let x = products().find(a=>a.id===id);
+  if(!x) return;
+  let name = document.getElementById(`inl_name_${id}`)?.value.trim() || '';
+  let sku = document.getElementById(`inl_sku_${id}`)?.value.trim() || '';
+  let stock = Number(document.getElementById(`inl_stock_${id}`)?.value);
+  let sellerPrice = Number(document.getElementById(`inl_seller_${id}`)?.value);
+  let mrp = Number(document.getElementById(`inl_mrp_${id}`)?.value);
+  let price = Number(document.getElementById(`inl_b2c_${id}`)?.value);
+  let b2bPrice = Number(document.getElementById(`inl_b2b_${id}`)?.value);
+  let gstRate = Number(document.getElementById(`inl_gst_${id}`)?.value);
+  let deliveryChargeB2C = Number(document.getElementById(`inl_delB2c_${id}`)?.value);
+  let deliveryChargeB2B = Number(document.getElementById(`inl_delB2b_${id}`)?.value);
+
+  if(!name || !sku){ alert('Product Name aur SKU khali nahi ho sakte.'); return; }
+  if([stock, sellerPrice, mrp, price, b2bPrice, gstRate, deliveryChargeB2C, deliveryChargeB2B].some(v => !Number.isFinite(v) || v < 0)){
+   alert('Please sabhi numbers sahi se bharein.');
+   return;
+  }
+
+  try{
+   await saveSingleProductToFirebase({
+    ...x,
+    name,
+    sku,
+    stock: Math.round(stock),
+    sellerPrice,
+    mrp,
+    price,
+    b2bPrice,
+    gstRate,
+    deliveryCharge: deliveryChargeB2C,
+    deliveryChargeB2C,
+    deliveryChargeB2B
+   });
+   inlineEditingProductId = null;
+   renderProducts();
+  }catch(err){
+   alert('Row save failed: ' + err.message);
+  }
+ }
+
  function renderStock(){
-  document.getElementById('a_productListTable').innerHTML = products().map((p,i)=>rowHTML(p,i+1)).join('') || '<tr><td colspan="5" class="muted" style="text-align:center">No products.</td></tr>';
+  document.getElementById('a_productListTable').innerHTML = products().map((p,i)=>rowHTML(p,i+1)).join('') || '<tr><td colspan="11" class="muted" style="text-align:center">No products.</td></tr>';
   bindProductLongPress(); showPage('a_products');
  }
  function renderLow(){
   let lowProducts = products().filter(p=>(+p.stock||0)<=5);
-  document.getElementById('a_lowList').innerHTML = lowProducts.length ? `<div class="tablewrap"><table class="productTable"><thead><tr><th>#</th><th>Product Name</th><th>SKU</th><th>Retail Price</th><th>B2B Wholesale</th></tr></thead><tbody>${lowProducts.map((p,i)=>rowHTML(p,i+1)).join('')}</tbody></table></div>` : '<div class="panel muted" style="text-align:center">No low stock products.</div>';
+  document.getElementById('a_lowList').innerHTML = lowProducts.length ? `<div class="tablewrap"><table class="productTable"><thead><tr><th>1. Kram</th><th>2. Image</th><th>3. Product Name</th><th>4. SKU</th><th>5. Stock</th><th>6. Seller Price</th><th>7. MRP</th><th>8. B2C Price</th><th>9. B2B Price</th><th>10. GST / Pc</th><th>11. Delivery</th></tr></thead><tbody>${lowProducts.map((p,i)=>rowHTML(p,i+1)).join('')}</tbody></table></div>` : '<div class="panel muted" style="text-align:center">No low stock products.</div>';
   bindProductLongPress();
  }
 
  let pressTimer=null, longTriggered=false;
  function bindProductLongPress(){
   document.querySelectorAll('#adminApp .productrow').forEach(el=>{
-   el.addEventListener('touchstart',()=>{longTriggered=false;pressTimer=setTimeout(()=>{longTriggered=true;quickMenu(el.dataset.id)},850)},{passive:true});
+   let pid = el.dataset.id;
+   if(inlineEditingProductId === pid) return;
+   el.addEventListener('touchstart',()=>{longTriggered=false;pressTimer=setTimeout(()=>{longTriggered=true;startInlineRowEdit(pid)},650)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(pressTimer));
    el.addEventListener('touchmove',()=>clearTimeout(pressTimer));
-   el.addEventListener('contextmenu',e=>{e.preventDefault();quickMenu(el.dataset.id)});
+   el.addEventListener('contextmenu',e=>{e.preventDefault();startInlineRowEdit(pid)});
    el.addEventListener('click',e=>{if(longTriggered){e.stopImmediatePropagation();longTriggered=false}},true);
   });
  }
 
  function isShowcased(product){ return Array.isArray(product.showcase)?product.showcase.length>0:product.showcase===true; }
 
+ /* Quick Menu (Price & Delivery removed from here as requested) */
  function quickMenu(id){
   let p = products().find(x=>x.id===id);
   if(!p) return;
   document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
    <div class="quick" onclick="event.stopPropagation()">
     <h3>Product Actions</h3>
-    <div class="qsec">PRICE &amp; STOCK</div>
-    <button onclick="A.priceChange('${esc(id)}')">💰 Price Change / Stock Change</button>
-    <div class="qsec">DELIVERY</div>
-    <button onclick="A.deliveryChargeChange('${esc(id)}')">🚚 Delivery Charges</button>
-    <div class="qsec">PRODUCT VISIBILITY &amp; LISTING</div>
+    <div class="qsec">INLINE &amp; LISTING</div>
+    <button onclick="A.closeQuick();A.startInlineRowEdit('${esc(id)}')">✏️ Edit Full Row in List</button>
     <button onclick="A.toggleLive('${esc(id)}')">${p.live===false?'⚪ Enable Live Product':'🟢 Disable Live Product'}</button>
     <button onclick="A.toggleShowcase('${esc(id)}')">${isShowcased(p)?'⭐ Disable Showcase':'☆ Enable Showcase'}</button>
     <button onclick="A.duplicateProduct('${esc(id)}')">🔘 Duplicate Listing</button>
@@ -1721,56 +1843,13 @@ window.A = (() => {
   productForm(copy, true);
  }
 
- function priceChange(id){
-  closeQuick(); let x=products().find(a=>a.id===id); if(!x) return;
-  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Price Change</h3><p class="muted">Changes will sync directly to Firebase.</p>
-  <label>MRP (₹)</label><input class="field" id="a_newMrp" type="number" min="0" step=".01" value="${Number(x.mrp)||0}">
-  <label>B2C Retail Price (₹)</label><input class="field" id="a_newPrice" type="number" min="0" step=".01" value="${Number(x.price)||0}">
-  <label>B2B Wholesale Price (₹)</label><input class="field" id="a_newB2bPrice" type="number" min="0" step=".01" value="${Number(x.b2bPrice)||Math.round((Number(x.price)||0)*0.85)}">
-  <label>Stock</label><input class="field" id="a_newStock" type="number" min="0" step="1" value="${Number(x.stock)||0}">
-  <button class="btn" onclick="A.saveQuickPrices('${esc(id)}')">Save Price &amp; Stock</button>`);
- }
- async function saveQuickPrices(id){
-  let x=products().find(a=>a.id===id); if(!x) return;
-  let mrp=Number(document.getElementById('a_newMrp').value), pr=Number(document.getElementById('a_newPrice').value), b2b=Number(document.getElementById('a_newB2bPrice').value), stock=Number(document.getElementById('a_newStock').value);
-  if([mrp,pr,b2b,stock].some(v=>!Number.isFinite(v)||v<0)){ alert('Enter valid MRP, B2C, B2B prices and stock'); return; }
-  try{ await saveSingleProductToFirebase({...x, mrp, price:pr, b2bPrice:b2b, stock}); closeModal(); }
-  catch(err){ alert('Price and stock could not be saved: '+err.message); }
- }
-
- function deliveryChargeChange(id){
-  closeQuick(); let x=products().find(a=>a.id===id); if(!x) return;
-  let legacy=Number(x.deliveryCharge)||0;
-  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Product Delivery Charges</h3><p class="muted">B2C aur B2B ke delivery charges alag set karein.</p>
-  <label>B2C Delivery Charge (₹)</label><input class="field" id="a_newDelB2C" type="number" min="0" step="0.01" value="${Number(x.deliveryChargeB2C??legacy)}">
-  <label>B2B Delivery Charge (₹)</label><input class="field" id="a_newDelB2B" type="number" min="0" step="0.01" value="${Number(x.deliveryChargeB2B??legacy)}">
-  <button class="btn" onclick="A.saveDeliveryCharge('${esc(id)}')">Save Delivery Charges</button>`);
- }
- async function saveDeliveryCharge(id){
-  let x=products().find(a=>a.id===id); if(!x) return;
-  let b2c=Number(document.getElementById('a_newDelB2C').value), b2b=Number(document.getElementById('a_newDelB2B').value);
-  if([b2c,b2b].some(c=>!Number.isFinite(c)||c<0)){ alert('Enter valid delivery charges'); return; }
-  try{ await saveSingleProductToFirebase({...x, deliveryChargeB2C:b2c, deliveryChargeB2B:b2b, deliveryCharge:b2c}); closeModal(); }
-  catch(err){ alert('Delivery charges could not be saved: '+err.message); }
- }
-
- function stockChange(id){
-  closeQuick(); let x=products().find(a=>a.id===id); if(!x) return;
-  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Stock Change</h3><p>Current Stock: ${x.stock}</p><input class="field" id="a_newStock" type="number" min="0" step="1" value="${x.stock}"><button class="btn" onclick="A.saveQuickStock('${esc(id)}')">Confirm Stock</button>`);
- }
- async function saveQuickStock(id){
-  let x=products().find(a=>a.id===id), v=Number(document.getElementById('a_newStock').value);
-  if(!Number.isFinite(v)||v<0){ alert('Enter a valid value'); return; }
-  try{ await saveSingleProductToFirebase({...x, stock:v}); closeModal(); }catch(err){ alert('Stock update failed: '+err.message); }
- }
-
  function openModal(html){ document.getElementById('a_modal').innerHTML=html; document.getElementById('a_modalShade').style.display='block'; }
  function closeModal(){ document.getElementById('a_modalShade').style.display='none'; document.getElementById('a_modal').innerHTML=''; }
  function newProduct(){ productForm(null); }
  function editProduct(id){ productForm(products().find(x=>x.id===id)); }
 
  function productForm(p, isDuplicate=false){
-  let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],desc:'',live:true,showcase:false,variations:{}};
+  let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],sellerPrice:'',mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],desc:'',live:true,showcase:false,variations:{}};
   let b2bDefault = x.b2bPrice || (x.price ? Math.round(x.price * 0.85) : '');
   let defaultPct = (x.price && x.b2bPrice) ? (((x.price - x.b2bPrice)/x.price)*100).toFixed(1) : '15';
   let hasVariations = Object.values(x.variations||{}).some(v=>Array.isArray(v)&&v.length);
@@ -1800,6 +1879,7 @@ window.A = (() => {
    <section data-product-step="2" style="display:none">
     <label>GST Rate *</label><select class="field" id="a_fGst">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
     <label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN code" required>
+    <label>Seller Price (₹)</label><input class="field" id="a_fSellerPrice" type="number" min="0" step=".01" value="${x.sellerPrice??''}" placeholder="Purchase / Seller rate">
     <label>MRP (₹) *</label><input class="field" id="a_fMrp" type="number" min="0" step=".01" value="${x.mrp??''}" required>
     <label>B2C Price (₹) *</label><input class="field" id="a_fPrice" type="number" min="0" step=".01" value="${x.price??''}" oninput="A.calcB2bPercent()" required>
     <label>B2B Price (₹)</label><input class="field" id="a_fB2bPrice" type="number" min="0" step=".01" value="${b2bDefault}" oninput="A.calcB2bPercent()">
@@ -1810,7 +1890,8 @@ window.A = (() => {
      <button type="button" class="btn ghost" id="a_saveNoPhotoBtn" onclick="A.saveProduct('${esc(x.id)}',false)">Save Product (Add Photos Later)</button>
      <button type="button" class="btn" onclick="A.goProductStep(3)">Continue to Photos →</button>
     </div>
-    ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
+    ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>
+    <button type="button" class="btn danger" style="margin-top:8px;width:100%" onclick="A.closeModal();A.deleteProd('${esc(x.id)}')">🗑️ Delete Product</button>` : ''}
    </section>
    <section data-product-step="3" style="display:none">
     <label>Product Photos (Select or Paste up to 4 Photos at Once)</label>
@@ -1864,7 +1945,6 @@ window.A = (() => {
     fileIdx++;
    }
   }
-  // If all 4 were already filled, replace from slot 0 onwards
   if(fileIdx === 0){
    for(let slot = 0; slot < Math.min(4, files.length); slot++){
     try{
@@ -1896,7 +1976,6 @@ window.A = (() => {
   renderAllPhotoSlots();
  }
 
- // Support direct Ctrl+V image paste on Step 3
  document.addEventListener('paste', async (e) => {
   const modal = document.getElementById('a_modal');
   const step3 = modal?.querySelector('[data-product-step="3"]');
@@ -1966,6 +2045,7 @@ window.A = (() => {
   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
   if(!validateProductPricing()){ goProductStep(2); return; }
 
+  let sellerPrice=Number(document.getElementById('a_fSellerPrice')?.value) || 0;
   let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
   let hsn=document.getElementById('a_fHsn').value.trim();
   let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
@@ -1983,7 +2063,7 @@ window.A = (() => {
    }
    let x={
     id,name,sku,cat:document.getElementById('a_fCat').value,
-    mrp,price,b2bPrice,
+    sellerPrice,mrp,price,b2bPrice,
     b2bMinQty:Number(document.getElementById('a_fB2bMin').value)||10,
     gstRate:Number(document.getElementById('a_fGst').value),stock,
     deliveryCharge:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
@@ -2010,7 +2090,60 @@ window.A = (() => {
   }
  }
 
- /* ORDERS & LONG PRESS */
+ /* ==================== ORDERS, SORTING & MANUAL MOVE ==================== */
+ function getCustomOrderSeq(){
+  return JSON.parse(localStorage.getItem(ORDER_SEQ_KEY) || '[]');
+ }
+ function saveCustomOrderSeq(arr){
+  localStorage.setItem(ORDER_SEQ_KEY, JSON.stringify(arr));
+ }
+
+ function getSortedFilteredOrders(){
+  let q = (document.getElementById('a_orderSearch')?.value||'').toLowerCase();
+  let f = document.getElementById('a_orderFilter')?.value || 'all';
+  let o = readOrders().filter(x=>{
+   let stMatch = (f==='all') || (x.status||'Pending').toLowerCase().includes(f.toLowerCase());
+   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.customer?.address||'')+' '+(x.paymentRef||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
+   return stMatch && searchStr.includes(q);
+  });
+
+  if(orderSort === 'name'){
+   o.sort((a,b)=>String(a.customer?.name||getOrderFirstName(a)).toLowerCase().localeCompare(String(b.customer?.name||getOrderFirstName(b)).toLowerCase()));
+  } else if(orderSort === 'productName'){
+   o.sort((a,b)=>getOrderFirstName(a).localeCompare(getOrderFirstName(b)));
+  } else if(orderSort === 'sku'){
+   o.sort((a,b)=>getOrderFirstSku(a).localeCompare(getOrderFirstSku(b)));
+  } else if(orderSort === 'number'){
+   o.sort((a,b)=>String(a.number||'').localeCompare(String(b.number||'')));
+  } else if(orderSort === 'manual'){
+   let seq = getCustomOrderSeq();
+   o.sort((a,b)=>{
+    let ia = seq.indexOf(a.number), ib = seq.indexOf(b.number);
+    if(ia === -1 && ib === -1) return (b.timestamp||new Date(b.date).getTime()||0) - (a.timestamp||new Date(a.date).getTime()||0);
+    if(ia === -1) return 1;
+    if(ib === -1) return -1;
+    return ia - ib;
+   });
+  } else {
+   o.sort((a,b)=>(b.timestamp||new Date(b.date).getTime()||0)-(a.timestamp||new Date(a.date).getTime()||0));
+  }
+  return o;
+ }
+
+ function moveOrderPosition(num, dir){
+  let currentList = getSortedFilteredOrders().map(x => x.number);
+  let idx = currentList.indexOf(num);
+  if(idx === -1) return;
+  let targetIdx = idx + dir;
+  if(targetIdx < 0 || targetIdx >= currentList.length) return;
+  let temp = currentList[idx];
+  currentList[idx] = currentList[targetIdx];
+  currentList[targetIdx] = temp;
+  saveCustomOrderSeq(currentList);
+  orderSort = 'manual';
+  renderOrders();
+ }
+
  function renderToday(){
   let o = readOrders().filter(x=>!['Shipped','Delivered','Complete','Cancelled'].includes(x.status));
   document.getElementById('a_todayOrders').innerHTML = o.map(orderCardHTML).join('') || '<p class="muted">No active orders.</p>';
@@ -2039,12 +2172,19 @@ window.A = (() => {
   </div>`;
  }
 
- function orderRowHTML(o, index=1){
+ function orderRowHTML(o, index=1, totalCount=1){
+  let firstProd = o.items?.[0]?.name || '';
   return `<tr class="orderrow" data-num="${esc(o.number)}">
    <td>${index}</td>
+   <td>
+    <div style="display:flex;gap:4px">
+     <button type="button" class="moveBtn" ${index===1?'disabled':''} onclick="event.stopPropagation();A.moveOrderPosition('${esc(o.number)}',-1)" title="Move Up">↑</button>
+     <button type="button" class="moveBtn" ${index===totalCount?'disabled':''} onclick="event.stopPropagation();A.moveOrderPosition('${esc(o.number)}',1)" title="Move Down">↓</button>
+    </div>
+   </td>
    <td><b>${esc(o.number)}</b>${o.isB2B?' <span class="badge" style="background:#fef3c7;color:#b45309;font-size:9px">B2B</span>':''}</td>
    <td><span class="muted">${esc(o.date)}</span></td>
-   <td><b>${esc(o.customer?.name||'Customer')}</b><br><span class="muted">${esc(o.customer?.phone||'')}</span></td>
+   <td><b>${esc(o.customer?.name||'Customer')}</b><br><span class="muted">${esc(o.customer?.phone||'')}</span>${firstProd?`<div class="muted" style="font-size:10.5px">${esc(firstProd)}</div>`:''}</td>
    <td><b>${money(o.total)}</b><br><span class="muted" style="font-size:10px">${esc(o.paymentMethod||'')}</span></td>
    <td><span class="badge">${esc(o.status||'Pending')}</span></td>
   </tr>`;
@@ -2054,20 +2194,11 @@ window.A = (() => {
  function getOrderFirstSku(o){ let fi=o.items?.[0], p=products().find(a=>a.id===fi?.id); return String(fi?.sku||p?.sku||'').toLowerCase(); }
 
  function renderOrders(){
-  let q = (document.getElementById('a_orderSearch').value||'').toLowerCase(), f = document.getElementById('a_orderFilter').value;
-  let o = readOrders().filter(x=>{
-   let stMatch = (f==='all') || (x.status||'Pending').toLowerCase().includes(f.toLowerCase());
-   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.customer?.address||'')+' '+(x.paymentRef||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
-   return stMatch && searchStr.includes(q);
-  });
-  if(orderSort==='name') o.sort((a,b)=>getOrderFirstName(a).localeCompare(getOrderFirstName(b)));
-  else if(orderSort==='sku') o.sort((a,b)=>getOrderFirstSku(a).localeCompare(getOrderFirstSku(b)));
-  else if(orderSort==='number') o.sort((a,b)=>String(a.number||'').localeCompare(String(b.number||'')));
-  else o.sort((a,b)=>(b.timestamp||new Date(b.date).getTime()||0)-(a.timestamp||new Date(a.date).getTime()||0));
-  let sortLabels = {name:'Name',sku:'SKU',date:'Date',number:'Order Number'};
+  let o = getSortedFilteredOrders();
+  let sortLabels = {name:'Customer Name (A-Z)',productName:'Product Name (A-Z)',sku:'SKU',date:'Date & Time (Newest First)',number:'Order Number',manual:'Custom Moved Order'};
   let ind = document.getElementById('a_sortIndicator');
-  if(ind) ind.textContent = `Sorted by: "${sortLabels[orderSort]||'Date'}" • Long-press here to Sort`;
-  document.getElementById('a_orderListTable').innerHTML = o.map((ord,i)=>orderRowHTML(ord,i+1)).join('') || '<tr><td colspan="6" class="muted" style="text-align:center">No parcel bills found.</td></tr>';
+  if(ind) ind.textContent = `Sorted by: "${sortLabels[orderSort]||'Date & Time'}" • Tap here to Sort`;
+  document.getElementById('a_orderListTable').innerHTML = o.map((ord,i)=>orderRowHTML(ord,i+1,o.length)).join('') || '<tr><td colspan="7" class="muted" style="text-align:center">No parcel bills found.</td></tr>';
   bindOrderRowLongPress();
  }
 
@@ -2104,11 +2235,13 @@ window.A = (() => {
   let cur = orderSort||'date';
   document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
    <div class="quick" onclick="event.stopPropagation()">
-    <h3>Sort Order List</h3>
-    <button onclick="A.applyOrderSort('name')">Sort by "Name" ${cur==='name'?'✓':''}</button>
-    <button onclick="A.applyOrderSort('sku')">Sort by "SKU" ${cur==='sku'?'✓':''}</button>
-    <button onclick="A.applyOrderSort('date')">Sort by "Date" ${cur==='date'?'✓':''}</button>
-    <button onclick="A.applyOrderSort('number')">Sort by "Order Number" ${cur==='number'?'✓':''}</button>
+    <h3>Sort / Arrange Orders</h3>
+    <button onclick="A.applyOrderSort('date')">🕒 Sort by Time &amp; Date ${cur==='date'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('name')">👤 Sort by Customer Name ${cur==='name'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('productName')">📦 Sort by Product Name ${cur==='productName'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('sku')">🏷️ Sort by SKU ${cur==='sku'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('number')">🔢 Sort by Order Number ${cur==='number'?'✓':''}</button>
+    <button onclick="A.applyOrderSort('manual')">⇅ Custom Move Order (↑ / ↓) ${cur==='manual'?'✓':''}</button>
    </div>
   </div>`;
  }
@@ -2517,9 +2650,9 @@ window.A = (() => {
   showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
   newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep,
   clearProductImage, handleBulkProductImages, handleSingleSlotImage, saveProduct,
-  closeModal, closeQuick, toggleShowcase, toggleLive, priceChange, saveQuickPrices,
-  deliveryChargeChange, saveDeliveryCharge, stockChange, saveQuickStock, deleteProd,
-  renderProducts, renderOrders, applyOrderSort, setOrderStatus, deleteOrder,
+  startInlineRowEdit, cancelInlineEdit, saveInlineProduct, updateInlineGstPreview,
+  closeModal, closeQuick, toggleShowcase, toggleLive, deleteProd,
+  renderProducts, renderOrders, applyOrderSort, moveOrderPosition, setOrderStatus, deleteOrder,
   printParcelLabel, printBillInvoice, printGSTReturnPDF, exportGST,
   closePrintView, downloadCurrentPDF, triggerDevicePrint,
   handleQrUpload, clearQrImage, saveGSTSettings, renderGST,
