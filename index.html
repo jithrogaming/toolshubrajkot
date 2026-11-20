@@ -211,12 +211,13 @@ button{cursor:pointer}
 #adminApp .stockLow{color:#dc2626;font-weight:800}
 
 /* 11-COLUMN WIDE PRODUCT TABLE & INLINE ROW EDITING */
-#adminApp .productrow{touch-action:pan-x pan-y;user-select:none;cursor:pointer}
+#adminApp .productrow{touch-action:pan-x pan-y;user-select:none}
 #adminApp .productrow:hover{background:#f8fafc}
 #adminApp .productrow.editingRow{background:#fffbeb;cursor:default;user-select:auto}
 #adminApp .productTable{min-width:1280px;width:max-content}
 #adminApp .productTable th,#adminApp .productTable td{vertical-align:middle;padding:9px 8px;white-space:nowrap}
 #adminApp .productTable td.colName{min-width:210px;max-width:260px;white-space:normal}
+#adminApp .productTable td.openFormCell{cursor:pointer}
 #adminApp .productThumb{width:46px;height:46px;object-fit:cover;border-radius:7px;background:#f1f5f9;border:1px solid #e5e7eb;display:block}
 #adminApp .inlineInp{width:100%;min-width:74px;padding:6px 7px;border:1.5px solid #0756a5;border-radius:6px;background:#fff;color:#111827;font-size:12px;font-weight:600}
 #adminApp .inlineInp.wide{min-width:185px}
@@ -501,7 +502,7 @@ button{cursor:pointer}
     <h2 class="title">Product List (11-Column Sheet)</h2>
     <button class="btn" onclick="A.newProduct()">+ New Product</button>
    </div>
-   <p class="muted" style="margin:0 0 8px">💡 <b>Long-press (dabakar rakhein)</b> kisi bhi row par poori row (Name, SKU, Stock, Seller Price, MRP, B2C, B2B, GST, Delivery) ko wahin edit karne ke liye. Normal tap se full form khulega.</p>
+   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par touch karne se full form khulega. Kisi bhi row par <b>1.3 sec long-press</b> karne se poori row wahin edit hogi.</p>
    <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
    <div class="tablewrap">
     <table class="productTable">
@@ -546,7 +547,7 @@ button{cursor:pointer}
      <option>Pending</option>
     </select>
    </div>
-   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par Long-press karein.</p>
+   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 1.3 sec Long-press karein.</p>
    <div class="tablewrap">
     <table>
      <thead>
@@ -1705,9 +1706,9 @@ window.A = (() => {
    </tr>`;
   }
 
-  return `<tr class="productrow" data-id="${id}" onclick="A.editProduct('${id}')">
-   <td><b>${index}</b></td>
-   <td>${imageHTML}</td>
+  return `<tr class="productrow" data-id="${id}">
+   <td class="openFormCell" onclick="A.editProduct('${id}')" title="Tap to open full form"><b>${index}</b></td>
+   <td class="openFormCell" onclick="A.editProduct('${id}')" title="Tap to open full form">${imageHTML}</td>
    <td class="colName"><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></td>
    <td><code>${esc(p.sku)}</code></td>
    <td><span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out (0)':p.stock}</span></td>
@@ -1794,7 +1795,7 @@ window.A = (() => {
   document.querySelectorAll('#adminApp .productrow').forEach(el=>{
    let pid = el.dataset.id;
    if(inlineEditingProductId === pid) return;
-   el.addEventListener('touchstart',()=>{longTriggered=false;pressTimer=setTimeout(()=>{longTriggered=true;startInlineRowEdit(pid)},650)},{passive:true});
+   el.addEventListener('touchstart',()=>{longTriggered=false;pressTimer=setTimeout(()=>{longTriggered=true;startInlineRowEdit(pid)},1300)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(pressTimer));
    el.addEventListener('touchmove',()=>clearTimeout(pressTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();startInlineRowEdit(pid)});
@@ -1804,7 +1805,7 @@ window.A = (() => {
 
  function isShowcased(product){ return Array.isArray(product.showcase)?product.showcase.length>0:product.showcase===true; }
 
- /* Quick Menu (Price & Delivery removed from here as requested) */
+ /* Quick Menu */
  function quickMenu(id){
   let p = products().find(x=>x.id===id);
   if(!p) return;
@@ -2167,7 +2168,7 @@ window.A = (() => {
    <p style="margin:6px 0">${itemsText}</p>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
     <b>Total: ${money(o.total)}</b>
-    <span class="muted">Hold for Print &amp; Actions ⋮</span>
+    <span class="muted">Hold 1.3s for Print &amp; Actions ⋮</span>
    </div>
   </div>`;
  }
@@ -2205,7 +2206,7 @@ window.A = (() => {
  let orderTimer = null;
  function bindOrderRowLongPress(){
   document.querySelectorAll('#adminApp .orderrow').forEach(el=>{
-   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),500)},{passive:true});
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),1300)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(orderTimer));
    el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
@@ -2213,7 +2214,7 @@ window.A = (() => {
  }
  function bindOrderCardLongPress(){
   document.querySelectorAll('#adminApp .ordercard').forEach(el=>{
-   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),500)},{passive:true});
+   el.addEventListener('touchstart',()=>{orderTimer=setTimeout(()=>openOrderMenu(el.dataset.num),1300)},{passive:true});
    el.addEventListener('touchend',()=>clearTimeout(orderTimer));
    el.addEventListener('touchmove',()=>clearTimeout(orderTimer));
    el.addEventListener('contextmenu',e=>{e.preventDefault();openOrderMenu(el.dataset.num)});
@@ -2224,7 +2225,7 @@ window.A = (() => {
   let hd = document.getElementById('a_orderListHeader');
   if(!hd) return;
   let hTimer = null;
-  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),480)},{passive:true});
+  hd.addEventListener('touchstart',()=>{hTimer=setTimeout(()=>openSortPopup(),1300)},{passive:true});
   hd.addEventListener('touchend',()=>clearTimeout(hTimer));
   hd.addEventListener('touchmove',()=>clearTimeout(hTimer));
   hd.addEventListener('contextmenu',e=>{e.preventDefault();openSortPopup()});
