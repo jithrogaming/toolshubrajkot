@@ -12,7 +12,7 @@
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyBOJQSNDeu7yclNvG0WaLvgridGl7TntdM",
+    apiKey: "AIzaSyBOJQSNDeu7yclNvG0WaLvgridGL7TntdM",
     authDomain: "toolshubrajkot-515307.firebaseapp.com",
     projectId: "toolshubrajkot-515307",
     storageBucket: "toolshubrajkot-515307.firebasestorage.app",
@@ -146,6 +146,15 @@ button{cursor:pointer}
 #customerApp .qrBox{background:#f8fafc;border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:center;margin:8px 0}
 #customerApp .qrBox img{max-width:210px;max-height:210px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;padding:6px}
 #customerApp .orderBadge{font-size:10.5px;padding:3px 8px;border-radius:12px;font-weight:700;display:inline-block}
+
+/* FULL SCREEN QR PAYMENT MODAL */
+#c_fullQrModal{display:none;position:fixed;inset:0;z-index:999;background:#ffffff;color:#14263d;overflow-y:auto;padding:16px}
+#c_fullQrModal .fqrWrap{max-width:440px;margin:0 auto;min-height:calc(100vh - 32px);display:flex;flex-direction:column;justify-content:space-between}
+#c_fullQrModal .fqrTop{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d9e8f6;padding-bottom:10px}
+#c_fullQrModal .fqrCard{background:#f8fafc;border:2px solid #0756a5;border-radius:16px;padding:18px 14px;text-align:center;margin:14px 0;box-shadow:0 8px 24px rgba(7,54,108,0.1)}
+#c_fullQrModal .fqrCard img{width:min(76vw,290px);height:min(76vw,290px);object-fit:contain;background:#fff;padding:10px;border:2px solid #cbd5e1;border-radius:14px;display:block;margin:10px auto}
+#c_fullQrModal .fqrAmt{font-size:30px;font-weight:900;color:#07366c;margin:4px 0}
+#c_fullQrModal .fqrSub{font-size:12.5px;color:#475569;font-weight:700}
 
 @media(min-width:700px){
  #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
@@ -418,6 +427,22 @@ button{cursor:pointer}
   <button id="c_b_cart" onclick="C.showPage('c_cart',this)"><b>🛒</b>Cart (<span id="c_cartCount">0</span>)</button>
   <button id="c_b_profile" onclick="C.showPage('c_profile',this)"><b>♙</b>Profile</button>
  </nav>
+
+ <!-- FULL SCREEN QR PAYMENT OVERLAY -->
+ <div id="c_fullQrModal">
+  <div class="fqrWrap">
+   <div>
+    <div class="fqrTop">
+     <b style="font-size:16px;color:#07366c" id="c_fqrHeader">Scan QR Code to Pay</b>
+     <button type="button" class="ghostBtn" style="padding:6px 12px;font-size:12px" onclick="C.closeFullQrModal()">✕ Close</button>
+    </div>
+    <div class="fqrCard" id="c_fqrBody"></div>
+   </div>
+   <div style="padding-bottom:10px">
+    <button type="button" class="primary" id="c_fqrConfirmBtn" style="padding:13px;font-size:15px" onclick="C.placeOrder()">✅ Confirm &amp; Place Order</button>
+   </div>
+  </div>
+ </div>
 </div>
 
 <!-- ==================== 2. ADMIN PANEL (WHITE THEME) ==================== -->
@@ -554,7 +579,7 @@ button{cursor:pointer}
 
    <div class="panel" id="a_profileFormPanel">
     <h3 style="margin:0 0 6px">Shop Details • GST, RTO &amp; Payment QR</h3>
-    <p class="muted">Business profile, GSTIN, Care Number, UPI ID aur Payment QR Cloud (Firestore) par save honge.</p>
+    <p class="muted">Business profile, GSTIN, Care Number, COD Advance Amount, UPI ID aur Payment QR Cloud (Firestore) par save honge.</p>
     <input class="field" id="a_sellerName" placeholder="Business Name">
     <input class="field" id="a_sellerGstin" placeholder="GSTIN">
     <textarea class="field" id="a_sellerAddress" placeholder="Full RTO Return Address"></textarea>
@@ -563,6 +588,8 @@ button{cursor:pointer}
      <input class="field" id="a_sellerState" placeholder="State">
      <input class="field" id="a_invoicePrefix" placeholder="Invoice Prefix">
     </div>
+    <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">COD Advance Online Payment Amount (₹) *</label>
+    <input class="field" id="a_sellerCodAdvance" type="number" min="1" step="1" placeholder="e.g. 49">
     <input class="field" id="a_sellerUpi" placeholder="Admin UPI ID (e.g. kestore@oksbi)">
     <label style="font-size:12px;font-weight:700;display:block;margin-top:6px">Admin Payment QR Image (UPI / PhonePe / Paytm)</label>
     <div style="display:flex;align-items:center;gap:10px;margin:6px 0 12px">
@@ -632,7 +659,7 @@ window.addEventListener('hashchange', applyRoute);
 
 /* ==================== SHARED FIRESTORE STORE DATA ==================== */
 window.storeProducts = [];
-window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',upiId:'',qrImage:''};
+window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,upiId:'',qrImage:''};
 
 window.initStoreFirebase = function(){
  if (!window.db || !window.fbLib) return;
@@ -659,7 +686,7 @@ window.initStoreFirebase = function(){
 /* ==================== 1. CUSTOMER STOREFRONT APP (C) ==================== */
 window.C = (() => {
  const CART = 'kestore_cart_v1', PROFILE = 'kestore_profile_v1', ORDERS = 'kestore_orders_v1', SEQ_KEY = 'kestore_daily_seq_v1', RECENT_KEY = 'kestore_recent_search_v1';
- let showcaseIndex = 0, catFilter = '', currentDetail = null, selectedUpiApp = 'UPI';
+ let showcaseIndex = 0, catFilter = '', currentDetail = null, selectedPayMode = 'COD';
 
  function makeFallbackSVG(title, color='#07366c'){
   let label = String(title||'श्रीEstore').slice(0,22).replace(/[&<>"']/g,'');
@@ -1086,11 +1113,18 @@ window.C = (() => {
   renderCareBanners();
  }
 
+ function getCodAdvanceAmount(){
+  let s = window.storeSettings || {};
+  let amt = Number(s.codAdvance);
+  return (Number.isFinite(amt) && amt > 0) ? amt : 49;
+ }
+
  function renderCheckout(){
   let c = getCart();
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
   let pr = getProfile();
+  let codAdv = getCodAdvanceAmount();
 
   document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
    <h3>Delivery Details</h3>
@@ -1098,13 +1132,20 @@ window.C = (() => {
    <input class="field" id="c_coPhone" placeholder="Mobile Number" value="${esc(pr.phone||'')}">
    <textarea class="field" id="c_coAddress" placeholder="Full Address">${esc(pr.address||'')}</textarea>
 
-   <h3>Payment Option</h3>
+   <h3>Payment Option (Select to Open Full-Screen QR)</h3>
    <div style="margin:8px 0 12px">
-    <label class="checkrow"><input type="radio" name="c_payOpt" value="COD" checked onclick="C.togglePaymentFields('COD')"> 💵 Cash on Delivery (COD)</label>
-    <label class="checkrow"><input type="radio" name="c_payOpt" value="UPI" onclick="C.togglePaymentFields('UPI')"> 📱 UPI Scan &amp; Pay</label>
-    <label class="checkrow"><input type="radio" name="c_payOpt" value="PhonePe / Paytm" onclick="C.togglePaymentFields('PhonePe / Paytm')"> 📲 PhonePe / Paytm</label>
+    <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
+     <input type="radio" name="c_payOpt" value="COD" onclick="C.openFullQrPayment('COD')">
+     <span>💵 Cash on Delivery (COD) — <b>${money(codAdv)} Advance Online QR</b> (Baaki ${money(Math.max(0, grandTotal - codAdv))} Cash on Delivery)</span>
+    </label>
+    <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
+     <input type="radio" name="c_payOpt" value="Online" onclick="C.openFullQrPayment('Online')">
+     <span>📱 Online Payment (QR Code) — <b>Full Payment ${money(grandTotal)}</b></span>
+    </label>
    </div>
-   <div id="c_payExtraFields" style="margin-bottom:12px"></div>
+   <div id="c_payExtraFields" style="margin-bottom:12px">
+    <div class="notice">Upar diye gaye <b>COD</b> ya <b>Online Payment</b> option par click karke Full-Screen QR Code se payment karein.</div>
+   </div>
 
    <h3>Order Summary (${orderGroups.length} Separate Bills/Parcels)</h3>
    ${orderGroups.map((grp, gIdx)=>{
@@ -1115,38 +1156,70 @@ window.C = (() => {
     </div>`;
    }).join('')}
    <div class="total" style="margin-top:10px">Grand Total: ${money(grandTotal)}</div>
-   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.placeOrder()">Confirm All Orders</button>
+   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.handleCheckoutSubmit()">Proceed to QR Payment &amp; Order</button>
   </div>`;
-  togglePaymentFields('COD');
  }
 
- function togglePaymentFields(mode){
-  selectedUpiApp = mode;
-  let box = document.getElementById('c_payExtraFields');
-  if(!box) return;
+ function openFullQrPayment(mode){
+  selectedPayMode = mode;
+  let name = document.getElementById('c_coName')?.value.trim() || '';
+  let phone = document.getElementById('c_coPhone')?.value.trim() || '';
+  let address = document.getElementById('c_coAddress')?.value.trim() || '';
+  if(!name || !phone || !address){
+   alert('Pehle apna Name, Mobile Number aur Delivery Address bharein.');
+   document.querySelectorAll('input[name="c_payOpt"]').forEach(r => r.checked = false);
+   return;
+  }
+
   let s = window.storeSettings || {};
   let upiId = (s.upiId || '').trim();
   let qrImg = s.qrImage || '';
   let c = getCart(), orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((sum, grp) => sum + grp.subtotal + grp.deliveryFee, 0);
+  let codAdv = getCodAdvanceAmount();
+  let payableNow = (mode === 'COD') ? codAdv : grandTotal;
+  let remCod = Math.max(0, grandTotal - payableNow);
 
-  if(mode === 'UPI' || mode === 'PhonePe / Paytm'){
-   let upiLink = upiId ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(s.name||'KEstore')}&am=${grandTotal.toFixed(2)}&cu=INR` : '';
-   let displayQr = qrImg || (upiLink ? `https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(upiLink)}` : '');
+  let upiLink = upiId ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(s.name||'KEstore')}&am=${payableNow.toFixed(2)}&cu=INR` : '';
+  let displayQr = qrImg || (upiLink ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiLink)}` : '');
 
-   box.innerHTML = `<div class="qrBox">
-    <div style="font-weight:800;color:var(--navy);margin-bottom:6px">${esc(mode)} — Pay ${money(grandTotal)}</div>
-    ${displayQr ? `<img src="${esc(displayQr)}" alt="Payment QR" style="margin:6px auto;display:block">` : `<div class="notice">Admin UPI ID set nahi hai. Please COD chunein ya Care par call karein.</div>`}
-    ${upiId ? `<div style="margin-top:8px;font-size:13px"><b>UPI ID:</b> <code>${esc(upiId)}</code></div>
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px">
-     <a class="ghostBtn" style="text-decoration:none;font-size:12px;background:#5f259f;color:#fff;border:0" href="${esc(upiLink)}">PhonePe / UPI App ↗</a>
-     <a class="ghostBtn" style="text-decoration:none;font-size:12px;background:#00baf2;color:#fff;border:0" href="${esc(upiLink)}">Paytm / GPay ↗</a>
-    </div>` : ''}
-    <input class="field" id="c_payRef" maxlength="20" style="margin-top:10px;margin-bottom:0" placeholder="Payment ke baad 12-digit UTR / Ref No. dalein">
-   </div>`;
-  } else {
-   box.innerHTML = `<p class="small">💵 Order delivery ke samay cash payment karein (COD).</p>`;
+  let existingRef = document.getElementById('c_payRef')?.value.trim() || '';
+
+  document.getElementById('c_fqrHeader').textContent = (mode === 'COD')
+   ? `COD Advance Payment (${money(payableNow)})`
+   : `Full Online Payment (${money(payableNow)})`;
+
+  document.getElementById('c_fqrBody').innerHTML = `
+   <div class="fqrSub">${mode === 'COD' ? 'COD Order Confirm karne ke liye Advance Online Pay karein' : 'Pura Online Payment QR Code se karein'}</div>
+   <div class="fqrAmt">${money(payableNow)}</div>
+   ${mode === 'COD' ? `<div style="font-size:12px;color:#b45309;background:#fef3c7;padding:5px 8px;border-radius:8px;margin:4px 0;font-weight:700">Order Total: ${money(grandTotal)} | Advance: ${money(payableNow)} | Cash on Delivery: ${money(remCod)}</div>` : `<div style="font-size:12px;color:#166534;background:#dcfce7;padding:5px 8px;border-radius:8px;margin:4px 0;font-weight:700">100% Paid Online (Delivery par ₹0 dena hoga)</div>`}
+   ${displayQr ? `<img src="${esc(displayQr)}" alt="Scan QR Code to Pay">` : `<div class="notice" style="margin:12px 0">Admin ne abhi QR Code ya UPI ID set nahi kiya hai. Please Admin se sampark karein.</div>`}
+   ${upiId ? `<div style="font-size:13px;margin-top:4px"><b>UPI ID:</b> <code>${esc(upiId)}</code></div>` : ''}
+   <div style="text-align:left;margin-top:12px">
+    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">Payment ke baad 12-digit UTR / Transaction Ref No. dalein *</label>
+    <input class="field" id="c_payRef" maxlength="20" value="${esc(existingRef)}" placeholder="Enter 12-digit UTR / Ref No." style="margin:0;border:2px solid #0756a5">
+   </div>
+  `;
+
+  let extraBox = document.getElementById('c_payExtraFields');
+  if(extraBox){
+   extraBox.innerHTML = `<div class="notice"><b>Selected:</b> ${mode === 'COD' ? `COD (${money(payableNow)} Advance Online + ${money(remCod)} COD)` : `Online Full Payment (${money(payableNow)})`} <button type="button" class="linkBtn" style="padding:2px 6px" onclick="C.openFullQrPayment('${mode}')">Show Full QR Again ↗</button></div>`;
   }
+
+  document.getElementById('c_fullQrModal').style.display = 'block';
+ }
+
+ function closeFullQrModal(){
+  document.getElementById('c_fullQrModal').style.display = 'none';
+ }
+
+ function handleCheckoutSubmit(){
+  let chosen = document.querySelector('input[name="c_payOpt"]:checked')?.value;
+  if(!chosen){
+   alert('Please COD ya Online Payment mein se ek option chunein.');
+   return;
+  }
+  openFullQrPayment(chosen);
  }
 
  function generateOrderNumber(firstSku){
@@ -1165,27 +1238,31 @@ window.C = (() => {
 
  async function placeOrder(){
   let c = getCart(), p = getProducts();
-  let name = document.getElementById('c_coName').value.trim();
-  let phone = document.getElementById('c_coPhone').value.trim();
-  let address = document.getElementById('c_coAddress').value.trim();
-  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
+  let name = document.getElementById('c_coName')?.value.trim() || '';
+  let phone = document.getElementById('c_coPhone')?.value.trim() || '';
+  let address = document.getElementById('c_coAddress')?.value.trim() || '';
+  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || selectedPayMode;
   let payRef = document.getElementById('c_payRef')?.value.trim() || '';
 
   if(!name||!phone||!address){ alert('Please enter name, mobile and address.'); return; }
   if(!c.length){ alert('Your cart is empty.'); return; }
-  if((payOpt==='UPI' || payOpt==='PhonePe / Paytm') && payRef.length < 8){
-   alert('Please payment complete karke sahi UPI / UTR Transaction ID (kam se kam 8-12 ank) dalein.'); return;
+  if(!payOpt){ alert('Please COD ya Online Payment option chunein.'); return; }
+  if(payRef.length < 8){
+   alert('QR Code se payment complete karke sahi 12-digit UTR / Transaction Ref No. (kam se kam 8 ank) dalein.');
+   return;
   }
 
-  let btn = document.getElementById('c_confirmOrderBtn');
+  let btn = document.getElementById('c_fqrConfirmBtn');
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Placing Order...'; }
 
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
+  let codAdv = getCodAdvanceAmount();
   let localOrders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
 
   try {
-   for (const grp of orderGroups) {
+   for (let idx = 0; idx < orderGroups.length; idx++) {
+    const grp = orderGroups[idx];
     let groupTotalWithDelivery = grp.subtotal + grp.deliveryFee;
     let orderItems = [];
     for (const it of grp.items) {
@@ -1200,6 +1277,12 @@ window.C = (() => {
 
     let firstSku = orderItems[0]?.sku || 'KESTR';
     let num = generateOrderNumber(firstSku);
+    let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
+    let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
+    let payMethodLabel = (payOpt === 'COD')
+     ? `COD (Adv ₹${advancePaid} Paid, Due ₹${codDue})`
+     : `Online QR Full Paid`;
+
     let orderObj = {
      number: num,
      date: new Date().toLocaleString(),
@@ -1207,8 +1290,10 @@ window.C = (() => {
      status: 'Pending',
      total: groupTotalWithDelivery,
      deliveryFee: grp.deliveryFee,
-     paymentMethod: payOpt,
+     paymentMethod: payMethodLabel,
      paymentRef: payRef,
+     advancePaid: advancePaid,
+     codBalanceDue: codDue,
      isB2B: grp.isB2B,
      customer: { name, phone, address },
      items: orderItems
@@ -1223,17 +1308,19 @@ window.C = (() => {
    localStorage.setItem(ORDERS, JSON.stringify(localOrders));
    localStorage.setItem(PROFILE, JSON.stringify({ name, phone, address, email:getProfile().email||'' }));
    saveCart([]);
+   closeFullQrModal();
 
+   let paidNowSummary = (payOpt === 'COD') ? codAdv : grandTotal;
    document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
     <h2>Orders Confirmed Successfully!</h2>
     <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to KEstore.</p>
-    <p>Grand Total: <b>${money(grandTotal)}</b> via <b>${esc(payOpt)}</b>${payRef ? ` (Ref: <code>${esc(payRef)}</code>)` : ''}</p>
+    <p>Grand Total: <b>${money(grandTotal)}</b> • Paid Online: <b>${money(paidNowSummary)}</b> (${esc(payOpt)}) • UTR Ref: <code>${esc(payRef)}</code></p>
     <button class="primary" onclick="C.showPage('c_profile')">View My Orders</button>
    </div>`;
   } catch(err){
    console.error('Place order failed:', err);
    alert('Order failed: ' + err.message);
-   if(btn){ btn.disabled = false; btn.textContent = 'Confirm All Orders'; }
+   if(btn){ btn.disabled = false; btn.textContent = '✅ Confirm & Place Order'; }
   }
  }
 
@@ -1247,7 +1334,7 @@ window.C = (() => {
   onProductsUpdated(){ renderHome(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
   onSettingsUpdated(){ renderCareBanners(); },
   showPage, openDetails, handleDetailQtyChange, addToCart, addFromCard, toggleCardAction, changeQty, removeCart,
-  renderCart, renderCheckout, togglePaymentFields, placeOrder, openCategory,
+  renderCart, renderCheckout, openFullQrPayment, closeFullQrModal, handleCheckoutSubmit, placeOrder, openCategory,
   searchNow, searchFromPage, openSearchTab, renderListing, saveProfile, toggleProfileForm,
   init(){ renderCats(); renderHome(); updateCartCount(); }
  };
@@ -1257,7 +1344,7 @@ C.init();
 /* ==================== 2. ADMIN PANEL APP (A - WHITE THEME) ==================== */
 window.A = (() => {
  const NOTES = 'kestore_notes_v1';
- let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',upiId:'',qrImage:''};
+ let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,upiId:'',qrImage:''};
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
@@ -1641,7 +1728,7 @@ window.A = (() => {
    if(src){
     let urlInput=document.getElementById(`a_imageUrl${i}`);
     if(urlInput&&!src.startsWith('data:image/')) urlInput.value=src;
-    showUploadPreview(i, src);
+    if(!src.startsWith('data:image/')) showUploadPreview(i, src);
    }
   });
  }
@@ -1715,14 +1802,7 @@ window.A = (() => {
  async function processProductImage(file,index){
   if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); return; }
   if(file.size>20*1024*1024){ alert('Image too large (max 20 MB).'); return; }
-  if(!CLOUDFLARE_WORKER_UPLOAD_URL){
-   const compressedDataUrl = await smartCompressImage(file, 720);
-   productUploadImages[index] = compressedDataUrl;
-   const urlInput = document.getElementById(`a_imageUrl${index}`);
-   if(urlInput) urlInput.value = "";
-   showUploadPreview(index, compressedDataUrl);
-   return;
-  }
+  if(!CLOUDFLARE_WORKER_UPLOAD_URL){ alert('Set CLOUDFLARE_WORKER_UPLOAD_URL in the admin code before uploading files. You can paste a public image URL instead.'); return; }
   try{
    const compressed=await compressForWorker(file);
    const formData=new FormData();
@@ -1777,7 +1857,7 @@ window.A = (() => {
   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
   if(!validateProductPricing()){ goProductStep(2); return; }
-  if(withPhotos && productUploadImages.some(src=>src && !/^(https?:\/\/|data:image\/)/i.test(src))){ alert('Photo URL me valid https:// link dalein ya Upload File button se photo chunein.'); goProductStep(3); return; }
+  if(withPhotos && productUploadImages.some(src=>src && !/^https?:\/\//i.test(src))){ alert('Photo URLs must be public HTTP/HTTPS links.'); goProductStep(3); return; }
 
   let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
   let hsn=document.getElementById('a_fHsn').value.trim();
@@ -1792,7 +1872,7 @@ window.A = (() => {
     finalImages=productUploadImages.filter(Boolean).slice(0,4);
    }else{
     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:[]);
-    finalImages=keepImages.filter(src=>typeof src==='string'&&/^(https?:\/\/|data:image\/)/i.test(src)).slice(0,4);
+    finalImages=keepImages.filter(src=>typeof src==='string'&&/^https?:\/\//i.test(src)).slice(0,4);
    }
    let x={
     id,name,sku,cat:document.getElementById('a_fCat').value,
@@ -1841,7 +1921,7 @@ window.A = (() => {
     <b>Order No: ${esc(o.number)}</b>
     <span class="badge">${esc(o.status||'Pending')}</span>
    </div>
-   <div class="muted" style="margin-top:4px">${esc(o.date)} • Pay: <b>${esc(o.paymentMethod||'COD')}</b>${o.paymentRef?` (${esc(o.paymentRef)})`:''} • Del: ${money(o.deliveryFee||0)}</div>
+   <div class="muted" style="margin-top:4px">${esc(o.date)} • Pay: <b>${esc(o.paymentMethod||'COD')}</b>${o.paymentRef?` (UTR: ${esc(o.paymentRef)})`:''} • Del: ${money(o.deliveryFee||0)}</div>
    <p style="margin:8px 0 4px"><b>${esc(o.customer?.name||'Customer')}</b> • ${esc(o.customer?.phone||'')}</p>
    <p class="muted" style="margin:0 0 8px">${esc(o.customer?.address||'')}</p>
    <p style="margin:6px 0">${itemsText}</p>
@@ -1858,7 +1938,7 @@ window.A = (() => {
    <td><b>${esc(o.number)}</b>${o.isB2B?' <span class="badge" style="background:#fef3c7;color:#b45309;font-size:9px">B2B</span>':''}</td>
    <td><span class="muted">${esc(o.date)}</span></td>
    <td><b>${esc(o.customer?.name||'Customer')}</b><br><span class="muted">${esc(o.customer?.phone||'')}</span></td>
-   <td><b>${money(o.total)}</b></td>
+   <td><b>${money(o.total)}</b><br><span class="muted" style="font-size:10px">${esc(o.paymentMethod||'')}</span></td>
    <td><span class="badge">${esc(o.status||'Pending')}</span></td>
   </tr>`;
  }
@@ -1870,7 +1950,7 @@ window.A = (() => {
   let q = (document.getElementById('a_orderSearch').value||'').toLowerCase(), f = document.getElementById('a_orderFilter').value;
   let o = readOrders().filter(x=>{
    let stMatch = (f==='all') || (x.status||'Pending').toLowerCase().includes(f.toLowerCase());
-   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
+   let searchStr = (x.number+' '+(x.customer?.name||'')+' '+(x.customer?.phone||'')+' '+(x.paymentRef||'')+' '+(x.items||[]).map(i=>{let p=products().find(a=>a.id===i.id);return (i.sku||p?.sku||'')+' '+(i.name||p?.name||'')}).join(' ')).toLowerCase();
    return stMatch && searchStr.includes(q);
   });
   if(orderSort==='name') o.sort((a,b)=>getOrderFirstName(a).localeCompare(getOrderFirstName(b)));
@@ -2060,7 +2140,7 @@ window.A = (() => {
    <div style="border-bottom:2px solid #000;padding-bottom:8px">
     <div style="font-size:22px;font-weight:900">${esc(bName)}</div>
     <div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:17px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B PARCEL</span>':''}</div>
-    <div style="font-size:11px;margin-top:2px">Date: ${esc(o.date)} | Delivery Fee: ${money(o.deliveryFee||0)}</div>
+    <div style="font-size:11px;margin-top:2px">Date: ${esc(o.date)} | Payment: <b>${esc(o.paymentMethod||'COD')}</b></div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
      <div style="flex:1;min-width:0">${generateBarcodeSVG(o.number)}<div style="font-family:monospace;font-size:11px;font-weight:900;letter-spacing:1.5px;margin-top:2px">${esc(o.number)}</div></div>
      <div>${generateOfflineQRSVG(o.number)}</div>
@@ -2166,6 +2246,7 @@ window.A = (() => {
   document.getElementById('a_sellerPhone').value = s.phone||'';
   document.getElementById('a_sellerState').value = s.state||'';
   document.getElementById('a_invoicePrefix').value = s.prefix||'';
+  document.getElementById('a_sellerCodAdvance').value = s.codAdvance || 49;
   document.getElementById('a_sellerUpi').value = s.upiId||'';
   let qrPrev = document.getElementById('a_qrPreviewImg');
   if(s.qrImage){ qrPrev.src=s.qrImage; qrPrev.style.display='block'; tempQrImage=s.qrImage; }
@@ -2234,6 +2315,11 @@ window.A = (() => {
  }
 
  async function saveGSTSettings(){
+  let codAdvVal = Number(document.getElementById('a_sellerCodAdvance').value);
+  if(!Number.isFinite(codAdvVal) || codAdvVal < 1){
+   alert('Please valid COD Advance Amount (₹) dalein.');
+   return;
+  }
   const newSettings = {
    name: document.getElementById('a_sellerName').value.trim() || 'KEstore (Tools Hub Rajkot)',
    gstin: document.getElementById('a_sellerGstin').value.trim(),
@@ -2241,6 +2327,7 @@ window.A = (() => {
    phone: document.getElementById('a_sellerPhone').value.trim(),
    state: document.getElementById('a_sellerState').value.trim(),
    prefix: document.getElementById('a_invoicePrefix').value.trim(),
+   codAdvance: codAdvVal,
    upiId: document.getElementById('a_sellerUpi').value.trim(),
    qrImage: tempQrImage
   };
