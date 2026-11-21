@@ -156,6 +156,8 @@ button{cursor:pointer}
 #c_fullQrModal .fqrCard img{width:min(76vw,290px);height:min(76vw,290px);object-fit:contain;background:#fff;padding:10px;border:2px solid #cbd5e1;border-radius:14px;display:block;margin:10px auto}
 #c_fullQrModal .fqrAmt{font-size:30px;font-weight:900;color:#07366c;margin:4px 0}
 #c_fullQrModal .fqrSub{font-size:12.5px;color:#475569;font-weight:700}
+#c_fullQrModal .proofBox{margin-top:10px;padding:10px;border:1.5px dashed #0756a5;border-radius:10px;background:#f1f7fd;text-align:left}
+#c_fullQrModal .proofPreview{max-width:120px;max-height:120px;border-radius:8px;border:1px solid #cbd5e1;margin-top:6px;display:none}
 
 @media(min-width:700px){
  #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
@@ -492,7 +494,7 @@ button{cursor:pointer}
 
   <section id="a_today" class="a-page">
    <h2 class="title">Today's Orders</h2>
-   <p class="muted">Tip: Long-press (5s) any order for Print (Label / Invoice) &amp; Status options.</p>
+   <p class="muted">Tip: Long-press (5s) any order for Print (Label / Invoice), Payment Screenshot &amp; Status options.</p>
    <div id="a_todayOrders"></div>
   </section>
 
@@ -550,7 +552,7 @@ button{cursor:pointer}
      <option>Pending</option>
     </select>
    </div>
-   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 5 sec Long-press karein.</p>
+   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print, Payment Screenshot &amp; Status menu ke liye row par 5 sec Long-press karein.</p>
    <div class="tablewrap">
     <table>
      <thead>
@@ -711,7 +713,7 @@ window.initStoreFirebase = function(){
 /* ==================== 1. CUSTOMER STOREFRONT APP (C) ==================== */
 window.C = (() => {
  const CART = 'kestore_cart_v1', PROFILE = 'kestore_profile_v1', ORDERS = 'kestore_orders_v1', SEQ_KEY = 'kestore_daily_seq_v1', RECENT_KEY = 'kestore_recent_search_v1';
- let showcaseIndex = 0, catFilter = '', currentDetail = null, selectedPayMode = 'COD';
+ let showcaseIndex = 0, catFilter = '', currentDetail = null, selectedPayMode = 'COD', paymentProofData = '';
 
  function makeFallbackSVG(title, color='#07366c'){
   let label = String(title||'श्रीEstore').slice(0,22).replace(/[&<>"']/g,'');
@@ -1243,6 +1245,65 @@ window.C = (() => {
   return { err, name, phone, street, landmark, pincode, city, state, fullAddress: buildFullAddress({street, landmark, city, state, pincode}) };
  }
 
+ function compressPaymentScreenshot(file){
+  return new Promise((resolve, reject) => {
+   let reader = new FileReader();
+   reader.onerror = () => reject(new Error('Could not read screenshot'));
+   reader.onload = () => {
+    let img = new Image();
+    img.onerror = () => reject(new Error('Invalid screenshot image'));
+    img.onload = () => {
+     let scale = Math.min(1, 720 / Math.max(img.naturalWidth, img.naturalHeight));
+     let canvas = document.createElement('canvas');
+     canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+     canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+     let ctx = canvas.getContext('2d');
+     ctx.fillStyle = '#ffffff';
+     ctx.fillRect(0, 0, canvas.width, canvas.height);
+     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+     let q = 0.72;
+     let out = canvas.toDataURL('image/webp', q);
+     if(!out.startsWith('data:image/webp')) out = canvas.toDataURL('image/jpeg', q);
+     while(out.length > 65000 && q > 0.3){
+      q -= 0.1;
+      out = out.startsWith('data:image/webp') ? canvas.toDataURL('image/webp', q) : canvas.toDataURL('image/jpeg', q);
+     }
+     resolve(out);
+    };
+    img.src = reader.result;
+   };
+   reader.readAsDataURL(file);
+  });
+ }
+
+ async function handlePaymentProofUpload(input){
+  let file = input.files?.[0];
+  input.value = '';
+  if(!file || !file.type.startsWith('image/')){ alert('Please valid payment screenshot image select karein.'); return; }
+  let st = document.getElementById('c_proofStatus');
+  if(st) st.textContent = '⏳ Loading screenshot...';
+  try{
+   paymentProofData = await compressPaymentScreenshot(file);
+   let prev = document.getElementById('c_proofPreviewImg');
+   if(prev){ prev.src = paymentProofData; prev.style.display = 'block'; }
+   if(st) st.textContent = '✅ Screenshot attached!';
+  }catch(err){
+   alert('Screenshot load failed: ' + err.message);
+  }
+ }
+
+ function validateStrictUtr(utr){
+  let clean = String(utr||'').trim();
+  if(!/^\d{12}$/.test(clean)){
+   return 'Please sahi 12 ankon (digits) ka UTR / UPI Ref No. dalein (sirf 12 numbers allowed hain).';
+  }
+  // Block fake/dummy patterns like 111111111111, 000000000000, 123456789012, 987654321098
+  if(/^(\d)\1{11}$/.test(clean) || clean === '123456789012' || clean === '012345678901' || clean === '987654321098'){
+   return 'Yeh nakli (dummy) UTR number hai! Kripya asli UPI payment receipt ka 12-digit UTR dalein.';
+  }
+  return '';
+ }
+
  function openFullQrPayment(mode){
   selectedPayMode = mode;
   let addr = getCheckoutAddressData();
@@ -1277,8 +1338,14 @@ window.C = (() => {
    ${displayQr ? `<img src="${esc(displayQr)}" alt="Scan QR Code to Pay">` : `<div class="notice" style="margin:12px 0">Admin ne abhi QR Code ya UPI ID set nahi kiya hai. Please Admin se sampark karein.</div>`}
    ${upiId ? `<div style="font-size:13px;margin-top:4px"><b>UPI ID:</b> <code>${esc(upiId)}</code></div>` : ''}
    <div style="text-align:left;margin-top:12px">
-    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">Payment ke baad 12-digit UTR / Transaction Ref No. dalein *</label>
-    <input class="field" id="c_payRef" maxlength="20" value="${esc(existingRef)}" placeholder="Enter 12-digit UTR / Ref No." style="margin:0;border:2px solid #0756a5">
+    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">1. Payment ke baad Exact 12-digit UTR / UPI Ref No. dalein *</label>
+    <input class="field" id="c_payRef" type="tel" maxlength="12" inputmode="numeric" value="${esc(existingRef)}" placeholder="Enter 12-digit UTR Number" style="margin:0;border:2px solid #0756a5">
+   </div>
+   <div class="proofBox">
+    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:5px;color:#07366c">2. Payment Screenshot Upload Karein (Compulsory) *</label>
+    <input type="file" accept="image/*" onchange="C.handlePaymentProofUpload(this)">
+    <div id="c_proofStatus" class="small" style="margin-top:4px;font-weight:700;color:#0756a5">${paymentProofData ? '✅ Screenshot attached!' : 'Receipt screenshot upload karna zaroori hai.'}</div>
+    <img id="c_proofPreviewImg" class="proofPreview" src="${esc(paymentProofData)}" style="${paymentProofData ? 'display:block' : ''}" alt="Payment Proof">
    </div>
   `;
 
@@ -1325,17 +1392,36 @@ window.C = (() => {
   if(addr.err){ alert(addr.err); return; }
 
   let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || selectedPayMode;
-  let payRef = document.getElementById('c_payRef')?.value.trim() || '';
+  let payRef = (document.getElementById('c_payRef')?.value.trim() || '').replace(/\D/g,'');
 
   if(!c.length){ alert('Your cart is empty.'); return; }
   if(!payOpt){ alert('Please COD ya Online Payment option chunein.'); return; }
-  if(payRef.length < 8){
-   alert('QR Code se payment complete karke sahi 12-digit UTR / Transaction Ref No. (kam se kam 8 ank) dalein.');
+
+  let utrErr = validateStrictUtr(payRef);
+  if(utrErr){ alert(utrErr); return; }
+
+  if(!paymentProofData){
+   alert('Please UPI payment ka screenshot upload karein — bina screenshot ke order confirm nahi hoga.');
    return;
   }
 
   let btn = document.getElementById('c_fqrConfirmBtn');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Placing Order...'; }
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Verifying UTR & Placing Order...'; }
+
+  // Check if UTR was already used in Firestore (Duplicate UTR Block)
+  try {
+   if(window.db && window.fbLib){
+    const utrDocRef = window.fbLib.doc(window.db, "used_utrs", payRef);
+    const utrSnap = await window.fbLib.getDoc(utrDocRef);
+    if(utrSnap.exists()){
+     alert('⚠️ Yeh UTR number (' + payRef + ') pehle hi kisi order mein use ho chuka hai! Purana ya duplicate UTR allowed nahi hai.');
+     if(btn){ btn.disabled = false; btn.textContent = '✅ Confirm & Place Order'; }
+     return;
+    }
+   }
+  } catch(checkErr){
+   console.warn('UTR duplicate check skipped (check Firestore rules for used_utrs):', checkErr);
+  }
 
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
@@ -1343,6 +1429,7 @@ window.C = (() => {
   let localOrders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
 
   try {
+   let createdOrderNums = [];
    for (let idx = 0; idx < orderGroups.length; idx++) {
     const grp = orderGroups[idx];
     let groupTotalWithDelivery = grp.subtotal + grp.deliveryFee;
@@ -1359,6 +1446,7 @@ window.C = (() => {
 
     let firstSku = orderItems[0]?.sku || 'KESTR';
     let num = generateOrderNumber(firstSku);
+    createdOrderNums.push(num);
     let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
     let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
     let payMethodLabel = (payOpt === 'COD')
@@ -1375,6 +1463,7 @@ window.C = (() => {
      deliveryFee: grp.deliveryFee,
      paymentMethod: payMethodLabel,
      paymentRef: payRef,
+     paymentScreenshot: idx === 0 ? paymentProofData : '',
      advancePaid: advancePaid,
      codBalanceDue: codDue,
      isB2B: grp.isB2B,
@@ -1397,6 +1486,18 @@ window.C = (() => {
     localOrders.unshift(orderObj);
    }
 
+   // Record this UTR in used_utrs so it can never be reused
+   if(window.db && window.fbLib){
+    try{
+     await window.fbLib.setDoc(window.fbLib.doc(window.db, "used_utrs", payRef), {
+      utr: payRef,
+      orderNumbers: createdOrderNums,
+      phone: addr.phone,
+      createdAt: Date.now()
+     });
+    }catch(e){ console.warn('Could not save used_utrs:', e); }
+   }
+
    localStorage.setItem(ORDERS, JSON.stringify(localOrders));
    localStorage.setItem(PROFILE, JSON.stringify({
     name: addr.name,
@@ -1409,12 +1510,13 @@ window.C = (() => {
     state: addr.state,
     address: addr.fullAddress
    }));
+   paymentProofData = '';
    saveCart([]);
    closeFullQrModal();
 
    let paidNowSummary = (payOpt === 'COD') ? codAdv : grandTotal;
    document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
-    <h2>Orders Confirmed Successfully!</h2>
+    <h2>Orders Submitted (Pending Payment Verification)</h2>
     <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to KEstore.</p>
     <p>Grand Total: <b>${money(grandTotal)}</b> • Paid Online: <b>${money(paidNowSummary)}</b> (${esc(payOpt)}) • UTR Ref: <code>${esc(payRef)}</code></p>
     <p class="small"><b>Delivery Address:</b> ${esc(addr.fullAddress)}</p>
@@ -1437,7 +1539,7 @@ window.C = (() => {
   onProductsUpdated(){ renderHome(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
   onSettingsUpdated(){ renderCareBanners(); },
   showPage, openDetails, handleDetailQtyChange, addToCart, addFromCard, toggleCardAction, changeQty, removeCart,
-  renderCart, renderCheckout, openFullQrPayment, closeFullQrModal, handleCheckoutSubmit, placeOrder, openCategory,
+  renderCart, renderCheckout, openFullQrPayment, closeFullQrModal, handleCheckoutSubmit, handlePaymentProofUpload, placeOrder, openCategory,
   searchNow, searchFromPage, openSearchTab, renderListing, saveProfile, toggleProfileForm,
   init(){ renderCats(); renderHome(); updateCartCount(); }
  };
@@ -1452,7 +1554,7 @@ window.A = (() => {
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
  let tempQrImage = '';
- let activeCellEdit = null; // { id, field }
+ let activeCellEdit = null;
  let selectedMoveProdId = null;
 
  function products(){ return cloudProducts; }
@@ -1875,7 +1977,6 @@ window.A = (() => {
 
  let pressTimer=null, longTriggered=false;
  function bindProductLongPress(){
-  // Only 1. Kram keeps 5.0s long-press for Product Actions (Move, Live, Showcase, Duplicate, Delete)
   document.querySelectorAll('#adminApp .kramCell').forEach(cell=>{
    let pid = cell.dataset.id;
    cell.addEventListener('touchstart',()=>{
@@ -1891,7 +1992,6 @@ window.A = (() => {
 
  function isShowcased(product){ return Array.isArray(product.showcase)?product.showcase.length>0:product.showcase===true; }
 
- /* Product Actions Menu on 1. Kram Long Press (Move + Live + Showcase + Duplicate + Delete) */
  function quickMenu(id){
   let p = products().find(x=>x.id===id);
   if(!p) return;
@@ -2254,7 +2354,7 @@ window.A = (() => {
    <p style="margin:6px 0">${itemsText}</p>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
     <b>Total: ${money(o.total)}</b>
-    <span class="muted">Hold 5s for Print &amp; Actions ⋮</span>
+    <span class="muted">Hold 5s for Print, Proof &amp; Actions ⋮</span>
    </div>
   </div>`;
  }
@@ -2334,13 +2434,22 @@ window.A = (() => {
  }
  function applyOrderSort(k){ orderSort=k; closeQuick(); renderOrders(); }
 
+ function viewPaymentProof(num){
+  let o = readOrders().find(x=>x.number===num);
+  if(!o) return;
+  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Payment Proof — Order ${esc(o.number)}</h3>
+   <p><b>UTR / Ref No:</b> <code>${esc(o.paymentRef||'N/A')}</code> • <b>Method:</b> ${esc(o.paymentMethod||'')}</p>
+   ${o.paymentScreenshot ? `<img src="${esc(o.paymentScreenshot)}" style="width:100%;max-height:70vh;object-fit:contain;border:1px solid #cbd5e1;border-radius:10px" alt="Payment Receipt">` : '<p class="muted">Is order mein screenshot attach nahi hai.</p>'}`);
+ }
+
  function openOrderMenu(num){
   let o = readOrders().find(x=>x.number===num);
   if(!o) return;
   document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
    <div class="quick" onclick="event.stopPropagation()">
     <h3>Order No: ${esc(o.number)}</h3>
-    <div class="qsec">PRINT</div>
+    <div class="qsec">PAYMENT &amp; PRINT</div>
+    <button onclick="A.closeQuick();A.viewPaymentProof('${esc(o.number)}')">🖼️ View Payment Screenshot (UTR: ${esc(o.paymentRef||'-')})</button>
     <button onclick="A.closeQuick();A.printParcelLabel('${esc(o.number)}')">1. 🏷️ Label Print</button>
     <button onclick="A.closeQuick();A.printBillInvoice('${esc(o.number)}')">2. 🧾 Bill Print</button>
     <div class="qsec">ORDER STATUS</div>
@@ -2740,7 +2849,7 @@ window.A = (() => {
   startSingleCellEdit, cancelSingleCellEdit, commitSingleCellEdit, commitDeliveryCellEdit,
   selectProductForMove, moveProductPosition,
   closeModal, closeQuick, toggleShowcase, toggleLive, deleteProd,
-  renderProducts, renderOrders, applyOrderSort, moveOrderPosition, setOrderStatus, deleteOrder,
+  renderProducts, renderOrders, applyOrderSort, moveOrderPosition, viewPaymentProof, setOrderStatus, deleteOrder,
   printParcelLabel, printBillInvoice, printGSTReturnPDF, exportGST,
   closePrintView, downloadCurrentPDF, triggerDevicePrint,
   handleQrUpload, clearQrImage, saveGSTSettings, renderGST,
