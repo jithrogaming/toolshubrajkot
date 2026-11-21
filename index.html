@@ -210,16 +210,18 @@ button{cursor:pointer}
 #adminApp .stockGood{color:#16a34a;font-weight:800}
 #adminApp .stockLow{color:#dc2626;font-weight:800}
 
-/* 11-COLUMN WIDE PRODUCT TABLE & SINGLE-CELL INLINE EDIT + MOVE */
+/* 11-COLUMN WIDE PRODUCT TABLE & PEN-ICON CELL EDIT + KRAM MOVE */
 #adminApp .productrow{touch-action:pan-x pan-y;user-select:none}
 #adminApp .productrow:hover{background:#f8fafc}
 #adminApp .productrow.selectedMoveRow{background:#eaf4ff}
-#adminApp .productTable{min-width:1280px;width:max-content}
+#adminApp .productTable{min-width:1320px;width:max-content}
 #adminApp .productTable th,#adminApp .productTable td{vertical-align:middle;padding:9px 8px;white-space:nowrap}
-#adminApp .productTable td.colName{min-width:210px;max-width:260px;white-space:normal}
+#adminApp .productTable td.colName{min-width:225px;max-width:275px;white-space:normal}
 #adminApp .productTable td.openFormCell{cursor:pointer}
-#adminApp .productTable td.editCell{cursor:pointer;position:relative}
 #adminApp .productTable td.editingCell{background:#fffbeb;user-select:auto}
+#adminApp .cellValWrap{display:flex;align-items:center;justify-content:space-between;gap:6px}
+#adminApp .penEditBtn{min-height:26px!important;min-width:26px!important;padding:2px 5px!important;border-radius:6px;border:1px solid #cbd5e1;background:#f8fafc;color:#0756a5;font-size:11px!important;line-height:1;flex-shrink:0}
+#adminApp .penEditBtn:active{background:#dbeafe}
 #adminApp .productThumb{width:46px;height:46px;object-fit:cover;border-radius:7px;background:#f1f5f9;border:1px solid #e5e7eb;display:block}
 #adminApp .inlineInp{width:100%;min-width:78px;padding:6px 7px;border:2px solid #0756a5;border-radius:6px;background:#fff;color:#111827;font-size:12px;font-weight:700}
 #adminApp .inlineInp.wide{min-width:190px}
@@ -290,7 +292,7 @@ button{cursor:pointer}
 }
 
 /* Responsive, touch-friendly admin controls */
-#adminApp button:not(.bottom button):not(.imgClearBtn):not(.moveBtn){min-height:46px}
+#adminApp button:not(.bottom button):not(.imgClearBtn):not(.moveBtn):not(.penEditBtn){min-height:46px}
 #adminApp .btn{padding:12px 16px;font-size:14px}
 #adminApp .row{flex-wrap:wrap;align-items:stretch}
 #adminApp .row>*{flex:1 1 220px}
@@ -497,13 +499,13 @@ button{cursor:pointer}
   <section id="a_stock" class="a-page"><h2 class="title">Total Stock</h2><div id="a_stockList"></div></section>
   <section id="a_lowstock" class="a-page"><h2 class="title">Low Stock Products (≤ 5)</h2><div id="a_lowList"></div></section>
 
-  <!-- 2. PRODUCT LIST (11 COLUMNS + SINGLE-CELL LONG PRESS AUTO-SAVE + KRAM ACTIONS & MOVE) -->
+  <!-- 2. PRODUCT LIST (11 COLUMNS + PEN ICON CELL EDIT + KRAM ACTIONS & MOVE) -->
   <section id="a_products" class="a-page">
    <div class="headFlex">
     <h2 class="title">Product List (11-Column Sheet)</h2>
     <button class="btn" onclick="A.newProduct()">+ New Product</button>
    </div>
-   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>5 sec long-press</b> karne se Move, Live, Showcase, Duplicate &amp; Delete options khulenge. Kisi bhi column box par <b>5 sec long-press</b> karke sirf usi box ko edit karein.</p>
+   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>5 sec long-press</b> karne se Move, Live, Showcase, Duplicate &amp; Delete options khulenge. Kisi bhi box ko edit karne ke liye uske <b>✏️ Pen icon</b> par tap karein.</p>
    <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
    <div class="tablewrap">
     <table class="productTable">
@@ -1652,7 +1654,7 @@ window.A = (() => {
   bindOrderCardLongPress();
  }
 
- /* ==================== 11-COLUMN PRODUCT LIST: SINGLE-CELL EDIT & KRAM ACTIONS/MOVE ==================== */
+ /* ==================== 11-COLUMN PRODUCT LIST: PEN ICON CELL EDIT & KRAM ACTIONS/MOVE ==================== */
  function getCustomProdSeq(){
   return JSON.parse(localStorage.getItem(PROD_SEQ_KEY) || '[]');
  }
@@ -1716,6 +1718,10 @@ window.A = (() => {
   }
  }
 
+ function penBtn(id, field, title){
+  return `<button type="button" class="penEditBtn" onclick="event.stopPropagation();A.startSingleCellEdit('${id}','${field}')" title="${title}">✏️</button>`;
+ }
+
  function rowHTML(p, index=1, totalCount=1){
   let id = esc(p.id);
   let image = (p.images||[]).find(Boolean) || p.image || '';
@@ -1745,42 +1751,42 @@ window.A = (() => {
 
   let nameCell = isEd('name')
    ? `<td class="colName editingCell"><input class="inlineInp wide" id="singleCellInp" value="${esc(p.name)}" onblur="A.commitSingleCellEdit('${id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="colName editCell" data-id="${id}" data-field="name"><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></td>`;
+   : `<td class="colName"><div class="cellValWrap"><div><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></div>${penBtn(id,'name','Edit Product Name')}</div></td>`;
 
   let skuCell = isEd('sku')
    ? `<td class="editingCell"><input class="inlineInp med" id="singleCellInp" value="${esc(p.sku)}" onblur="A.commitSingleCellEdit('${id}','sku',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="editCell" data-id="${id}" data-field="sku"><code>${esc(p.sku)}</code></td>`;
+   : `<td><div class="cellValWrap"><code>${esc(p.sku)}</code>${penBtn(id,'sku','Edit SKU')}</div></td>`;
 
   let stockCell = isEd('stock')
    ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step="1" value="${Number(p.stock)||0}" onblur="A.commitSingleCellEdit('${id}','stock',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="editCell" data-id="${id}" data-field="stock"><span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out (0)':p.stock}</span></td>`;
+   : `<td><div class="cellValWrap"><span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out (0)':p.stock}</span>${penBtn(id,'stock','Edit Stock')}</div></td>`;
 
   let sellerCell = isEd('sellerPrice')
    ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${sellerPriceVal}" onblur="A.commitSingleCellEdit('${id}','sellerPrice',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="editCell" data-id="${id}" data-field="sellerPrice"><b>₹${sellerPriceVal}</b></td>`;
+   : `<td><div class="cellValWrap"><b>₹${sellerPriceVal}</b>${penBtn(id,'sellerPrice','Edit Seller Price')}</div></td>`;
 
   let mrpCell = isEd('mrp')
    ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${mrpVal}" onblur="A.commitSingleCellEdit('${id}','mrp',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="editCell" data-id="${id}" data-field="mrp"><span style="text-decoration:line-through;color:#6b7280">₹${mrpVal}</span></td>`;
+   : `<td><div class="cellValWrap"><span style="text-decoration:line-through;color:#6b7280">₹${mrpVal}</span>${penBtn(id,'mrp','Edit MRP')}</div></td>`;
 
   let b2cCell = isEd('price')
    ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${b2cVal}" onblur="A.commitSingleCellEdit('${id}','price',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="editCell" data-id="${id}" data-field="price"><b style="color:#07366c">₹${b2cVal}</b></td>`;
+   : `<td><div class="cellValWrap"><b style="color:#07366c">₹${b2cVal}</b>${penBtn(id,'price','Edit B2C Price')}</div></td>`;
 
   let b2bCell = isEd('b2bPrice')
    ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${b2bVal}" onblur="A.commitSingleCellEdit('${id}','b2bPrice',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="editCell" data-id="${id}" data-field="b2bPrice"><b style="color:#d97706">₹${b2bVal}</b><div class="muted">${p.b2bMinQty||10}+ Qty</div></td>`;
+   : `<td><div class="cellValWrap"><div><b style="color:#d97706">₹${b2bVal}</b><div class="muted">${p.b2bMinQty||10}+ Qty</div></div>${penBtn(id,'b2bPrice','Edit B2B Price')}</div></td>`;
 
   let gstCell = isEd('gstRate')
    ? `<td class="editingCell"><select class="inlineInp" id="singleCellInp" onchange="A.commitSingleCellEdit('${id}','gstRate',this.value)" onblur="A.cancelSingleCellEdit()">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==gstRateVal?'selected':''}>${v}%</option>`).join('')}</select></td>`
-   : `<td class="editCell" data-id="${id}" data-field="gstRate"><b>₹${gstPerPc.toFixed(2)}</b><div class="muted">(${gstRateVal}%)</div></td>`;
+   : `<td><div class="cellValWrap"><div><b>₹${gstPerPc.toFixed(2)}</b><div class="muted">(${gstRateVal}%)</div></div>${penBtn(id,'gstRate','Edit GST Rate')}</div></td>`;
 
   let delCell = isEd('delivery')
    ? `<td class="editingCell"><div style="display:flex;gap:4px">
       <input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${delB2c}" placeholder="B2C" onkeydown="if(event.key==='Enter')document.getElementById('singleCellInpB2B').focus()">
       <input class="inlineInp" id="singleCellInpB2B" type="number" min="0" step=".01" value="${delB2b}" placeholder="B2B" onblur="A.commitDeliveryCellEdit('${id}')" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()">
      </div></td>`
-   : `<td class="editCell" data-id="${id}" data-field="delivery"><b>₹${delB2c}</b> / <span style="color:#d97706">₹${delB2b}</span><div class="muted">B2C / B2B</div></td>`;
+   : `<td><div class="cellValWrap"><div><b>₹${delB2c}</b> / <span style="color:#d97706">₹${delB2b}</span><div class="muted">B2C / B2B</div></div>${penBtn(id,'delivery','Edit Delivery Charges')}</div></td>`;
 
   return `<tr class="productrow ${isMoveSel?'selectedMoveRow':''}" data-id="${id}">
    ${kramCell}
@@ -1869,19 +1875,7 @@ window.A = (() => {
 
  let pressTimer=null, longTriggered=false;
  function bindProductLongPress(){
-  // 1. Long press (5.0s = 5000ms) on individual editable cells -> edits ONLY that box
-  document.querySelectorAll('#adminApp .editCell').forEach(cell=>{
-   let pid = cell.dataset.id, fld = cell.dataset.field;
-   cell.addEventListener('touchstart',()=>{
-    longTriggered = false;
-    pressTimer = setTimeout(()=>{ longTriggered = true; startSingleCellEdit(pid, fld); }, 5000);
-   },{passive:true});
-   cell.addEventListener('touchend',()=>clearTimeout(pressTimer));
-   cell.addEventListener('touchmove',()=>clearTimeout(pressTimer));
-   cell.addEventListener('contextmenu',e=>{ e.preventDefault(); startSingleCellEdit(pid, fld); });
-  });
-
-  // 2. Long press (5.0s = 5000ms) on 1. Kram -> opens Product Actions menu (Move, Live, Showcase, Duplicate, Delete)
+  // Only 1. Kram keeps 5.0s long-press for Product Actions (Move, Live, Showcase, Duplicate, Delete)
   document.querySelectorAll('#adminApp .kramCell').forEach(cell=>{
    let pid = cell.dataset.id;
    cell.addEventListener('touchstart',()=>{
