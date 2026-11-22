@@ -7,6 +7,15 @@
 <meta name="description" content="Shop hardware, power tools, hand tools and home improvement products from श्रीEstore, Tools Hub Rajkot.">
 <meta name="robots" content="index, follow">
 <meta name="google-site-verification" content="IJVJqng7F8aDG97f6Fu71Ec8WJWoyXOXPjvOaZnVH_Q" />
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ffffff">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW reg skipped:', err));
+    });
+  }
+</script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type="module">
@@ -167,6 +176,22 @@ button{cursor:pointer}
 #customerApp .b2b-status-banner{background:#eaf4ff;color:#0756a5;border:1px solid #b6d4fe;border-radius:8px;padding:9px 12px;font-weight:700;font-size:12px;width:100%;margin:8px 0;text-align:center}
 #customerApp .b2b-status-banner.b2b-on{background:#fef3c7;color:#b45309;border-color:#fde68a}
 #customerApp .orderBadge{font-size:10.5px;padding:3px 8px;border-radius:12px;font-weight:700;display:inline-block}
+
+/* FOOTER LEGAL LINKS & POLICY POPUP MODAL (PURE WHITE) */
+#customerApp .legalFooterBox{background:#ffffff;border:1px solid var(--line);border-radius:14px;padding:14px 12px;margin:12px 0 6px;text-align:center}
+#customerApp .legalLinksRow{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;margin-bottom:8px}
+#customerApp .legalLinksRow a{color:var(--blue);font-size:12px;font-weight:700;text-decoration:none;cursor:pointer}
+#customerApp .legalLinksRow a:hover{text-decoration:underline}
+.thr-policy-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:99999;justify-content:center;align-items:center;padding:14px}
+.thr-policy-overlay.active{display:flex}
+.thr-policy-box{background:#ffffff;color:#1f2937;width:100%;max-width:680px;max-height:85vh;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,0.22);display:flex;flex-direction:column;overflow:hidden}
+.thr-policy-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#ffffff;border-bottom:1px solid #e5e7eb}
+.thr-policy-header h3{margin:0;font-size:17px;font-weight:800;color:#07366c}
+.thr-policy-close{background:#f1f5f9;border:0;font-size:20px;line-height:1;width:32px;height:32px;border-radius:50%;cursor:pointer;color:#334155;font-weight:700}
+.thr-policy-body{padding:18px;overflow-y:auto;font-size:13.5px;line-height:1.65;text-align:left;color:#334155}
+.thr-policy-body h4{color:#07366c;margin:14px 0 6px;font-size:14.5px}
+.thr-policy-body ul{padding-left:18px;margin:6px 0 12px}
+.thr-policy-body li{margin-bottom:5px}
 
 @media(min-width:700px){
  #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
@@ -387,7 +412,16 @@ button{cursor:pointer}
    </section>
 
    <div class="careBanner" id="c_homeCareBanner">📞 Customer Care: Loading...</div>
-   <div class="footer">© श्रीEstore (Tools Hub Rajkot) • Your trusted hardware &amp; tools store</div>
+   <div class="legalFooterBox">
+    <div class="legalLinksRow">
+     <a href="policies.html#terms" onclick="event.preventDefault();C.openPolicyModal('terms')">Terms &amp; Conditions</a>
+     <a href="policies.html#privacy" onclick="event.preventDefault();C.openPolicyModal('privacy')">Privacy Policy</a>
+     <a href="policies.html#refund" onclick="event.preventDefault();C.openPolicyModal('refund')">Refund &amp; Cancellation</a>
+     <a href="policies.html#shipping" onclick="event.preventDefault();C.openPolicyModal('shipping')">Shipping Policy</a>
+     <a href="policies.html#contact" onclick="event.preventDefault();C.openPolicyModal('contact')">Contact Us</a>
+    </div>
+    <div class="footer" style="padding:2px 0 0">© श्रीEstore (Tools Hub Rajkot) • Your trusted hardware &amp; tools store</div>
+   </div>
   </section>
 
   <section id="c_categories" class="c-page">
@@ -492,6 +526,17 @@ button{cursor:pointer}
   <button id="c_b_cart" onclick="C.showPage('c_cart',this)"><b>🛒</b>Cart (<span id="c_cartCount">0</span>)</button>
   <button id="c_b_profile" onclick="C.showPage('c_profile',this)"><b>♙</b>Profile</button>
  </nav>
+</div>
+
+<!-- POLICY POPUP MODAL (CUSTOMER STORE) -->
+<div id="thrPolicyModal" class="thr-policy-overlay" onclick="if(event.target.id==='thrPolicyModal')C.closePolicyModal()">
+ <div class="thr-policy-box">
+  <div class="thr-policy-header">
+   <h3 id="thrPolicyTitle">Policy</h3>
+   <button class="thr-policy-close" onclick="C.closePolicyModal()">×</button>
+  </div>
+  <div id="thrPolicyContent" class="thr-policy-body"></div>
+ </div>
 </div>
 
 <!-- ==================== 2. ADMIN PANEL (WHITE THEME) ==================== -->
@@ -744,6 +789,107 @@ window.C = (() => {
  const pinCache = {};
  let heroRotationIndex = 0, heroRotationTimer = null;
  let currentDetailImages = [], currentDetailImageIndex = 0, detailTouchStartX = null;
+
+ function openPolicyModal(type){
+  let s = window.storeSettings || {};
+  let codAdv = getCodAdvanceAmount();
+  let phoneTxt = s.phone ? esc(s.phone) : 'Contact Store Admin';
+  let addrTxt = s.address ? esc(s.address) : 'Rajkot, Gujarat, India';
+  const policies = {
+   terms: {
+    title: 'Terms & Conditions – Tools Hub Rajkot',
+    html: `<p><strong>Last Updated:</strong> November 2026</p>
+     <p>Welcome to <strong>Tools Hub Rajkot</strong> (operated under <strong>श्रीEstore / Shree Estore</strong>), accessible at <strong>toolsrajkot.pages.dev</strong>. By accessing this website and placing an order, you agree to these terms:</p>
+     <h4>1. Business Scope &amp; Pricing</h4>
+     <ul>
+      <li>We deal in retail (B2C) and wholesale (B2B) industrial tools and hardware supplies across India.</li>
+      <li>All prices are in <strong>Indian Rupees (INR / ₹)</strong>. Applicable <strong>GST</strong> is calculated as per Indian tax regulations.</li>
+     </ul>
+     <h4>2. Orders &amp; Payment Terms</h4>
+     <ul>
+      <li><strong>Full Online Payment:</strong> Customers can pay the full order amount online via UPI, QR, Cards, or Net Banking through Razorpay.</li>
+      <li><strong>Cash on Delivery (COD):</strong> COD orders require a mandatory <strong>₹${codAdv} non-refundable advance payment</strong> online to confirm the booking. The remaining balance is payable in cash upon delivery.</li>
+     </ul>
+     <h4>3. Shipping &amp; Unboxing Video Rule</h4>
+     <ul>
+      <li>Orders are dispatched from <strong>Rajkot, Gujarat</strong> within 1–2 business days and delivered within 3–7 business days across India.</li>
+      <li>Damaged or wrong items must be reported within <strong>48 hours of delivery</strong> with a clear, unedited <strong>unboxing video</strong> showing the shipping label.</li>
+     </ul>
+     <h4>4. Governing Law</h4>
+     <p>All transactions are governed by the laws of India under the exclusive jurisdiction of courts in <strong>Rajkot, Gujarat</strong>.</p>`
+   },
+   privacy: {
+    title: 'Privacy Policy – Tools Hub Rajkot',
+    html: `<p><strong>Last Updated:</strong> November 2026</p>
+     <p>At <strong>Tools Hub Rajkot (श्रीEstore)</strong>, protecting your personal data is our priority.</p>
+     <h4>1. Information We Collect</h4>
+     <ul>
+      <li><strong>Contact &amp; Delivery Details:</strong> Name, mobile number, email, complete Indian shipping address, and 6-digit pincode.</li>
+      <li><strong>B2B Details:</strong> Firm name and GSTIN (when provided for GST invoicing).</li>
+      <li><strong>Payment Info:</strong> Payment reference IDs and status. <strong>We never store your card numbers, UPI PIN, or net banking passwords.</strong></li>
+     </ul>
+     <h4>2. Payment &amp; Data Security</h4>
+     <ul>
+      <li>Online payments are securely processed via <strong>Razorpay</strong> (PCI-DSS compliant).</li>
+      <li>Website records are hosted on SSL-encrypted <strong>Google Firebase</strong> and <strong>Cloudflare</strong> infrastructure. We never sell or rent customer data.</li>
+     </ul>`
+   },
+   refund: {
+    title: 'Refund & Cancellation Policy',
+    html: `<p><strong>Last Updated:</strong> November 2026</p>
+     <h4>1. Order Cancellation</h4>
+     <ul>
+      <li>Orders can be cancelled within <strong>12 hours</strong> of placement or before dispatch from our Rajkot warehouse, whichever is earlier.</li>
+      <li>Once dispatched, orders cannot be cancelled. For COD orders, the <strong>₹${codAdv} advance fee is non-refundable</strong> upon cancellation or delivery refusal.</li>
+     </ul>
+     <h4>2. Return &amp; Replacement Conditions</h4>
+     <ul>
+      <li>Replacements or refunds are accepted only if you receive a physically damaged, defective, or wrong item/size.</li>
+      <li>You must notify us within <strong>48 hours of delivery</strong> with a complete, unedited <strong>unboxing video</strong> starting from the sealed parcel.</li>
+     </ul>
+     <h4>3. Refund Timeline</h4>
+     <ul>
+      <li>Approved refunds are initiated within <strong>2 business days</strong> and credited back to your original payment source (UPI/Bank/Card) within <strong>5 to 7 working days</strong>.</li>
+     </ul>`
+   },
+   shipping: {
+    title: 'Shipping & Delivery Policy',
+    html: `<p><strong>Last Updated:</strong> November 2026</p>
+     <h4>1. Dispatch Time</h4>
+     <ul>
+      <li>Confirmed orders are packed and dispatched from <strong>Rajkot, Gujarat</strong> within <strong>1 to 2 business days</strong> (excluding Sundays and public holidays).</li>
+      <li>Bulk B2B wholesale orders may take 2 to 3 business days to dispatch.</li>
+     </ul>
+     <h4>2. Estimated Delivery Timeline</h4>
+     <ul>
+      <li><strong>Within Gujarat:</strong> 2 to 4 business days</li>
+      <li><strong>Metro Cities &amp; Rest of India:</strong> 4 to 7 business days</li>
+      <li><strong>Remote / North-East / J&amp;K:</strong> 7 to 10 business days</li>
+     </ul>`
+   },
+   contact: {
+    title: 'Contact Us – Tools Hub Rajkot',
+    html: `<p>For order support, bulk B2B quotes, cancellations, or payment queries, contact us:</p>
+     <ul>
+      <li><strong>Business Name:</strong> Tools Hub Rajkot (श्रीEstore / Shree Estore)</li>
+      <li><strong>Shop / Warehouse Address:</strong> ${addrTxt}</li>
+      <li><strong>Phone / WhatsApp Support:</strong> ${phoneTxt}</li>
+      <li><strong>Working Hours:</strong> Monday to Saturday, 10:00 AM – 7:00 PM IST</li>
+     </ul>`
+   }
+  };
+  const item = policies[type];
+  if(!item) return;
+  document.getElementById('thrPolicyTitle').textContent = item.title;
+  document.getElementById('thrPolicyContent').innerHTML = item.html;
+  document.getElementById('thrPolicyModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+ }
+
+ function closePolicyModal(){
+  document.getElementById('thrPolicyModal')?.classList.remove('active');
+  document.body.style.overflow = '';
+ }
 
  function stateOptionsHTML(selectedVal=''){
   let sel = String(selectedVal||'').trim().toLowerCase();
@@ -1526,6 +1672,18 @@ window.C = (() => {
    currency: 'INR',
    name: s.name || 'श्रीEstore (Tools Hub Rajkot)',
    description: payOpt === 'COD' ? `COD Advance Payment (₹${payableNow})` : `Full Order Payment (₹${payableNow})`,
+   config: {
+    display: {
+     blocks: {
+      upi: {
+       name: 'Pay via UPI / QR',
+       instruments: [{ method: 'upi' }]
+      }
+     },
+     sequence: ['block.upi'],
+     preferences: { show_default_blocks: true }
+    }
+   },
    prefill: {
     name: addr.name,
     contact: addr.phone,
@@ -1665,7 +1823,7 @@ window.C = (() => {
  return {
   onProductsUpdated(){ renderHome(); renderCategoryBrowser(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
   onSettingsUpdated(){ renderCareBanners(); },
-  onPincodeInput, onHeroScroll,
+  onPincodeInput, onHeroScroll, openPolicyModal, closePolicyModal,
   showPage, openDetails, selectDetailImage, detailTouchStart, detailTouchEnd, handleDetailQtyChange, addToCart, changeQty, removeCart,
   renderCart, renderCheckout, startRazorpayCheckout, openCategory,
   searchNow, searchFromPage, openSearchTab, openCategoriesTab, renderListing, renderCategoryBrowser, saveProfile, toggleProfileForm,
