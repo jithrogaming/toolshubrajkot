@@ -84,7 +84,7 @@ button{cursor:pointer}
 /* FULL-BLEED EDGE-TO-EDGE HERO SHOWCASE CARDS */
 #customerApp .heroTrack{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px 4px 10px;margin:4px -4px 12px;scrollbar-width:none}
 #customerApp .heroTrack::-webkit-scrollbar{display:none}
-#customerApp .heroPoster{flex:0 0 85%;max-width:390px;height:440px;scroll-snap-align:center;border-radius:20px;padding:0;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 12px 26px rgba(7,30,61,0.18);background:#ffffff;transition:transform .15s}
+#customerApp .heroPoster{flex:0 0 85%;max-width:390px;height:250px;scroll-snap-align:center;border-radius:18px;padding:0;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 8px 20px rgba(7,30,61,0.14);background:#ffffff;transition:transform .15s}
 #customerApp .heroPoster:active{transform:scale(0.985)}
 #customerApp .heroFullImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
 #customerApp .heroSchemeShade{position:absolute;inset:0;z-index:2;pointer-events:none}
@@ -98,10 +98,10 @@ button{cursor:pointer}
 #customerApp .heroTheme7 .heroSchemeShade{background:linear-gradient(180deg,rgba(255,228,230,0.94) 0%,rgba(255,241,242,0.12) 46%,rgba(136,19,55,0.78) 100%)}
 #customerApp .heroTheme0,#customerApp .heroTheme3,#customerApp .heroTheme4,#customerApp .heroTheme5,#customerApp .heroTheme6{color:#ffffff}
 #customerApp .heroTheme1,#customerApp .heroTheme2,#customerApp .heroTheme7{color:#111827}
-#customerApp .heroTopTxt{position:relative;z-index:3;padding:20px 18px 8px}
-#customerApp .heroOfferTitle{font-size:30px;font-weight:900;line-height:1.1;letter-spacing:-0.4px;margin:0 0 5px}
-#customerApp .heroProdSub{font-size:15px;font-weight:700;opacity:0.95;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#customerApp .heroBottomWrap{position:relative;z-index:3;padding:14px 16px 16px;margin-top:auto}
+#customerApp .heroTopTxt{position:relative;z-index:3;padding:14px 14px 4px}
+#customerApp .heroOfferTitle{font-size:22px;font-weight:900;line-height:1.12;letter-spacing:-0.3px;margin:0 0 3px}
+#customerApp .heroProdSub{font-size:13px;font-weight:700;opacity:0.95;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+#customerApp .heroBottomWrap{position:relative;z-index:3;padding:10px 12px 12px;margin-top:auto}
 #customerApp .heroBottomPill{background:rgba(255,255,255,0.95);color:#111827;border-radius:12px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,0.16)}
 #customerApp .heroBottomPill .hPrice{font-size:19px;font-weight:900;color:#07366c}
 #customerApp .heroBottomPill .hMrp{font-size:12px;text-decoration:line-through;color:#64748b;margin-left:6px;font-weight:600}
@@ -164,7 +164,7 @@ button{cursor:pointer}
 #customerApp .qty button{background:#eaf4ff;color:var(--navy);border-radius:7px;padding:5px 10px;font-weight:700}
 
 /* SINGLE LARGE PRODUCT DETAILS IMAGE (SAME 440PX HEIGHT AS HERO IMAGE, NO DOUBLE IMAGE) */
-#customerApp .detailImg{width:100%;height:440px;max-height:440px;object-fit:contain;background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;display:block}
+#customerApp .detailImg{width:100%;height:260px;max-height:260px;object-fit:contain;background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;display:block}
 #customerApp .thumbs{display:flex;gap:7px;margin:8px 0}
 #customerApp .thumbs img{width:58px;height:58px;object-fit:contain;background:#fff;border:2px solid transparent;border-radius:8px;cursor:pointer}
 #customerApp .thumbs img.sel{border-color:var(--blue)}
@@ -196,8 +196,8 @@ button{cursor:pointer}
 @media(min-width:700px){
  #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
  #customerApp .products{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
- #customerApp .heroPoster{flex:0 0 340px;height:460px}
- #customerApp .detailImg{height:460px;max-height:460px}
+ #customerApp .heroPoster{flex:0 0 340px;height:270px}
+ #customerApp .detailImg{height:300px;max-height:300px}
  #customerApp .wrap{padding-top:20px}
 }
 
@@ -392,11 +392,6 @@ button{cursor:pointer}
 
  <main class="wrap">
   <section id="c_home" class="c-page active">
-   <section class="section" style="margin-top:4px">
-    <div class="sectionHead"><h2>Shop by Category</h2><button class="linkBtn" onclick="C.showPage('c_all')">View all ›</button></div>
-    <div class="catgrid" id="c_homeCats"></div>
-   </section>
-
    <!-- Full-bleed showcase cards, below photo-led categories -->
    <div class="heroTrack" id="c_heroTrack" onscroll="C.onHeroScroll()"></div>
    <div class="heroDots" id="c_heroDots"></div>
@@ -411,7 +406,6 @@ button{cursor:pointer}
     <div class="products" id="c_recentSearched"></div>
    </section>
 
-   <div class="careBanner" id="c_homeCareBanner">📞 Customer Care: Loading...</div>
    <div class="legalFooterBox">
     <div class="legalLinksRow">
      <a href="policies.html#terms" onclick="event.preventDefault();C.openPolicyModal('terms')">Terms &amp; Conditions</a>
@@ -420,7 +414,7 @@ button{cursor:pointer}
      <a href="policies.html#shipping" onclick="event.preventDefault();C.openPolicyModal('shipping')">Shipping Policy</a>
      <a href="policies.html#contact" onclick="event.preventDefault();C.openPolicyModal('contact')">Contact Us</a>
     </div>
-    <div class="footer" style="padding:2px 0 0">© श्रीEstore (Tools Hub Rajkot) • Your trusted hardware &amp; tools store</div>
+    <div class="footer" style="padding:2px 0 0">©Shree Estore Powered by Tools Hub Rajkot . Your trusted tools shop</div>
    </div>
   </section>
 
@@ -516,7 +510,6 @@ button{cursor:pointer}
     <div id="c_completedOrdersBox"></div>
    </div>
 
-   <div class="careBanner" id="c_profileCareBanner"></div>
   </section>
  </main>
 
@@ -559,10 +552,7 @@ button{cursor:pointer}
     <button onclick="A.showPage('a_products')"><span class="menuIcon">◆</span><span class="menuLabel">Product List <small id="a_productCount" class="muted">0 products</small></span><span class="menuArrow">›</span></button>
     <button onclick="A.openHeroEditor()"><span class="menuIcon">🎨</span><span class="menuLabel">Hero Card Editor <small class="muted">Showcase Schemes</small></span><span class="menuArrow">›</span></button>
     <button onclick="A.openOrderList()"><span class="menuIcon">☷</span><span class="menuLabel">Order List &amp; GST Management</span><span class="menuArrow">›</span></button>
-    <div class="sellerMenuPair">
-     <button onclick="A.openSellerForm()"><span class="menuIcon">🏪</span><span class="menuLabel">Seller Form</span><span class="menuArrow">›</span></button>
-     <button onclick="A.openLoginPanel()"><span class="menuIcon">🔐</span><span class="menuLabel">Login</span><span class="menuArrow">›</span></button>
-    </div>
+    <button onclick="A.openSellerAndLogin()"><span class="menuIcon">🏪</span><span class="menuLabel">Seller Form &amp; Login <small class="muted">Shop Details, Razorpay &amp; Account</small></span><span class="menuArrow">›</span></button>
    </section>
   </section>
 
@@ -671,14 +661,11 @@ button{cursor:pointer}
    </details>
   </section>
 
-  <!-- 4. PROFILE / LOGIN / SELLER FORM -->
+  <!-- 4. UNIFIED SELLER FORM & LOGIN -->
   <section id="a_login" class="a-page">
    <div class="headFlex">
-    <h2 class="title">Admin Profile</h2>
-    <div style="display:flex;gap:6px" id="a_profileQuickBtns">
-     <button class="btn ghost" style="padding:7px 10px;font-size:12px" onclick="A.toggleProfileEditPanel()">🏪 Shop Profile</button>
-     <button class="btn ghost" style="padding:7px 10px;font-size:12px" onclick="A.toggleLoginPanel()">🔐 Login / Account</button>
-    </div>
+    <h2 class="title">Seller Form &amp; Login</h2>
+    <button class="btn ghost" style="padding:7px 12px;font-size:12px" onclick="A.showPage('a_dashboard')">← Back</button>
    </div>
 
    <div class="panel" id="a_loginPanel">
@@ -793,86 +780,114 @@ window.C = (() => {
  function openPolicyModal(type){
   let s = window.storeSettings || {};
   let codAdv = getCodAdvanceAmount();
-  let phoneTxt = s.phone ? esc(s.phone) : 'Contact Store Admin';
+  let phoneTxt = s.phone ? esc(s.phone) : 'Contact Store Support';
   let addrTxt = s.address ? esc(s.address) : 'Rajkot, Gujarat, India';
   const policies = {
    terms: {
-    title: 'Terms & Conditions – Tools Hub Rajkot',
+    title: 'Terms & Conditions – Shree Estore (Tools Hub Rajkot)',
     html: `<p><strong>Last Updated:</strong> November 2026</p>
-     <p>Welcome to <strong>Tools Hub Rajkot</strong> (operated under <strong>श्रीEstore / Shree Estore</strong>), accessible at <strong>toolsrajkot.pages.dev</strong>. By accessing this website and placing an order, you agree to these terms:</p>
-     <h4>1. Business Scope &amp; Pricing</h4>
+     <p>Welcome to <strong>Shree Estore (Tools Hub Rajkot)</strong>, accessible at <strong>https://toolsrajkot.pages.dev</strong>. By accessing this website and placing an order, you agree to be bound by the following Terms and Conditions.</p>
+     <h4>1. General &amp; Business Scope</h4>
      <ul>
-      <li>We deal in retail (B2C) and wholesale (B2B) industrial tools and hardware supplies across India.</li>
-      <li>All prices are in <strong>Indian Rupees (INR / ₹)</strong>. Applicable <strong>GST</strong> is calculated as per Indian tax regulations.</li>
+      <li><strong>Tools Hub Rajkot</strong> deals in the retail (B2C) and wholesale (B2B) supply of industrial tools, power tools, hand tools, and hardware items across India.</li>
+      <li>We reserve the right to update product prices, stock availability, schemes, and these terms at any time without prior notice.</li>
      </ul>
-     <h4>2. Orders &amp; Payment Terms</h4>
+     <h4>2. Product Information &amp; Pricing</h4>
      <ul>
-      <li><strong>Full Online Payment:</strong> Customers can pay the full order amount online via UPI, QR, Cards, or Net Banking through Razorpay.</li>
-      <li><strong>Cash on Delivery (COD):</strong> COD orders require a mandatory <strong>₹${codAdv} non-refundable advance payment</strong> online to confirm the booking. The remaining balance is payable in cash upon delivery.</li>
+      <li>All prices listed on the website are in <strong>Indian Rupees (INR / ₹)</strong>.</li>
+      <li>Applicable <strong>GST</strong> is calculated and displayed clearly at checkout as per Indian tax regulations.</li>
+      <li>While we strive for accuracy in product images, dimensions (mm sizes), and packaging quantities, minor visual variations from manufacturers may occur.</li>
      </ul>
-     <h4>3. Shipping &amp; Unboxing Video Rule</h4>
+     <h4>3. Orders &amp; Payment Terms</h4>
+     <ul>
+      <li><strong>Full Online Payment:</strong> Customers can pay the complete order amount online via supported payment methods (UPI, QR, Credit/Debit Cards, Net Banking) through Razorpay.</li>
+      <li><strong>Cash on Delivery (COD):</strong> COD orders require a mandatory <strong>₹${codAdv} non-refundable advance payment</strong> online to confirm the order and prevent fake bookings. The remaining balance is payable in cash at the time of delivery.</li>
+     </ul>
+     <h4>4. Shipping, Cancellation &amp; Unboxing Video Rule</h4>
      <ul>
       <li>Orders are dispatched from <strong>Rajkot, Gujarat</strong> within 1–2 business days and delivered within 3–7 business days across India.</li>
-      <li>Damaged or wrong items must be reported within <strong>48 hours of delivery</strong> with a clear, unedited <strong>unboxing video</strong> showing the shipping label.</li>
+      <li>Orders can only be cancelled before dispatch. For COD orders, the ₹${codAdv} advance booking fee is non-refundable upon customer cancellation.</li>
+      <li>Damaged, defective, or wrong items must be reported within <strong>48 hours of delivery</strong> with a clear, unedited <strong>unboxing video</strong> showing the intact shipping label.</li>
      </ul>
-     <h4>4. Governing Law</h4>
-     <p>All transactions are governed by the laws of India under the exclusive jurisdiction of courts in <strong>Rajkot, Gujarat</strong>.</p>`
-   },
-   privacy: {
-    title: 'Privacy Policy – Tools Hub Rajkot',
-    html: `<p><strong>Last Updated:</strong> November 2026</p>
-     <p>At <strong>Tools Hub Rajkot (श्रीEstore)</strong>, protecting your personal data is our priority.</p>
-     <h4>1. Information We Collect</h4>
+     <h4>5. Intellectual Property &amp; Governing Law</h4>
      <ul>
-      <li><strong>Contact &amp; Delivery Details:</strong> Name, mobile number, email, complete Indian shipping address, and 6-digit pincode.</li>
-      <li><strong>B2B Details:</strong> Firm name and GSTIN (when provided for GST invoicing).</li>
-      <li><strong>Payment Info:</strong> Payment reference IDs and status. <strong>We never store your card numbers, UPI PIN, or net banking passwords.</strong></li>
-     </ul>
-     <h4>2. Payment &amp; Data Security</h4>
-     <ul>
-      <li>Online payments are securely processed via <strong>Razorpay</strong> (PCI-DSS compliant).</li>
-      <li>Website records are hosted on SSL-encrypted <strong>Google Firebase</strong> and <strong>Cloudflare</strong> infrastructure. We never sell or rent customer data.</li>
+      <li>All product images, packaging visuals, branding, and website content belong to <strong>Tools Hub Rajkot (Shree Estore)</strong>. Unauthorized copying or commercial reuse is strictly prohibited.</li>
+      <li>These terms are governed by the laws of <strong>India</strong> under the exclusive jurisdiction of courts in <strong>Rajkot, Gujarat</strong>.</li>
      </ul>`
    },
-   refund: {
-    title: 'Refund & Cancellation Policy',
+   privacy: {
+    title: 'Privacy Policy – Shree Estore (Tools Hub Rajkot)',
     html: `<p><strong>Last Updated:</strong> November 2026</p>
-     <h4>1. Order Cancellation</h4>
+     <p>At <strong>Shree Estore (Tools Hub Rajkot)</strong>, accessible from <strong>https://toolsrajkot.pages.dev</strong>, protecting the privacy and personal data of our customers is a top priority.</p>
+     <h4>1. Information We Collect</h4>
      <ul>
-      <li>Orders can be cancelled within <strong>12 hours</strong> of placement or before dispatch from our Rajkot warehouse, whichever is earlier.</li>
-      <li>Once dispatched, orders cannot be cancelled. For COD orders, the <strong>₹${codAdv} advance fee is non-refundable</strong> upon cancellation or delivery refusal.</li>
+      <li><strong>Personal &amp; Contact Details:</strong> Full name, mobile number, and email address.</li>
+      <li><strong>Shipping &amp; Billing Address:</strong> Complete Indian address details including House/Shop number, Street, Area, Landmark, City, State, and 6-digit Pincode.</li>
+      <li><strong>Business Details (For B2B Orders):</strong> Company/Shop name and GSTIN (if provided for GST invoicing).</li>
+      <li><strong>Payment &amp; Transaction Information:</strong> Payment status, Razorpay transaction reference IDs, and order amounts. <strong>We do not store your credit/debit card numbers, UPI PINs, or net banking passwords on our servers.</strong></li>
      </ul>
-     <h4>2. Return &amp; Replacement Conditions</h4>
+     <h4>2. How We Use Your Information</h4>
      <ul>
-      <li>Replacements or refunds are accepted only if you receive a physically damaged, defective, or wrong item/size.</li>
-      <li>You must notify us within <strong>48 hours of delivery</strong> with a complete, unedited <strong>unboxing video</strong> starting from the sealed parcel.</li>
+      <li>To process, pack, and dispatch your retail (B2C) or wholesale (B2B) orders from Rajkot, Gujarat.</li>
+      <li>To verify online payments and ₹${codAdv} COD advance bookings, share tracking updates, and generate GST-compliant invoices.</li>
      </ul>
-     <h4>3. Refund Timeline</h4>
+     <h4>3. Payment Security &amp; Third-Party Services</h4>
      <ul>
-      <li>Approved refunds are initiated within <strong>2 business days</strong> and credited back to your original payment source (UPI/Bank/Card) within <strong>5 to 7 working days</strong>.</li>
+      <li><strong>Payment Gateway (Razorpay):</strong> All online payments are processed securely through <strong>Razorpay</strong> (PCI-DSS compliant) with end-to-end encryption.</li>
+      <li><strong>Cloud &amp; Hosting:</strong> Website records are hosted on SSL-encrypted <strong>Google Firebase</strong> and <strong>Cloudflare</strong> servers.</li>
+      <li><strong>Logistics Partners:</strong> Name, address, and phone number are shared strictly with courier partners solely for parcel delivery. We <strong>never sell, rent, or trade</strong> your personal data.</li>
+     </ul>
+     <h4>4. Data Retention &amp; Your Rights</h4>
+     <p>We retain invoice records as required under Indian tax laws. You may request updates or deletion of your personal contact details by contacting our support team.</p>`
+   },
+   refund: {
+    title: 'Refund & Cancellation Policy – Shree Estore (Tools Hub Rajkot)',
+    html: `<p><strong>Last Updated:</strong> November 2026</p>
+     <h4>1. Order Cancellation Policy</h4>
+     <ul>
+      <li><strong>Before Dispatch:</strong> You can request an order cancellation within <strong>12 hours</strong> of placing the order or before the parcel is dispatched from our Rajkot warehouse, whichever is earlier.</li>
+      <li><strong>After Dispatch:</strong> Once handed over to our courier partner, orders cannot be cancelled.</li>
+      <li><strong>COD Advance Fee:</strong> For Cash on Delivery (COD) orders, the mandatory <strong>₹${codAdv} advance booking charge is non-refundable</strong> if the customer cancels the order or refuses delivery at the doorstep.</li>
+     </ul>
+     <h4>2. Return &amp; Replacement Eligibility</h4>
+     <ul>
+      <li>Replacement or refund requests are accepted only if you receive a <strong>physically damaged, defective, or wrong item/size</strong> compared to your invoice.</li>
+      <li><strong>Mandatory Unboxing Video:</strong> You must inform our support team within <strong>48 hours of delivery</strong> and share a <strong>clear, unedited unboxing video</strong> starting from opening the sealed courier package (showing the shipping label clearly).</li>
+      <li>Claims without a proper unboxing video, or products used, installed, or damaged by the customer, are not eligible for return or refund.</li>
+     </ul>
+     <h4>3. Refund Process &amp; Timeline</h4>
+     <ul>
+      <li>Once we verify your unboxing video and return claim (or if a prepaid order is cancelled before dispatch), we initiate the refund within <strong>2 business days</strong>.</li>
+      <li><strong>Refund Credit Time:</strong> Approved refunds are credited back to your original payment method (UPI, Bank Account, Credit/Debit Card, or Net Banking) within <strong>5 to 7 working days</strong>.</li>
      </ul>`
    },
    shipping: {
-    title: 'Shipping & Delivery Policy',
+    title: 'Shipping & Delivery Policy – Shree Estore (Tools Hub Rajkot)',
     html: `<p><strong>Last Updated:</strong> November 2026</p>
-     <h4>1. Dispatch Time</h4>
+     <h4>1. Dispatch &amp; Processing Time</h4>
      <ul>
-      <li>Confirmed orders are packed and dispatched from <strong>Rajkot, Gujarat</strong> within <strong>1 to 2 business days</strong> (excluding Sundays and public holidays).</li>
-      <li>Bulk B2B wholesale orders may take 2 to 3 business days to dispatch.</li>
+      <li>All confirmed orders (after online payment verification or ₹${codAdv} COD advance confirmation) are packed and dispatched from our warehouse in <strong>Rajkot, Gujarat</strong> within <strong>1 to 2 business days</strong> (excluding Sundays and public holidays).</li>
+      <li>Large B2B wholesale orders may take <strong>2 to 3 business days</strong> depending on order volume.</li>
      </ul>
-     <h4>2. Estimated Delivery Timeline</h4>
+     <h4>2. Estimated Delivery Timelines</h4>
      <ul>
       <li><strong>Within Gujarat:</strong> 2 to 4 business days</li>
       <li><strong>Metro Cities &amp; Rest of India:</strong> 4 to 7 business days</li>
-      <li><strong>Remote / North-East / J&amp;K:</strong> 7 to 10 business days</li>
+      <li><strong>Remote Locations / North-East / J&amp;K:</strong> 7 to 10 business days</li>
+     </ul>
+     <h4>3. Order Tracking &amp; Address Accuracy (RTO)</h4>
+     <ul>
+      <li>Tracking details (AWB number and courier link) are shared via WhatsApp, SMS, or email once dispatched.</li>
+      <li>If a parcel returns to us (RTO) due to an incomplete/wrong address or repeated customer unavailability, re-shipping charges will apply and the ₹${codAdv} COD advance will not be refunded.</li>
      </ul>`
    },
    contact: {
-    title: 'Contact Us – Tools Hub Rajkot',
-    html: `<p>For order support, bulk B2B quotes, cancellations, or payment queries, contact us:</p>
+    title: 'Contact Us – Shree Estore (Tools Hub Rajkot)',
+    html: `<p>For order inquiries, bulk B2B quotes, cancellations, returns, or payment support, reach out to us:</p>
      <ul>
-      <li><strong>Business Name:</strong> Tools Hub Rajkot (श्रीEstore / Shree Estore)</li>
-      <li><strong>Shop / Warehouse Address:</strong> ${addrTxt}</li>
+      <li><strong>Business Name:</strong> Shree Estore (Tools Hub Rajkot)</li>
+      <li><strong>Warehouse / Office Address:</strong> ${addrTxt}</li>
+      <li><strong>Website:</strong> https://toolsrajkot.pages.dev</li>
       <li><strong>Phone / WhatsApp Support:</strong> ${phoneTxt}</li>
       <li><strong>Working Hours:</strong> Monday to Saturday, 10:00 AM – 7:00 PM IST</li>
      </ul>`
@@ -1973,41 +1988,21 @@ window.A = (() => {
  function syncProfileVisibility(){
   const loginPanel = document.getElementById('a_loginPanel');
   const profPanel = document.getElementById('a_profileFormPanel');
-  const quickBtns = document.getElementById('a_profileQuickBtns');
   if(!window.adminUser){
    loginPanel.classList.remove('hidden');
    profPanel.classList.add('hidden');
-   quickBtns.classList.add('hidden');
   } else {
-   quickBtns.classList.remove('hidden');
-   loginPanel.classList.add('hidden');
-   const hasShopDetails = Boolean(cloudSettings.name && cloudSettings.phone && cloudSettings.address);
-   if(hasShopDetails) profPanel.classList.add('hidden');
-   else profPanel.classList.remove('hidden');
+   loginPanel.classList.remove('hidden');
+   profPanel.classList.remove('hidden');
   }
  }
- function toggleProfileEditPanel(){
-  document.getElementById('a_loginPanel').classList.add('hidden');
-  document.getElementById('a_profileFormPanel').classList.toggle('hidden');
- }
- function toggleLoginPanel(){
-  document.getElementById('a_profileFormPanel').classList.add('hidden');
-  document.getElementById('a_loginPanel').classList.toggle('hidden');
- }
- function openLoginPanel(){
+ function toggleProfileEditPanel(){ syncProfileVisibility(); }
+ function toggleLoginPanel(){ syncProfileVisibility(); }
+ function openLoginPanel(){ openSellerAndLogin(); }
+ function openSellerForm(){ openSellerAndLogin(); }
+ function openSellerAndLogin(){
   showPage('a_login');
-  document.getElementById('a_profileFormPanel').classList.add('hidden');
-  document.getElementById('a_loginPanel').classList.remove('hidden');
- }
- function openSellerForm(){
-  showPage('a_login');
-  if(window.adminUser){
-   document.getElementById('a_loginPanel').classList.add('hidden');
-   document.getElementById('a_profileFormPanel').classList.remove('hidden');
-   document.getElementById('a_profileFormPanel').scrollIntoView({behavior:'smooth',block:'start'});
-  } else {
-   document.getElementById('a_loginPanel').scrollIntoView({behavior:'smooth',block:'start'});
-  }
+  syncProfileVisibility();
  }
  function openHeroEditor(){
   closeModal();
@@ -3427,7 +3422,7 @@ window.A = (() => {
     if(window.location.hash === '#admin') showPage('a_login');
    }
   },
-  showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openHeroEditor, openOrderList, openGSTManagement,
+  showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openSellerAndLogin, openHeroEditor, openOrderList, openGSTManagement,
   uploadHeroEditorImage, saveHeroScheme,
   newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, recalcFormTotal, goProductStep,
   clearProductImage, clearHeroImage, handleBulkProductImages, handleSingleSlotImage, handleHeroSlotImage, saveProduct,
