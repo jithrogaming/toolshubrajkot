@@ -8,6 +8,7 @@
 <meta name="robots" content="index, follow">
 <meta name="google-site-verification" content="IJVJqng7F8aDG97f6Fu71Ec8WJWoyXOXPjvOaZnVH_Q" />
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
   import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app-check.js";
@@ -58,64 +59,79 @@ button{cursor:pointer}
 #customerApp button{border:0}
 #customerApp .top{position:sticky;top:0;z-index:20;background:#fff;box-shadow:0 2px 12px #0b3b6812;padding:8px 12px}
 #customerApp .headrow{display:flex;align-items:center}
-#customerApp .search{flex:1;display:flex;align-items:center;height:32px;background:#f1f7fd;border:1px solid var(--line);border-radius:7px;overflow:hidden}
-#customerApp .search input{width:100%;height:100%;border:0;background:transparent;padding:0 10px;font-size:12px;outline:0;color:var(--ink)}
-#customerApp .search button{height:100%;background:var(--blue);color:#fff;padding:0 12px;font-size:11px;font-weight:700}
+#customerApp .search{flex:1;display:flex;align-items:center;height:48px;background:#fff;border:1px solid #cbd5e1;border-radius:24px;overflow:hidden;box-shadow:0 2px 8px #123d6410}
+#customerApp .search input{width:100%;height:100%;border:0;background:transparent;padding:0 16px;font-size:15px;outline:0;color:var(--ink)}
+#customerApp .search button{height:100%;background:var(--blue);color:#fff;padding:0 18px;font-size:13px;font-weight:700}
+#customerApp .deliveryLocation{display:flex;align-items:center;gap:8px;width:100%;margin-top:9px;padding:9px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;color:#1e293b;font-size:13px;font-weight:700;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#customerApp .deliveryLocation span:last-child{overflow:hidden;text-overflow:ellipsis}
 #customerApp .subbrand{text-align:center;font-size:11px;color:#555;font-weight:700;margin-top:4px;letter-spacing:.5px}
-#customerApp .brand{text-align:center;padding:2px 0 1px;font-weight:900;font-size:26px;letter-spacing:.4px}
-#customerApp .brand .shri{color:var(--red);text-shadow:1px 1px 0px rgba(0,0,0,0.1)}
-#customerApp .brand .estore{color:#475569}
-#customerApp .tag{text-align:center;color:#6a7e94;font-size:9.5px;letter-spacing:1.5px;font-weight:700}
-#customerApp .wrap{max-width:1100px;margin:auto;padding:14px 12px 92px}
+#customerApp .brand{display:flex;align-items:baseline;justify-content:center;gap:7px;white-space:nowrap;padding:4px 0 2px;font-weight:900;letter-spacing:.2px}
+#customerApp .brand .shri{color:var(--red);text-shadow:1px 1px 0px rgba(0,0,0,0.1);font-size:27px}
+#customerApp .brand .estore{color:#475569;font-size:27px}
+#customerApp .brand .brandLocation{color:#475569;font-size:12px;font-weight:700;letter-spacing:0}
+@media(max-width:360px){#customerApp .brand{gap:5px}#customerApp .brand .shri,#customerApp .brand .estore{font-size:24px}#customerApp .brand .brandLocation{font-size:10px}}
+#customerApp .wrap{max-width:1100px;margin:auto;padding:12px 12px 92px}
 
-#customerApp .topShowcase{background:linear-gradient(135deg,#07366c,#1682d4,#0a58ca);color:#fff;border-radius:20px;padding:18px;margin:6px 0 18px;box-shadow:0 10px 24px #07366c25;position:relative;overflow:hidden}
-#customerApp .showcaseCard{display:grid;grid-template-columns:38% 1fr;gap:12px;align-items:center}
-#customerApp .showcaseCard img{width:100%;height:145px;object-fit:cover;border-radius:12px;background:#fff}
-#customerApp .showcaseInfo h3{margin:0 0 5px;font-size:17px}
-#customerApp .showcasePrice{font-size:16px;font-weight:800;color:#ffca28}
-#customerApp .showcaseMrp{text-decoration:line-through;color:#cbd5e1;font-size:11px;margin-left:5px}
-#customerApp .showcaseBadge{display:inline-block;background:#22c55e;color:#fff;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:5px}
-#customerApp .dots{text-align:center;margin-top:8px}
-#customerApp .dots span{display:inline-block;width:6px;height:6px;background:rgba(255,255,255,0.4);border-radius:50%;margin:0 3px}
-#customerApp .dots span.on{background:#fff;width:16px;border-radius:4px}
+/* FULL-BLEED EDGE-TO-EDGE HERO SHOWCASE CARDS */
+#customerApp .heroTrack{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px 4px 10px;margin:4px -4px 12px;scrollbar-width:none}
+#customerApp .heroTrack::-webkit-scrollbar{display:none}
+#customerApp .heroPoster{flex:0 0 85%;max-width:390px;height:440px;scroll-snap-align:center;border-radius:20px;padding:0;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 12px 26px rgba(7,30,61,0.18);background:#ffffff;transition:transform .15s}
+#customerApp .heroPoster:active{transform:scale(0.985)}
+#customerApp .heroFullImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+#customerApp .heroSchemeShade{position:absolute;inset:0;z-index:2;pointer-events:none}
+#customerApp .heroTheme0 .heroSchemeShade{background:linear-gradient(180deg,rgba(15,23,42,0.86) 0%,rgba(15,23,42,0.18) 46%,rgba(15,23,42,0.78) 100%)}
+#customerApp .heroTheme1 .heroSchemeShade{background:linear-gradient(180deg,rgba(250,204,21,0.94) 0%,rgba(250,204,21,0.15) 45%,rgba(17,24,39,0.72) 100%)}
+#customerApp .heroTheme2 .heroSchemeShade{background:linear-gradient(180deg,rgba(248,250,252,0.92) 0%,rgba(248,250,252,0.12) 45%,rgba(15,23,42,0.72) 100%)}
+#customerApp .heroTheme3 .heroSchemeShade{background:linear-gradient(180deg,rgba(109,40,217,0.88) 0%,rgba(109,40,217,0.18) 46%,rgba(30,27,75,0.80) 100%)}
+#customerApp .heroTheme4 .heroSchemeShade{background:linear-gradient(180deg,rgba(8,145,178,0.9) 0%,rgba(6,182,212,0.16) 46%,rgba(8,47,73,0.82) 100%)}
+#customerApp .heroTheme5 .heroSchemeShade{background:linear-gradient(180deg,rgba(234,88,12,0.9) 0%,rgba(251,146,60,0.16) 46%,rgba(124,45,18,0.84) 100%)}
+#customerApp .heroTheme6 .heroSchemeShade{background:linear-gradient(180deg,rgba(5,150,105,0.9) 0%,rgba(16,185,129,0.16) 46%,rgba(6,78,59,0.84) 100%)}
+#customerApp .heroTheme7 .heroSchemeShade{background:linear-gradient(180deg,rgba(255,228,230,0.94) 0%,rgba(255,241,242,0.12) 46%,rgba(136,19,55,0.78) 100%)}
+#customerApp .heroTheme0,#customerApp .heroTheme3,#customerApp .heroTheme4,#customerApp .heroTheme5,#customerApp .heroTheme6{color:#ffffff}
+#customerApp .heroTheme1,#customerApp .heroTheme2,#customerApp .heroTheme7{color:#111827}
+#customerApp .heroTopTxt{position:relative;z-index:3;padding:20px 18px 8px}
+#customerApp .heroOfferTitle{font-size:30px;font-weight:900;line-height:1.1;letter-spacing:-0.4px;margin:0 0 5px}
+#customerApp .heroProdSub{font-size:15px;font-weight:700;opacity:0.95;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#customerApp .heroBottomWrap{position:relative;z-index:3;padding:14px 16px 16px;margin-top:auto}
+#customerApp .heroBottomPill{background:rgba(255,255,255,0.95);color:#111827;border-radius:12px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,0.16)}
+#customerApp .heroBottomPill .hPrice{font-size:19px;font-weight:900;color:#07366c}
+#customerApp .heroBottomPill .hMrp{font-size:12px;text-decoration:line-through;color:#64748b;margin-left:6px;font-weight:600}
+#customerApp .heroBottomPill .hTap{font-size:11px;font-weight:800;color:#0756a5;text-transform:uppercase;letter-spacing:.4px}
+#customerApp .heroDots{text-align:center;margin:-2px 0 12px}
+#customerApp .heroDots span{display:inline-block;width:7px;height:7px;background:#cbd5e1;border-radius:50%;margin:0 3px;transition:all .2s}
+#customerApp .heroDots span.on{background:#0756a5;width:18px;border-radius:4px}
 
 #customerApp .section{margin:18px 0}
 #customerApp .sectionHead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}
 #customerApp .sectionHead h2{font-size:18px;margin:0;color:var(--navy)}
 #customerApp .linkBtn{background:transparent;color:var(--blue);font-weight:700;padding:7px}
 
-#customerApp .catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-#customerApp .cat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 6px;text-align:center;color:var(--navy);font-weight:700;font-size:11px;min-height:64px;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
-#customerApp .cat i{display:block;font-style:normal;font-size:20px;margin-bottom:4px}
+#customerApp .catgrid{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#customerApp .catgrid::-webkit-scrollbar{display:none}
+#customerApp .cat{flex:0 0 94px;min-width:94px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 6px;text-align:center;color:var(--navy);font-weight:700;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+#customerApp .cat img{display:block;width:58px;height:54px;object-fit:contain;margin:0 auto 5px;border-radius:9px;background:#f8fafc}
+#customerApp .cat span{display:block;line-height:1.2;min-height:26px}
 
-#customerApp .products{display:flex;flex-direction:column;gap:11px}
-#customerApp .product{background:#fff;border:1px solid #e9e9e9;border-radius:8px;min-height:230px;min-width:0;display:grid;grid-template-columns:40% 60%;overflow:hidden;cursor:pointer;transition:box-shadow .15s}
-#customerApp .product:hover{box-shadow:0 5px 16px #123d641c}
-#customerApp .productVisual{min-width:0;min-height:230px;background:#f6f6f6;position:relative;display:flex;align-items:center;justify-content:center;padding:10px}
-#customerApp .productVisual>img{width:100%;height:100%;max-height:290px;object-fit:contain;mix-blend-mode:multiply}
-#customerApp .productActions{position:absolute;bottom:9px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
-#customerApp .productAction{pointer-events:auto;width:38px;height:38px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 8px #0002;color:#222;font-size:21px;padding:0}
-#customerApp .productAction.active{color:#e21b42}
-#customerApp .productInfo{min-width:0;padding:11px 10px;display:flex;flex-direction:column;align-items:stretch}
-#customerApp .productInfo h3{font-size:clamp(16px,4.3vw,21px);font-weight:400;line-height:1.3;margin:0 0 5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#customerApp .productInfo .small{font-size:11px;margin-bottom:5px}
-#customerApp .productInfo .price{font-size:clamp(23px,6vw,31px);font-weight:500;color:#171717}
-#customerApp .productInfo .mrp{font-size:12px}
-#customerApp .productInfo .b2b-badge{margin:2px 0 5px}
-#customerApp .addCartBtn{width:100%;min-height:42px;margin-top:auto;border:0;border-radius:24px;background:#ffd814;color:#171717;font-size:15px;font-weight:600;padding:8px;cursor:pointer}
-#customerApp .addCartBtn:active{filter:brightness(.94);transform:scale(.99)}
-#customerApp .addCartBtn:disabled{opacity:.55;cursor:not-allowed}
-@media(max-width:350px){#customerApp .product{grid-template-columns:38% 62%}#customerApp .productVisual{padding:7px}#customerApp .productInfo{padding:9px 8px}#customerApp .productAction{width:34px;height:34px;font-size:19px}}
-#customerApp .small{color:var(--muted);font-size:10.5px;line-height:1.35}
-#customerApp .price{font-weight:800;color:var(--navy);font-size:15px;margin-top:3px}
-#customerApp .mrp{text-decoration:line-through;color:#8997a7;font-size:11px;margin-left:4px}
+/* CLEAN GRID PRODUCT CARDS */
+#customerApp .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#customerApp .product{background:#fff;border:1px solid #e2e8f0;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(7,54,108,0.04);transition:transform .15s,box-shadow .15s}
+#customerApp .product:hover{box-shadow:0 6px 18px #123d641c}
+#customerApp .product:active{transform:scale(0.99)}
+#customerApp .productVisual{width:100%;height:175px;background:#ffffff;position:relative;display:flex;align-items:center;justify-content:center;padding:10px;border-bottom:1px solid #f1f5f9}
+#customerApp .productVisual>img{width:100%;height:100%;object-fit:contain}
+#customerApp .cardOfferBadge{position:absolute;top:8px;left:8px;background:#dc2626;color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:6px}
+#customerApp .productInfo{padding:10px;display:flex;flex-direction:column;flex:1}
+#customerApp .productInfo h3{font-size:14px;font-weight:700;line-height:1.3;color:#0f172a;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#customerApp .productInfo .priceRow{margin-top:auto;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+#customerApp .productInfo .price{font-size:18px;font-weight:900;color:#07366c;margin:0}
+#customerApp .productInfo .mrp{font-size:11px;text-decoration:line-through;color:#94a3b8;margin:0}
+#customerApp .small{color:var(--muted);font-size:11px;line-height:1.35}
+#customerApp .price{font-weight:800;color:var(--navy);font-size:16px;margin-top:3px}
+#customerApp .mrp{text-decoration:line-through;color:#8997a7;font-size:12px;margin-left:4px}
 #customerApp .discount{display:inline-block;background:#e5f7ec;color:#168047;padding:3px 6px;border-radius:6px;font-size:11px;font-weight:700;margin:4px 0}
-#customerApp .b2b-badge{background:#fef3c7;color:#b45309;padding:4px 6px;border-radius:6px;font-size:10px;font-weight:700;margin-top:4px;border:1px solid #fde68a}
-#customerApp .card-tax-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px;margin:5px 0;font-size:10px;color:#475569}
-#customerApp .variantHint{font-size:10.5px;color:#0756a5;background:#f1f7fd;border-radius:7px;padding:6px;margin-top:6px}
 #customerApp .variantChooser{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0}
 #customerApp .variantChooser label{display:block;margin:8px 0 3px;font-size:12px}
-#customerApp .primary{background:var(--blue);color:#fff;border-radius:10px;padding:9px 12px;font-weight:700;width:100%;margin-top:8px}
+#customerApp .primary{background:var(--blue);color:#fff;border-radius:10px;padding:11px 12px;font-weight:700;width:100%;margin-top:8px}
 #customerApp .primary:disabled{opacity:.5;cursor:not-allowed}
 #customerApp .ghostBtn{background:#eaf4ff;color:var(--navy);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-weight:700}
 
@@ -129,6 +145,7 @@ button{cursor:pointer}
 #customerApp .panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0}
 #customerApp .field{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;margin:5px 0 10px;background:#fff;color:var(--ink)}
 #customerApp .addrLbl{display:block;font-size:11.5px;font-weight:700;color:var(--navy);margin-top:4px}
+#customerApp .pinStatus{font-size:11.5px;font-weight:700;margin:-4px 0 8px;display:block}
 #customerApp .row{display:flex;gap:9px}#customerApp .row>*{flex:1;min-width:0}
 #customerApp .checkrow{display:flex;gap:8px;align-items:center;margin:7px 0;font-size:13px;font-weight:600}
 #customerApp .checkrow input{width:auto}
@@ -136,52 +153,34 @@ button{cursor:pointer}
 #customerApp .itemrow img{width:62px;height:62px;object-fit:cover;border-radius:9px}
 #customerApp .qty{display:flex;gap:8px;align-items:center;margin-top:7px}
 #customerApp .qty button{background:#eaf4ff;color:var(--navy);border-radius:7px;padding:5px 10px;font-weight:700}
-#customerApp .detailImg{width:100%;max-height:330px;object-fit:contain;background:#f2f7fb;border-radius:13px}
+
+/* SINGLE LARGE PRODUCT DETAILS IMAGE (SAME 440PX HEIGHT AS HERO IMAGE, NO DOUBLE IMAGE) */
+#customerApp .detailImg{width:100%;height:440px;max-height:440px;object-fit:contain;background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;display:block}
 #customerApp .thumbs{display:flex;gap:7px;margin:8px 0}
-#customerApp .thumbs img{width:58px;height:58px;object-fit:cover;border:2px solid transparent;border-radius:8px;cursor:pointer}
+#customerApp .thumbs img{width:58px;height:58px;object-fit:contain;background:#fff;border:2px solid transparent;border-radius:8px;cursor:pointer}
 #customerApp .thumbs img.sel{border-color:var(--blue)}
 #customerApp .notice{background:#fff8e7;border:1px solid #f1dfad;padding:10px;border-radius:10px;color:#765514;font-size:12px}
 #customerApp .careBanner{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;margin:14px 0 6px;text-align:center;color:var(--navy);font-size:12px;box-shadow:0 2px 8px #123d640d}
 #customerApp .footer{text-align:center;color:#8092a6;font-size:11px;padding:10px 0 18px}
-#customerApp .empty{text-align:center;color:#71839a;padding:20px 10px;font-size:12px}
+#customerApp .empty{text-align:center;color:#71839a;padding:20px 10px;font-size:12px;grid-column:1/-1}
 #customerApp .total{font-size:19px;font-weight:800;color:var(--navy)}
 #customerApp .b2b-status-banner{background:#eaf4ff;color:#0756a5;border:1px solid #b6d4fe;border-radius:8px;padding:9px 12px;font-weight:700;font-size:12px;width:100%;margin:8px 0;text-align:center}
 #customerApp .b2b-status-banner.b2b-on{background:#fef3c7;color:#b45309;border-color:#fde68a}
-#customerApp .qrBox{background:#f8fafc;border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:center;margin:8px 0}
-#customerApp .qrBox img{max-width:210px;max-height:210px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;padding:6px}
 #customerApp .orderBadge{font-size:10.5px;padding:3px 8px;border-radius:12px;font-weight:700;display:inline-block}
-
-/* FULL SCREEN QR PAYMENT MODAL */
-#c_fullQrModal{display:none;position:fixed;inset:0;z-index:999;background:#ffffff;color:#14263d;overflow-y:auto;padding:16px}
-#c_fullQrModal .fqrWrap{max-width:440px;margin:0 auto;min-height:calc(100vh - 32px);display:flex;flex-direction:column;justify-content:space-between}
-#c_fullQrModal .fqrTop{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d9e8f6;padding-bottom:10px}
-#c_fullQrModal .fqrCard{background:#f8fafc;border:2px solid #0756a5;border-radius:16px;padding:18px 14px;text-align:center;margin:14px 0;box-shadow:0 8px 24px rgba(7,54,108,0.1)}
-#c_fullQrModal .fqrCard img{width:min(76vw,290px);height:min(76vw,290px);object-fit:contain;background:#fff;padding:10px;border:2px solid #cbd5e1;border-radius:14px;display:block;margin:10px auto}
-#c_fullQrModal .fqrAmt{font-size:30px;font-weight:900;color:#07366c;margin:4px 0}
-#c_fullQrModal .fqrSub{font-size:12.5px;color:#475569;font-weight:700}
-#c_fullQrModal .proofBox{margin-top:10px;padding:10px;border:1.5px dashed #0756a5;border-radius:10px;background:#f1f7fd;text-align:left}
-#c_fullQrModal .proofPreview{max-width:120px;max-height:120px;border-radius:8px;border:1px solid #cbd5e1;margin-top:6px;display:none}
 
 @media(min-width:700px){
  #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
- #customerApp .showcaseCard{grid-template-columns:30% 1fr}
- #customerApp .showcaseCard img{height:180px}
+ #customerApp .products{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+ #customerApp .heroPoster{flex:0 0 340px;height:460px}
+ #customerApp .detailImg{height:460px;max-height:460px}
  #customerApp .wrap{padding-top:20px}
- #customerApp .product{grid-template-columns:34% 66%;min-height:270px}
- #customerApp .productVisual{min-height:270px}
- #customerApp .productInfo{padding:16px 18px}
- #customerApp .productInfo h3{font-size:23px}
- #customerApp .productInfo .price{font-size:34px}
- #customerApp .addCartBtn{max-width:360px}
 }
 
 /* ================= ADMIN PANEL STYLES (WHITE THEME) ================= */
 #adminApp{background:#f4f6f9;color:#111827;min-height:100vh}
-#adminApp .top{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;background:#ffffff;border-bottom:1px solid #e5e7eb;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+#adminApp .top{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;background:#ffffff;border-bottom:1px solid #e5e7eb;z-index:20;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
 #adminApp .logo{font-size:22px;font-weight:900;letter-spacing:.5px;color:#07366c;cursor:pointer}
- #adminApp .wrap{max-width:1100px;margin:auto;padding:18px 14px 28px}
-#adminApp .dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:8px}
-#adminApp .dashbtn{background:#ffffff;color:#111827;border:1px solid #d1d5db;border-radius:15px;min-height:118px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+#adminApp .wrap{max-width:1100px;margin:auto;padding:18px 14px 28px}
 #adminApp .sellerMenu{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0}
 #adminApp .sellerMenuPair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #adminApp .sellerMenu button{display:flex;align-items:center;gap:13px;min-width:0;min-height:68px;padding:11px 14px;border:1px solid #dce5fa;border-radius:15px;background:linear-gradient(180deg,#fff,#f8faff);color:#101a35;text-align:left;font-weight:750;box-shadow:0 4px 12px #153b8b12}
@@ -191,9 +190,21 @@ button{cursor:pointer}
 #adminApp .sellerMenu .menuArrow{margin-left:auto;font-size:24px;color:#64748b}
 #adminApp .sellerHomeTitle{font-size:22px;color:#07366c;margin:10px 2px 4px}
 #adminApp .sellerHomeHint{margin:0 2px 14px;color:#6b7280;font-size:13px}
+#adminApp #a_todayCount,#adminApp #a_lowCount,#adminApp #a_productCount{display:inline-block;font-size:18px;font-weight:900;line-height:1.15;margin-left:4px}
+#adminApp #a_todayCount{color:#15803d}
+#adminApp #a_lowCount{color:#991b1b}
+#adminApp #a_productCount{color:#0756a5}
+
+/* BLINKING RED ALERT FOR LOW STOCK (<=5) */
+@keyframes lowStockBlink {
+ 0%, 100% { background-color:#fee2e2; border-color:#ef4444; color:#b91c1c; box-shadow:0 0 10px rgba(239,68,68,0.35); }
+ 50% { background-color:#ffffff; border-color:#fca5a5; color:#dc2626; box-shadow:none; }
+}
+#adminApp .lowStockAlertBtn.hasLow{animation:lowStockBlink 1.1s infinite ease-in-out!important;border-width:2px!important}
+#adminApp .lowStockAlertBtn.hasLow .menuIcon{background:#dc2626!important;color:#fff!important}
+#adminApp .lowStockAlertBtn.hasLow small{color:#dc2626!important;font-weight:900}
+
 @media(max-width:380px){#adminApp .sellerMenuPair{gap:7px}#adminApp .sellerMenuPair button{padding:9px 8px;gap:7px;font-size:12px}#adminApp .sellerMenuPair .menuIcon{width:34px;height:34px;flex-basis:34px;font-size:18px}}
-#adminApp .dashbtn .ico{font-size:27px}
-#adminApp .dashbtn .num{font-size:22px;color:#0756a5}
 #adminApp .a-page{display:none}
 #adminApp .a-page.active{display:block}
 #adminApp .title{font-size:21px;margin:8px 0 14px;color:#07366c}
@@ -208,47 +219,78 @@ button{cursor:pointer}
 #adminApp .btn.danger{background:#dc2626;color:#fff}
 #adminApp .row{display:flex;gap:9px}#adminApp .row>*{flex:1;min-width:0}
 #adminApp .muted{color:#6b7280;font-size:12px}
-#adminApp .tablewrap{overflow-x:auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;-webkit-overflow-scrolling:touch}
-#adminApp table{border-collapse:collapse;width:100%}
-#adminApp th,#adminApp td{padding:9px 8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:12px;color:#111827}
-#adminApp th{color:#374151;background:#f9fafb;font-weight:700;white-space:nowrap}
-#adminApp .stockGood{color:#16a34a;font-weight:800}
-#adminApp .stockLow{color:#dc2626;font-weight:800}
+#adminApp .tablewrap{overflow-x:auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;-webkit-overflow-scrolling:touch;position:relative}
+#adminApp table{border-collapse:separate;border-spacing:0;width:100%}
+#adminApp th,#adminApp td{padding:9px 8px;border-bottom:1px solid #e5e7eb;border-right:1px solid #f1f5f9;text-align:left;font-size:12px;color:#111827}
+#adminApp th{color:#374151;background:#f9fafb;font-weight:700;white-space:nowrap;user-select:none}
 
-/* 11-COLUMN WIDE PRODUCT TABLE & PEN-ICON CELL EDIT + KRAM MOVE */
+/* STOCK COLOUR LEVELS: <=5 RED, 6-15 ORANGE, >15 GREEN */
+#adminApp .stockLow{color:#dc2626;font-weight:900}
+#adminApp .stockMed{color:#ea580c;font-weight:900}
+#adminApp .stockGood{color:#16a34a;font-weight:900}
+
+/* 12-COLUMN PRODUCT TABLE, STICKY KRAM COLUMN & HEADER LONG-PRESS COLUMN BULK EDIT */
 #adminApp .productrow{touch-action:pan-x pan-y;user-select:none}
-#adminApp .productrow:hover{background:#f8fafc}
-#adminApp .productrow.selectedMoveRow{background:#eaf4ff}
-#adminApp .productTable{min-width:1320px;width:max-content}
+#adminApp .productrow:hover td{background:#f8fafc}
+#adminApp .productrow.selectedMoveRow td{background:#eaf4ff}
+#adminApp .productTable{min-width:1460px;width:max-content}
 #adminApp .productTable th,#adminApp .productTable td{vertical-align:middle;padding:9px 8px;white-space:nowrap}
-#adminApp .productTable td.colName{min-width:225px;max-width:275px;white-space:normal}
+#adminApp .productTable td.colName{min-width:210px;max-width:260px;white-space:normal}
 #adminApp .productTable td.openFormCell{cursor:pointer}
-#adminApp .productTable td.editingCell{background:#fffbeb;user-select:auto}
-#adminApp .cellValWrap{display:flex;align-items:center;justify-content:space-between;gap:6px}
-#adminApp .penEditBtn{min-height:26px!important;min-width:26px!important;padding:2px 5px!important;border-radius:6px;border:1px solid #cbd5e1;background:#f8fafc;color:#0756a5;font-size:11px!important;line-height:1;flex-shrink:0}
-#adminApp .penEditBtn:active{background:#dbeafe}
+
+/* STICKY 1. KRAM COLUMN */
+#adminApp .productTable th.stickyKram,#adminApp .productTable td.stickyKram{position:sticky;left:0;z-index:6;background:#ffffff;border-right:2px solid #cbd5e1;box-shadow:3px 0 6px rgba(0,0,0,0.05);min-width:66px;text-align:center}
+#adminApp .productTable th.stickyKram{background:#f1f5f9;z-index:8;color:#07366c}
+#adminApp .productrow.selectedMoveRow td.stickyKram{background:#dbeafe}
+
+/* EDITABLE HEADER & ACTIVE COLUMN HIGHLIGHT */
+#adminApp th.colEditable{cursor:pointer;touch-action:pan-x pan-y}
+#adminApp th.colEditable:hover{background:#eff6ff;color:#0756a5}
+#adminApp th.colEditingActive{background:#0756a5!important;color:#ffffff!important}
+#adminApp td.colEditingCell{background:#fffbeb!important;user-select:auto}
 #adminApp .productThumb{width:46px;height:46px;object-fit:cover;border-radius:7px;background:#f1f5f9;border:1px solid #e5e7eb;display:block}
-#adminApp .inlineInp{width:100%;min-width:78px;padding:6px 7px;border:2px solid #0756a5;border-radius:6px;background:#fff;color:#111827;font-size:12px;font-weight:700}
-#adminApp .inlineInp.wide{min-width:190px}
-#adminApp .inlineInp.med{min-width:110px}
+#adminApp .colBulkInp{width:100%;min-width:84px;padding:6px 7px;border:2px solid #0756a5;border-radius:6px;background:#fff;color:#111827;font-size:12px;font-weight:700}
+#adminApp .colBulkInp.med{min-width:112px}
 
 /* MOVE BUTTONS (ORDERS & PRODUCTS) */
 #adminApp .moveBtn{min-height:30px!important;padding:4px 8px!important;font-size:12px!important;background:#0756a5;color:#fff;border:0;border-radius:6px;font-weight:800}
 #adminApp .moveBtn:disabled{opacity:0.35;cursor:not-allowed}
 
-#adminApp .imageGrid{display:grid;grid-template-columns:repeat(4,minmax(72px,1fr));gap:8px;margin:8px 0 14px}
-#adminApp .productStepNav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0 16px}
-#adminApp .productStepBadge{padding:9px 5px;border-radius:9px;background:#f3f4f6;color:#64748b;text-align:center;font-size:11px;font-weight:700}
-#adminApp .productStepBadge.active{background:#eaf4ff;color:#0756a5;box-shadow:inset 0 0 0 1px #93c5fd}
-#adminApp .bulkPhotoBox{border:2px dashed #0756a5;border-radius:12px;background:#f4faff;padding:14px;text-align:center;margin:8px 0 12px;cursor:pointer}
+/* 3-PAGE PRODUCT FORM ROWS & IMAGE SLOTS */
+#adminApp .formRowBox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;margin-bottom:10px}
+#adminApp .formRowTag{font-size:10.5px;font-weight:800;color:#0756a5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+#adminApp .formGrid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#adminApp .formGrid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#adminApp .formGrid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#adminApp .formGrid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+#adminApp .formRowBox label{display:block;font-size:11px;font-weight:700;color:#374151;margin-bottom:2px}
+#adminApp .formRowBox .field{margin:0;padding:9px 8px;font-size:13px}
+#adminApp .imageGrid5{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+@media(min-width:520px){#adminApp .imageGrid5{grid-template-columns:repeat(5,minmax(0,1fr))}}
+#adminApp .productStepNav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0 14px}
+#adminApp .productStepBadge{padding:10px 5px;border-radius:9px;background:#f3f4f6;color:#374151;text-align:center;font-size:12px;font-weight:700;border:1px solid #d1d5db;cursor:pointer}
+#adminApp .productStepBadge.active{background:#0756a5;color:#ffffff;border-color:#0756a5;box-shadow:0 2px 6px rgba(7,86,165,0.25)}
+#adminApp .bulkPhotoBox{border:2px dashed #0756a5;border-radius:12px;background:#f4faff;padding:12px;text-align:center;margin:6px 0 10px;cursor:pointer}
 #adminApp .bulkPhotoBox:hover{background:#eaf4ff}
-#adminApp .imageSlot{position:relative;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc;height:105px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#adminApp .imageSlot{position:relative;border:1.5px solid #cbd5e1;border-radius:10px;background:#ffffff;height:105px;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+#adminApp .imageSlot.heroSlot{border:2px dashed #d97706;background:#fffbeb}
 #adminApp .imageSlot img{width:100%;height:100%;object-fit:contain;background:#fff;display:none}
+#adminApp .imageSlot.heroSlot img{object-fit:cover}
 #adminApp .imageSlot img.visible{display:block}
 #adminApp .imageSlot .slotLbl{font-size:11px;color:#64748b;font-weight:700;text-align:center;padding:4px}
+#adminApp .imageSlot.heroSlot .slotLbl{color:#b45309}
 #adminApp .imageSlot img.visible+.slotLbl{display:none}
 #adminApp .imgClearBtn{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;background:#dc2626;color:#fff;font-size:12px;font-weight:700;line-height:22px;text-align:center;padding:0;z-index:2;display:none}
 #adminApp .imgClearBtn.visible{display:block}
+
+/* HERO CARD EDITOR LIVE PREVIEW */
+#adminApp .heroEdCard{border:1px solid #cbd5e1;border-radius:16px;padding:14px;margin-bottom:14px;background:#ffffff;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+#adminApp .heroPreviewBox{width:230px;height:310px;margin:0 auto 12px;border-radius:16px;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.16);background:#fff;display:flex;flex-direction:column;justify-content:space-between}
+#adminApp .heroPreviewBox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+#adminApp .heroPreviewShade{position:absolute;inset:0;z-index:2}
+#adminApp .heroPreviewTop{position:relative;z-index:3;padding:14px 12px 6px}
+#adminApp .heroPreviewBot{position:relative;z-index:3;padding:10px 12px}
+
 #adminApp .modalShade{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:50}
 #adminApp .quick{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90%,370px);max-height:86vh;overflow:auto;background:#ffffff;border:1px solid #cbd5e1;border-radius:14px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,0.2);color:#111827}
 #adminApp .quick h3{margin:4px 6px 10px;font-size:16px;color:#07366c}
@@ -256,19 +298,14 @@ button{cursor:pointer}
 #adminApp .quick button{display:block;width:100%;padding:12px 10px;text-align:left;color:#111827;background:transparent;border:0;border-bottom:1px solid #e5e7eb;font-weight:600}
 #adminApp .quick button:hover{background:#f3f4f6}
 #adminApp .quick button:last-child{border:0}
-#adminApp .modal{background:#ffffff;border:1px solid #cbd5e1;border-radius:14px;padding:16px;width:min(94%,620px);max-height:92vh;overflow:auto;margin:3vh auto;color:#111827}
+#adminApp .modal{background:#ffffff;border:1px solid #cbd5e1;border-radius:14px;padding:16px;width:min(95%,650px);max-height:92vh;overflow:auto;margin:3vh auto;color:#111827}
 #adminApp .close{float:right;background:#e5e7eb;color:#111827;border:0;border-radius:7px;padding:7px 10px;font-weight:700}
 #adminApp .checkrow{display:flex;gap:8px;align-items:center;margin:7px 0;font-weight:600}
 #adminApp .checkrow input{width:auto}
 #adminApp .ordercard{border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin:9px 0;background:#ffffff;touch-action:pan-y;user-select:none;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
 #adminApp .orderrow{touch-action:pan-x pan-y;user-select:none;cursor:pointer}
 #adminApp .badge{font-size:11px;background:#eaf4ff;color:#07366c;padding:4px 8px;border-radius:20px;font-weight:700;display:inline-block}
-#adminApp .note{border-bottom:1px solid #e5e7eb;padding:12px 2px}
 #adminApp .hidden{display:none!important}
-#adminApp .bottom{position:fixed;bottom:0;left:0;right:0;z-index:22;background:#ffffff;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -4px 15px rgba(0,0,0,0.06)}
-#adminApp .bottom button{background:transparent;color:#6b7280;font-size:11px;font-weight:700;padding:4px;border:0}
-#adminApp .bottom b{display:block;font-size:20px;margin-bottom:2px}
-#adminApp .bottom button.active{color:#0756a5}
 #adminApp .sortHead{padding:10px 12px;border:1px dashed #94a3b8;border-radius:10px;margin:8px 0 12px;display:flex;align-items:center;justify-content:space-between;user-select:none;cursor:pointer;background:#ffffff}
 #adminApp .collapsible>summary{cursor:pointer;font-weight:800;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
 #adminApp .collapsible>summary::-webkit-details-marker{display:none}
@@ -291,20 +328,17 @@ button{cursor:pointer}
  .printBox{max-width:100%;border:2px solid #000}
 }
 @media(min-width:700px){
- #adminApp .dashboard{gap:18px}
- #adminApp .dashbtn{min-height:135px}
  #adminApp .wrap{padding-top:24px}
 }
 
 /* Responsive, touch-friendly admin controls */
-#adminApp button:not(.bottom button):not(.imgClearBtn):not(.moveBtn):not(.penEditBtn){min-height:46px}
+#adminApp button:not(.imgClearBtn):not(.moveBtn):not(.productStepBadge){min-height:46px}
 #adminApp .btn{padding:12px 16px;font-size:14px}
 #adminApp .row{flex-wrap:wrap;align-items:stretch}
 #adminApp .row>*{flex:1 1 220px}
 #adminApp .headFlex{flex-wrap:wrap}
 #adminApp .headFlex>.btn{min-width:150px}
 #adminApp .sellerMenu button{min-height:76px}
-#adminApp .bottom button{min-height:44px;padding:5px 3px}
 #adminApp .quick button{min-height:48px;padding:13px 12px}
 @media(max-width:520px){
  #adminApp .wrap{padding:14px 10px 82px}
@@ -312,6 +346,7 @@ button{cursor:pointer}
  #adminApp .headFlex>.btn{width:100%}
  #adminApp .sellerMenuPair{grid-template-columns:1fr}
  #adminApp .sellerMenu button{width:100%}
+ #adminApp .formGrid4,#adminApp .formGrid5{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
 </head>
@@ -326,19 +361,20 @@ button{cursor:pointer}
     <button onclick="C.searchNow()">Search</button>
    </div>
   </div>
-  <div class="subbrand">Tools Hub Rajkot</div>
-  <div class="brand"><span class="shri">श्री</span><span class="estore">Estore</span></div>
-  <div class="tag">HARDWARE • HOME IMPROVEMENT • TOOLS</div>
+  <div class="brand"><span class="shri">श्री</span><span class="estore">Estore</span><span class="brandLocation">Tools Hub Rajkot</span></div>
+  <button class="deliveryLocation" onclick="C.showPage('c_profile')"><span>📍</span><span id="c_deliveryLabel">Deliver to — Add your address</span><span style="margin-left:auto">⌄</span></button>
  </header>
 
  <main class="wrap">
   <section id="c_home" class="c-page active">
-   <div class="topShowcase" id="c_topShowcaseBanner"></div>
-
-   <section class="section">
-    <div class="sectionHead"><h2>Shop by Category</h2></div>
+   <section class="section" style="margin-top:4px">
+    <div class="sectionHead"><h2>Shop by Category</h2><button class="linkBtn" onclick="C.showPage('c_all')">View all ›</button></div>
     <div class="catgrid" id="c_homeCats"></div>
    </section>
+
+   <!-- Full-bleed showcase cards, below photo-led categories -->
+   <div class="heroTrack" id="c_heroTrack" onscroll="C.onHeroScroll()"></div>
+   <div class="heroDots" id="c_heroDots"></div>
 
    <section class="section">
     <div class="sectionHead"><h2>Featured Products</h2><button class="linkBtn" onclick="C.showPage('c_all')">View All ›</button></div>
@@ -352,6 +388,12 @@ button{cursor:pointer}
 
    <div class="careBanner" id="c_homeCareBanner">📞 Customer Care: Loading...</div>
    <div class="footer">© श्रीEstore (Tools Hub Rajkot) • Your trusted hardware &amp; tools store</div>
+  </section>
+
+  <section id="c_categories" class="c-page">
+   <h2 class="pageTitle">Shop by Category</h2>
+   <input class="field" id="c_categorySearch" placeholder="Search categories..." oninput="C.renderCategoryBrowser()">
+   <div class="catgrid" id="c_categoryBrowser"></div>
   </section>
 
   <section id="c_all" class="c-page">
@@ -393,7 +435,7 @@ button{cursor:pointer}
 
   <section id="c_profile" class="c-page">
    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-    <h2 class="pageTitle" style="margin:8px 0">My Profile</h2>
+    <h2 class="pageTitle" style="margin:8px 0">Customer Profile &amp; Orders</h2>
     <button class="ghostBtn" id="c_editProfileToggleBtn" style="display:none;font-size:12px" onclick="C.toggleProfileForm(true)">✏️ Edit Profile</button>
    </div>
 
@@ -417,16 +459,17 @@ button{cursor:pointer}
     <div class="row">
      <div>
       <label class="addrLbl">6-Digit Pincode *</label>
-      <input class="field" id="c_custPincode" type="tel" maxlength="6" placeholder="e.g. 360001">
+      <input class="field" id="c_custPincode" type="tel" maxlength="6" placeholder="e.g. 360001" oninput="C.onPincodeInput('prof')">
+      <span class="pinStatus" id="c_profPinStatus"></span>
      </div>
      <div>
-      <label class="addrLbl">City *</label>
-      <input class="field" id="c_custCity" placeholder="e.g. Rajkot / Mumbai">
+      <label class="addrLbl">City / District *</label>
+      <input class="field" id="c_custCity" placeholder="Auto-filled from Pincode">
      </div>
     </div>
     <label class="addrLbl">State *</label>
-    <input class="field" id="c_custState" placeholder="e.g. Gujarat / Maharashtra">
-    <button class="primary" onclick="C.saveProfile()">Save Profile &amp; Address</button>
+    <select class="field" id="c_custState"></select>
+    <button class="primary" id="c_saveProfBtn" onclick="C.saveProfile()">Save Profile &amp; Address</button>
    </div>
 
    <div class="panel">
@@ -443,28 +486,12 @@ button{cursor:pointer}
   </section>
  </main>
 
- <nav class="bottom">
+ <nav class="bottom" aria-label="Main navigation">
   <button id="c_b_home" class="active" onclick="C.showPage('c_home',this)"><b>⌂</b>Home</button>
-  <button id="c_b_search" onclick="C.openSearchTab(this)"><b>🔍</b>Search</button>
+  <button id="c_b_categories" onclick="C.openCategoriesTab(this)"><b>▦</b>Categories</button>
   <button id="c_b_cart" onclick="C.showPage('c_cart',this)"><b>🛒</b>Cart (<span id="c_cartCount">0</span>)</button>
   <button id="c_b_profile" onclick="C.showPage('c_profile',this)"><b>♙</b>Profile</button>
  </nav>
-
- <!-- FULL SCREEN QR PAYMENT OVERLAY -->
- <div id="c_fullQrModal">
-  <div class="fqrWrap">
-   <div>
-    <div class="fqrTop">
-     <b style="font-size:16px;color:#07366c" id="c_fqrHeader">Scan QR Code to Pay</b>
-     <button type="button" class="ghostBtn" style="padding:6px 12px;font-size:12px" onclick="C.closeFullQrModal()">✕ Close</button>
-    </div>
-    <div class="fqrCard" id="c_fqrBody"></div>
-   </div>
-   <div style="padding-bottom:10px">
-    <button type="button" class="primary" id="c_fqrConfirmBtn" style="padding:13px;font-size:15px" onclick="C.placeOrder()">✅ Confirm &amp; Place Order</button>
-   </div>
-  </div>
- </div>
 </div>
 
 <!-- ==================== 2. ADMIN PANEL (WHITE THEME) ==================== -->
@@ -482,12 +509,11 @@ button{cursor:pointer}
    <section class="sellerMenu" aria-label="Seller panel menu">
     <div class="sellerMenuPair">
      <button onclick="A.showPage('a_today')"><span class="menuIcon">✓</span><span class="menuLabel">Live Orders <small id="a_todayCount" class="muted">0</small></span><span class="menuArrow">›</span></button>
-     <button onclick="A.showPage('a_lowstock')"><span class="menuIcon">⚠</span><span class="menuLabel">Low Stock <small id="a_lowCount" class="muted">0</small></span><span class="menuArrow">›</span></button>
+     <button id="a_lowStockDashBtn" class="lowStockAlertBtn" onclick="A.showPage('a_lowstock')"><span class="menuIcon">⚠</span><span class="menuLabel">Low Stock <small id="a_lowCount" class="muted">0</small></span><span class="menuArrow">›</span></button>
     </div>
     <button onclick="A.showPage('a_products')"><span class="menuIcon">◆</span><span class="menuLabel">Product List <small id="a_productCount" class="muted">0 products</small></span><span class="menuArrow">›</span></button>
-    <button onclick="A.openOrderList()"><span class="menuIcon">☷</span><span class="menuLabel">Order List</span><span class="menuArrow">›</span></button>
-    <button onclick="A.openGSTManagement()"><span class="menuIcon">₹</span><span class="menuLabel">GST Management</span><span class="menuArrow">›</span></button>
-    <button onclick="A.openNotebook()"><span class="menuIcon">📓</span><span class="menuLabel">Notebook</span><span class="menuArrow">›</span></button>
+    <button onclick="A.openHeroEditor()"><span class="menuIcon">🎨</span><span class="menuLabel">Hero Card Editor <small class="muted">Showcase Schemes</small></span><span class="menuArrow">›</span></button>
+    <button onclick="A.openOrderList()"><span class="menuIcon">☷</span><span class="menuLabel">Order List &amp; GST Management</span><span class="menuArrow">›</span></button>
     <div class="sellerMenuPair">
      <button onclick="A.openSellerForm()"><span class="menuIcon">🏪</span><span class="menuLabel">Seller Form</span><span class="menuArrow">›</span></button>
      <button onclick="A.openLoginPanel()"><span class="menuIcon">🔐</span><span class="menuLabel">Login</span><span class="menuArrow">›</span></button>
@@ -497,36 +523,50 @@ button{cursor:pointer}
 
   <section id="a_today" class="a-page">
    <h2 class="title">Today's Orders</h2>
-   <p class="muted">Tip: Long-press (5s) any order for Print (Label / Invoice), Payment Screenshot &amp; Status options.</p>
+   <p class="muted">Tip: Long-press (5s) any order for Print (Label / Invoice) &amp; Status options.</p>
    <div id="a_todayOrders"></div>
   </section>
 
   <section id="a_stock" class="a-page"><h2 class="title">Total Stock</h2><div id="a_stockList"></div></section>
   <section id="a_lowstock" class="a-page"><h2 class="title">Low Stock Products (≤ 5)</h2><div id="a_lowList"></div></section>
 
-  <!-- 2. PRODUCT LIST (11 COLUMNS + PEN ICON CELL EDIT + KRAM ACTIONS & MOVE) -->
+  <!-- HERO CARD EDITOR PAGE -->
+  <section id="a_heroEditor" class="a-page">
+   <div class="headFlex">
+    <h2 class="title">🎨 Hero Card Editor (Showcase)</h2>
+    <button class="btn ghost" onclick="A.showPage('a_dashboard')">← Back</button>
+   </div>
+   <p class="muted">Yahan har Showcase Hero Card mein system se auto-add hui <b>Scheme (Offer Text, Colour Theme, Price Pill)</b> ko dekhein, badlein, ya agar full banner upload kiya hai toh scheme overlay ko hata dein. Card par click karne par customer seedha product details mein jayega jahan single normal product image dikhegi.</p>
+   <div id="a_heroEditorList"></div>
+  </section>
+
+  <!-- 2. PRODUCT LIST (STICKY KRAM + HEADER LONG-PRESS COLUMN BULK EDIT) -->
   <section id="a_products" class="a-page">
    <div class="headFlex">
-    <h2 class="title">Product List (11-Column Sheet)</h2>
+    <h2 class="title">Product List</h2>
     <button class="btn" onclick="A.newProduct()">+ New Product</button>
    </div>
-   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> ya <b>2. Image</b> par tap karne se full form khulega. <b>1. Kram</b> par <b>5 sec long-press</b> karne se Move, Live, Showcase, Duplicate &amp; Delete options khulenge. Kisi bhi box ko edit karne ke liye uske <b>✏️ Pen icon</b> par tap karein.</p>
+   <p class="muted" style="margin:0 0 8px">💡 <b>1. Kram</b> (left side fixed) ya <b>2. Image</b> par tap karne se full form khulega, aur <b>1. Kram</b> par 5s long-press se Move/Live/Showcase/Delete menu khulega. Kisi bhi editable column ki <b>Heading par long-press</b> karne par poora column editable ho jayega, aur column ke bahar touch karne par auto-save ho jayega.</p>
+   <div id="a_colEditStatusBanner" class="panel" style="display:none;background:#eff6ff;border-color:#93c5fd;padding:9px 12px;margin:6px 0"></div>
    <input class="field" id="a_productSearch" placeholder="Search name / SKU / category" oninput="A.renderProducts()">
-   <div class="tablewrap">
-    <table class="productTable">
+   <div class="tablewrap" id="a_prodTableWrap">
+    <table class="productTable" id="a_prodTable">
      <thead>
       <tr>
-       <th>1. Kram</th>
+       <th class="stickyKram">1. Kram</th>
        <th>2. Image</th>
        <th>3. Product Name</th>
-       <th>4. SKU</th>
-       <th>5. Stock</th>
-       <th>6. Seller Price</th>
-       <th>7. MRP</th>
-       <th>8. B2C Price</th>
-       <th>9. B2B Price</th>
-       <th>10. GST / Pc</th>
-       <th>11. Delivery (B2C / B2B)</th>
+       <th class="colEditable" data-col="sku" title="Long-press header to edit entire SKU column">SKU ✎</th>
+       <th class="colEditable" data-col="stock" title="Long-press header to edit entire Stock column">Stock ✎</th>
+       <th class="colEditable" data-col="hsn" title="Long-press header to edit entire HSN column">HSN Code ✎</th>
+       <th class="colEditable" data-col="sellerPrice" title="Long-press header to edit Seller Price column">Seller Price (+) ✎</th>
+       <th class="colEditable" data-col="gstRate" title="Long-press header to edit GST column">GST (+) ✎</th>
+       <th class="colEditable" data-col="delivery" title="Long-press header to edit Delivery Charges column">Delivery Charges (+) ✎</th>
+       <th class="colEditable" data-col="profit" title="Long-press header to edit Profit column">Profit (=) ✎</th>
+       <th class="colEditable" data-col="total" title="Long-press header to edit Total column">Total ✎</th>
+       <th class="colEditable" data-col="mrp" title="Long-press header to edit MRP column">MRP ✎</th>
+       <th class="colEditable" data-col="price" title="Long-press header to edit B2C Price column">B2C Price ✎</th>
+       <th class="colEditable" data-col="b2bPrice" title="Long-press header to edit B2B Price column">B2B Price ✎</th>
       </tr>
      </thead>
      <tbody id="a_productListTable"></tbody>
@@ -555,7 +595,7 @@ button{cursor:pointer}
      <option>Pending</option>
     </select>
    </div>
-   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print, Payment Screenshot &amp; Status menu ke liye row par 5 sec Long-press karein.</p>
+   <p class="muted" style="margin:2px 0 8px">Order ko upar/neeche karne ke liye <b>↑ / ↓</b> dabayein, ya Print &amp; Status menu ke liye row par 5 sec Long-press karein.</p>
    <div class="tablewrap">
     <table>
      <thead>
@@ -586,7 +626,7 @@ button{cursor:pointer}
    </details>
   </section>
 
-  <!-- 4. PROFILE / LOGIN / NOTEBOOK -->
+  <!-- 4. PROFILE / LOGIN / SELLER FORM -->
   <section id="a_login" class="a-page">
    <div class="headFlex">
     <h2 class="title">Admin Profile</h2>
@@ -608,8 +648,8 @@ button{cursor:pointer}
    </div>
 
    <div class="panel" id="a_profileFormPanel">
-    <h3 style="margin:0 0 6px">Shop Details • GST, RTO &amp; Payment QR</h3>
-    <p class="muted">Business profile, GSTIN, Care Number, COD Advance Amount, UPI ID aur Payment QR Cloud (Firestore) par save honge.</p>
+    <h3 style="margin:0 0 6px">Shop Details • GST, RTO &amp; Razorpay Payment</h3>
+    <p class="muted">Business profile, GSTIN, Care Number, COD Advance Amount aur Razorpay Key ID Cloud (Firestore) par save honge.</p>
     <input class="field" id="a_sellerName" placeholder="Business Name">
     <input class="field" id="a_sellerGstin" placeholder="GSTIN">
     <textarea class="field" id="a_sellerAddress" placeholder="Full RTO Return Address"></textarea>
@@ -620,35 +660,12 @@ button{cursor:pointer}
     </div>
     <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">COD Advance Online Payment Amount (₹) *</label>
     <input class="field" id="a_sellerCodAdvance" type="number" min="1" step="1" placeholder="e.g. 49">
-    <input class="field" id="a_sellerUpi" placeholder="Admin UPI ID (e.g. kestore@oksbi)">
-    <label style="font-size:12px;font-weight:700;display:block;margin-top:6px">Admin Payment QR Image (UPI / PhonePe / Paytm)</label>
-    <div style="display:flex;align-items:center;gap:10px;margin:6px 0 12px">
-     <input type="file" accept="image/*" id="a_qrUploadInput" onchange="A.handleQrUpload(this)">
-     <img id="a_qrPreviewImg" style="width:64px;height:64px;object-fit:contain;border:1px solid #cbd5e1;border-radius:8px;display:none" alt="QR Preview">
-     <button type="button" class="btn ghost" style="padding:6px 10px;font-size:11px" onclick="A.clearQrImage()">Clear QR</button>
-    </div>
-    <button class="btn" onclick="A.saveGSTSettings()">Save Profile &amp; Settings</button>
-   </div>
-
-   <!-- NOTEBOOK ALWAYS VISIBLE ON PROFILE PAGE -->
-   <div class="panel" id="a_notebookSection">
-    <h3 style="margin:0 0 10px">📓 Notebook &amp; Reminders</h3>
-    <input class="field" id="a_noteTitle" placeholder="Note Title">
-    <textarea class="field" id="a_noteText" placeholder="Details"></textarea>
-    <div class="row">
-     <input class="field" id="a_noteDate" type="date">
-     <input class="field" id="a_noteTime" type="time">
-    </div>
-    <button class="btn" onclick="A.addNote()">Save Note</button>
-    <p class="muted" style="margin-top:6px">Reminders are saved locally on this device.</p>
-    <h4 style="margin:14px 0 6px">Pending</h4>
-    <div id="a_pendingNotes"></div>
-    <h4 style="margin:14px 0 6px">Completed</h4>
-    <div id="a_completedNotes"></div>
+    <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">Razorpay Live Key ID (rzp_live_...) *</label>
+    <input class="field" id="a_sellerRazorpayKey" placeholder="e.g. rzp_live_xxxxxxxxxxxxxx">
+    <button class="btn" onclick="A.saveGSTSettings()">Save Profile &amp; Razorpay Settings</button>
    </div>
   </section>
  </main>
-
 
  <div class="modalShade" id="a_modalShade" onclick="A.closeModal()"><div class="modal" id="a_modal" onclick="event.stopPropagation()"></div></div>
  <div id="a_quickHost"></div>
@@ -670,6 +687,13 @@ button{cursor:pointer}
 <script>
 /* ==================== SHARED HELPERS & ROUTING ==================== */
 const CATS = ['New Tools','Power Tools','Hand Tools','Home Improvement','Auto Tools','Electric','Electronic','Plumber Tools','Kitchen Tools'];
+const INDIAN_STATES = [
+ 'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
+ 'Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur',
+ 'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
+ 'Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh',
+ 'Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'
+];
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
@@ -689,7 +713,7 @@ window.addEventListener('hashchange', applyRoute);
 
 /* ==================== SHARED FIRESTORE STORE DATA ==================== */
 window.storeProducts = [];
-window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,upiId:'',qrImage:''};
+window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,razorpayKeyId:''};
 
 window.initStoreFirebase = function(){
  if (!window.db || !window.fbLib) return;
@@ -700,8 +724,8 @@ window.initStoreFirebase = function(){
   if (window.C) C.onProductsUpdated();
  }, err => {
   console.error("Customer products sync error:", err);
-  const banner = document.getElementById('c_topShowcaseBanner');
-  if (banner) banner.innerHTML = '<div class="empty" style="color:#fff">Products could not load. Check Firebase configuration and Firestore read rules.</div>';
+  const track = document.getElementById('c_heroTrack');
+  if (track) track.innerHTML = '<div class="empty">Products could not load. Check Firebase configuration and Firestore read rules.</div>';
  });
 
  window.fbLib.onSnapshot(window.fbLib.doc(window.db, "settings", "store_profile"), snap => {
@@ -716,7 +740,67 @@ window.initStoreFirebase = function(){
 /* ==================== 1. CUSTOMER STOREFRONT APP (C) ==================== */
 window.C = (() => {
  const CART = 'kestore_cart_v1', PROFILE = 'kestore_profile_v1', ORDERS = 'kestore_orders_v1', SEQ_KEY = 'kestore_daily_seq_v1', RECENT_KEY = 'kestore_recent_search_v1';
- let showcaseIndex = 0, catFilter = '', currentDetail = null, selectedPayMode = 'COD', paymentProofData = '';
+ let catFilter = '', currentDetail = null, selectedPayMode = 'COD';
+ const pinCache = {};
+ let heroRotationIndex = 0, heroRotationTimer = null;
+ let currentDetailImages = [], currentDetailImageIndex = 0, detailTouchStartX = null;
+
+ function stateOptionsHTML(selectedVal=''){
+  let sel = String(selectedVal||'').trim().toLowerCase();
+  return `<option value="">-- Select State --</option>` + INDIAN_STATES.map(st =>
+   `<option value="${esc(st)}" ${st.toLowerCase()===sel?'selected':''}>${esc(st)}</option>`
+  ).join('');
+ }
+
+ async function fetchIndiaPostPin(pin){
+  let clean = String(pin||'').replace(/\D/g,'');
+  if(clean.length !== 6) return null;
+  if(pinCache[clean]) return pinCache[clean];
+  try{
+   let res = await fetch(`https://api.postalpincode.in/pincode/${clean}`);
+   let data = await res.json();
+   if(Array.isArray(data) && data[0]?.Status === 'Success' && data[0]?.PostOffice?.length){
+    let po = data[0].PostOffice[0];
+    let info = {
+     valid: true,
+     district: po.District || '',
+     state: po.State || '',
+     areas: data[0].PostOffice.map(x => String(x.Name||'').toLowerCase())
+    };
+    pinCache[clean] = info;
+    return info;
+   }
+   return { valid: false };
+  }catch(err){
+   console.warn('Pincode API offline fallback:', err);
+   return { offline: true };
+  }
+ }
+
+ async function onPincodeInput(prefix){
+  let pinEl = document.getElementById(prefix === 'co' ? 'c_coPincode' : 'c_custPincode');
+  let cityEl = document.getElementById(prefix === 'co' ? 'c_coCity' : 'c_custCity');
+  let stateEl = document.getElementById(prefix === 'co' ? 'c_coState' : 'c_custState');
+  let stEl = document.getElementById(prefix === 'co' ? 'c_coPinStatus' : 'c_profPinStatus');
+  if(!pinEl) return;
+  let pin = pinEl.value.replace(/\D/g,'');
+  pinEl.value = pin;
+  if(pin.length < 6){
+   if(stEl) stEl.textContent = '';
+   return;
+  }
+  if(stEl){ stEl.style.color = '#0756a5'; stEl.textContent = '⏳ Checking Pincode...'; }
+  let info = await fetchIndiaPostPin(pin);
+  if(info && info.valid){
+   if(cityEl) cityEl.value = info.district;
+   if(stateEl) stateEl.value = info.state;
+   if(stEl){ stEl.style.color = '#168047'; stEl.textContent = `✅ ${info.district}, ${info.state}`; }
+  } else if(info && info.valid === false){
+   if(stEl){ stEl.style.color = '#dc2626'; stEl.textContent = '❌ Invalid Indian Pincode!'; }
+  } else {
+   if(stEl) stEl.textContent = '';
+  }
+ }
 
  function makeFallbackSVG(title, color='#07366c'){
   let label = String(title||'श्रीEstore').slice(0,22).replace(/[&<>"']/g,'');
@@ -728,62 +812,135 @@ window.C = (() => {
  function liveProducts(){ return getProducts().filter(p => p.live !== false); }
  function discount(p){ if(!(Number(p.mrp)>0)||!(Number(p.price)>=0)||Number(p.price)>Number(p.mrp))return null; let v=Number(p.mrp)-Number(p.price); return {rs:v,pct:v/Number(p.mrp)*100}; }
  function photo(p){ let list=(p?.images||[]).filter(Boolean); return list[0]||p?.image||makeFallbackSVG(p?.name); }
+ function showcasePhoto(p){ return p?.showcaseImage || photo(p); }
  function imgTag(src, name, cls=''){ let fb=makeFallbackSVG(name); return `<img class="${cls}" src="${esc(src||fb)}" alt="${esc(name||'')}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">`; }
+
+ /* FULL-BLEED HERO SHOWCASE CARDS */
+ function renderHeroShowcase(){
+  let showcased = liveProducts().filter(p=>p.showcase===true || Boolean(p.showcaseImage) || (Array.isArray(p.showcase)&&p.showcase.length>0));
+  let arr = showcased.length ? showcased.slice(0, 8) : liveProducts().slice(0, 8);
+  let track = document.getElementById('c_heroTrack');
+  let dots = document.getElementById('c_heroDots');
+  if(!track) return;
+  if(!arr.length){
+   track.innerHTML = '<div class="empty">Loading live products...</div>';
+   if(dots) dots.innerHTML = '';
+   return;
+  }
+
+  track.innerHTML = arr.map((p, idx) => {
+   let d = discount(p);
+   let sc = p.heroScheme || {};
+   let showScheme = sc.enabled !== false;
+   let headline = (sc.headline && sc.headline.trim())
+    ? sc.headline.trim()
+    : ((d && d.pct >= 5) ? `Up to ${d.pct.toFixed(0)}% off` : `Top Pick Deal`);
+   let subline = (sc.subline && sc.subline.trim()) ? sc.subline.trim() : p.name;
+   let themeIdx = (sc.theme !== undefined && sc.theme !== '') ? Number(sc.theme) : (idx % 8);
+   let themeCls = `heroTheme${themeIdx % 8}`;
+
+   return `<article class="heroPoster ${themeCls}" onclick="C.openDetails('${esc(p.id)}')">
+    ${imgTag(showcasePhoto(p), p.name, 'heroFullImg')}
+    ${showScheme ? `
+     <div class="heroSchemeShade"></div>
+     <div class="heroTopTxt">
+      <div class="heroOfferTitle">${esc(headline)}</div>
+      <div class="heroProdSub">${esc(subline)}</div>
+     </div>
+     <div class="heroBottomWrap">
+      <div class="heroBottomPill">
+       <div>
+        <span class="hPrice">${money(p.price)}</span>
+        ${p.mrp && Number(p.mrp) > Number(p.price) ? `<span class="hMrp">${money(p.mrp)}</span>` : ''}
+       </div>
+       <span class="hTap">View ›</span>
+      </div>
+     </div>
+    ` : ''}
+   </article>`;
+  }).join('');
+  if(arr.length > 1) track.appendChild(track.firstElementChild.cloneNode(true));
+  heroRotationIndex = 0;
+
+  if(dots){
+   dots.innerHTML = arr.map((_, i) => `<span class="${i===0?'on':''}"></span>`).join('');
+  }
+ }
+
+ function onHeroScroll(){
+  let track = document.getElementById('c_heroTrack');
+  let dots = document.querySelectorAll('#c_heroDots span');
+  if(!track || !dots.length) return;
+  let cardW = track.firstElementChild ? (track.firstElementChild.offsetWidth + 12) : 300;
+  let physicalIdx = Math.max(0, Math.round(track.scrollLeft / cardW));
+  let activeIdx = physicalIdx >= dots.length ? 0 : physicalIdx;
+  heroRotationIndex = activeIdx;
+  dots.forEach((dot, i) => dot.classList.toggle('on', i === activeIdx));
+ }
+
+ function advanceHeroRotation(){
+  let track = document.getElementById('c_heroTrack');
+  let count = document.querySelectorAll('#c_heroDots span').length;
+  if(!track || count < 2 || track.children.length <= count) return;
+  heroRotationIndex = (heroRotationIndex + 1) % count;
+  let cardW = track.firstElementChild.offsetWidth + 12;
+  if(heroRotationIndex === 0){
+   track.scrollTo({left:cardW * count, behavior:'smooth'});
+   setTimeout(() => {
+    if(heroRotationIndex === 0) track.scrollTo({left:0, behavior:'instant'});
+   }, 550);
+  } else {
+   track.scrollTo({left:cardW * heroRotationIndex, behavior:'smooth'});
+  }
+ }
 
  function productCard(p){
   let d = discount(p);
-  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
-  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
-  let gstRate = p.gstRate !== undefined ? p.gstRate : 18;
-
   return `<article class="product" onclick="C.openDetails('${esc(p.id)}')">
     <div class="productVisual">
+     ${d && d.pct >= 5 ? `<span class="cardOfferBadge">${d.pct.toFixed(0)}% OFF</span>` : ''}
      ${imgTag(photo(p), p.name)}
-     <div class="productActions">
-      <button class="productAction" type="button" aria-label="Compare ${esc(p.name)}" title="Compare" onclick="event.stopPropagation();C.toggleCardAction(this,'compare')">▣</button>
-      <button class="productAction" type="button" aria-label="Add ${esc(p.name)} to wishlist" title="Wishlist" onclick="event.stopPropagation();C.toggleCardAction(this,'favorite')">♡</button>
-     </div>
     </div>
     <div class="productInfo">
      <h3>${esc(p.name)}</h3>
-     <div class="small">${esc(p.cat||'')} ${p.sku?`• SKU: <code>${esc(p.sku)}</code>`:''}</div>
-     <div class="price">${money(p.price)} <span class="mrp">${p.mrp?`M.R.P. <s>${money(p.mrp)}</s>`:''}</span></div>
-     ${d?`<div class="discount">(${d.pct.toFixed(0)}% off)</div>`:''}
-     <div class="b2b-badge">📦 B2B: ${money(b2bPriceVal)} (${b2bMin}+ Qty)</div>
-     <div class="small">Stock: <span style="font-weight:700;color:${p.stock<=5?'#dc2626':'#16833b'}">${p.stock<=0?'Out of stock':p.stock}</span> · GST ${gstRate}%</div>
-     <button class="addCartBtn" type="button" ${p.stock<=0?'disabled':''} onclick="event.stopPropagation();C.addFromCard('${esc(p.id)}')">Add to cart</button>
+     <div class="priceRow">
+      <span class="price">${money(p.price)}</span>
+      ${p.mrp && Number(p.mrp) > Number(p.price) ? `<span class="mrp">${money(p.mrp)}</span>` : ''}
+     </div>
     </div>
    </article>`;
  }
 
- function renderCats(){
+ function categoryCardsHTML(query=''){
   let icons=['🆕','⚡','🔧','🏠','🚗','💡','🔌','🚿','📦'];
-  document.getElementById('c_homeCats').innerHTML = CATS.map((c,i)=>`<button class="cat" onclick="C.openCategory('${c.replace(/'/g,"\\'")}')"><i>${icons[i]||'🔧'}</i>${c}</button>`).join('');
+  let products = liveProducts();
+  let categories = CATS.filter(c=>c.toLowerCase().includes(query.trim().toLowerCase()));
+  return categories.map(c=>{
+   let i = CATS.indexOf(c);
+   let match = products.find(p=>String(p.cat||'').toLowerCase()===c.toLowerCase());
+   let image = match ? photo(match) : makeFallbackSVG(c);
+   return `<button class="cat" onclick="C.openCategory('${c.replace(/'/g,"\\'")}')"><img src="${esc(image)}" alt="${esc(c)}" loading="lazy" onerror="this.onerror=null;this.src='${makeFallbackSVG(c)}'"><span>${icons[i]||'🔧'} ${esc(c)}</span></button>`;
+  }).join('') || '<div class="empty">No matching categories found.</div>';
  }
 
- function renderTopShowcase(){
-  let arr = liveProducts().filter(p=>p.showcase===true || (Array.isArray(p.showcase)&&p.showcase.length>0));
-  if(!arr.length) arr = liveProducts();
-  let el = document.getElementById('c_topShowcaseBanner');
-  if(!el) return;
-  if(!arr.length){ el.innerHTML='<div class="empty" style="color:#fff">Loading live products...</div>'; return; }
-  showcaseIndex = showcaseIndex % arr.length;
-  let p = arr[showcaseIndex], d = discount(p);
-  let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
-  let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
+ function renderCats(){
+  let homeCats = document.getElementById('c_homeCats');
+  if(homeCats) homeCats.innerHTML = categoryCardsHTML();
+ }
 
-  el.innerHTML = `<div class="showcaseCard">
-   ${imgTag(photo(p), p.name)}
-   <div class="showcaseInfo">
-    <div class="showcaseBadge">⭐ FEATURED LIVE DEAL</div>
-    <h3>${esc(p.name)}</h3>
-    <div class="showcasePrice">${money(p.price)} <span class="showcaseMrp">${p.mrp?money(p.mrp):''}</span></div>
-    <div style="font-size:10.5px;background:#fef3c7;color:#d97706;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px">📦 B2B Wholesale: ${money(b2bPriceVal)} (${b2bMin}+ Qty)</div>
-    ${d?`<div style="font-size:11px;color:#86efac;margin:2px 0">Save ${money(d.rs)} (${d.pct.toFixed(0)}% OFF)</div>`:''}
-    <button class="primary" style="margin-top:8px;padding:7px 12px;font-size:12px;background:#ffca28;color:#000" onclick="C.openDetails('${esc(p.id)}')">View Details ›</button>
-   </div>
-  </div>
-  <div class="dots">${arr.map((_,n)=>`<span class="${n===showcaseIndex?'on':''}"></span>`).join('')}</div>`;
+ function renderCategoryBrowser(){
+  let query = document.getElementById('c_categorySearch')?.value || '';
+  let browser = document.getElementById('c_categoryBrowser');
+  if(browser) browser.innerHTML = categoryCardsHTML(query);
+ }
+
+ function renderDeliveryLocation(){
+  let label = document.getElementById('c_deliveryLabel');
+  if(!label) return;
+  let p = getProfile();
+  label.textContent = p.name && (p.city || p.address)
+   ? `Deliver to ${p.name} — ${p.city || p.address}`
+   : 'Deliver to — Add your address';
  }
 
  function renderCareBanners(){
@@ -796,7 +953,8 @@ window.C = (() => {
  }
 
  function renderHome(){
-  renderTopShowcase();
+  renderDeliveryLocation();
+  renderHeroShowcase();
   renderCats();
   let p = liveProducts();
   document.getElementById('c_featured').innerHTML = p.slice(0,8).map(productCard).join('') || '<div class="empty">No live products available.</div>';
@@ -852,6 +1010,14 @@ window.C = (() => {
   if(!document.getElementById('c_searchResults').innerHTML.trim()) runSearch('');
  }
 
+ function openCategoriesTab(btn){
+  catFilter = '';
+  let search = document.getElementById('c_categorySearch');
+  if(search) search.value = '';
+  showPage('c_categories', btn);
+  renderCategoryBrowser();
+ }
+
  function showPage(id, btn){
   if(id === 'c_all' && !btn) catFilter = catFilter || '';
   document.querySelectorAll('#customerApp .c-page').forEach(p=>p.classList.remove('active'));
@@ -864,6 +1030,7 @@ window.C = (() => {
   window.scrollTo(0,0);
  }
 
+ /* PRODUCT DETAILS PAGE: SINGLE LARGE NORMAL IMAGE ONLY (440PX HEIGHT, NO DOUBLE IMAGE) */
  function openDetails(id){
   let p = getProducts().find(x=>x.id===id);
   if(!p) return;
@@ -874,6 +1041,8 @@ window.C = (() => {
   if(p.image && !imgs.includes(p.image)) imgs.unshift(p.image);
   if(!imgs.length) imgs = [photo(p)];
   let fb = makeFallbackSVG(p.name);
+  currentDetailImages = imgs;
+  currentDetailImageIndex = 0;
 
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
@@ -881,8 +1050,8 @@ window.C = (() => {
   let defaultB2cText = b2cCustomDel > 0 ? `₹${b2cCustomDel} per item delivery` : `1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery`;
 
   document.getElementById('c_detailContent').innerHTML = `<div class="panel">
-   <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">
-   <div class="thumbs">${imgs.slice(0,4).map((u,i)=>`<img class="${i===0?'sel':''}" src="${esc(u)}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'" onclick="document.getElementById('c_mainDetailImg').src=this.src;document.querySelectorAll('#customerApp .thumbs img').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')">`).join('')}</div>
+   <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'" ontouchstart="C.detailTouchStart(event)" ontouchend="C.detailTouchEnd(event)">
+   ${imgs.length > 1 ? `<div class="thumbs">${imgs.slice(0,4).map((u,i)=>`<img class="${i===0?'sel':''}" src="${esc(u)}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'" onclick="C.selectDetailImage(${i})">`).join('')}</div>` : ''}
    <h2>${esc(p.name)}</h2>
    <div class="small">SKU: ${esc(p.sku)} • ${esc(p.cat)} | GST: ${p.gstRate||18}% ${p.hsn?'| HSN: '+esc(p.hsn):''}</div>
    <div class="price" id="c_detailPriceDisp">${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span></div>
@@ -890,7 +1059,7 @@ window.C = (() => {
    ${discount(p)?`<div class="discount" id="c_detailDiscDiv">Save ${money(discount(p).rs)} • ${discount(p).pct.toFixed(0)}% OFF</div>`:''}
    <p>${esc(p.desc||'')}</p>
    ${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).length?`<div class="variantChooser"><b>Choose your options</b><div class="small">Apni pasand ka size, colour ya weight select karein.</div>${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).map(([k,v])=>`<label><b>${esc(k)}</b></label><select class="field variation" data-var="${esc(k)}">${v.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>`).join('')}</div>`:''}
-   <label><b>Quantity (Enter ${b2bMin}+ for Automatic B2B Wholesale Rate: ${money(b2bPriceVal)})</b></label>
+   <label><b>Quantity (Enter ${b2bMin}+ for B2B Wholesale Rate: ${money(b2bPriceVal)})</b></label>
    <input class="field" id="c_detailQty" type="number" min="1" max="${Math.max(1,p.stock)}" value="1" oninput="C.handleDetailQtyChange()">
    <div class="notice">${p.stock<=0?'Currently out of stock':p.stock<=5?'Only '+p.stock+' left in stock':p.stock+' available in stock'}</div>
    <div class="row" style="margin-top:12px">
@@ -899,6 +1068,30 @@ window.C = (() => {
    </div>
   </div>`;
   showPage('c_details');
+ }
+
+ function selectDetailImage(index){
+  if(!currentDetailImages.length) return;
+  currentDetailImageIndex = Math.max(0, Math.min(index, currentDetailImages.length - 1));
+  let mainImg = document.getElementById('c_mainDetailImg');
+  if(mainImg) mainImg.src = currentDetailImages[currentDetailImageIndex];
+  document.querySelectorAll('#customerApp .thumbs img').forEach((thumb, i)=>thumb.classList.toggle('sel', i === currentDetailImageIndex));
+ }
+
+ function detailTouchStart(event){
+  detailTouchStartX = event.changedTouches?.[0]?.clientX ?? null;
+ }
+
+ function detailTouchEnd(event){
+  if(detailTouchStartX === null) return;
+  let endX = event.changedTouches?.[0]?.clientX;
+  let deltaX = endX - detailTouchStartX;
+  detailTouchStartX = null;
+  if(Math.abs(deltaX) < 40 || currentDetailImages.length < 2) return;
+  let nextIndex = currentDetailImageIndex + (deltaX < 0 ? 1 : -1);
+  if(nextIndex >= currentDetailImages.length) nextIndex = 0;
+  if(nextIndex < 0) nextIndex = currentDetailImages.length - 1;
+  selectDetailImage(nextIndex);
  }
 
  function handleDetailQtyChange(){
@@ -927,20 +1120,6 @@ window.C = (() => {
    bannerEl.innerHTML = `🛒 B2C Retail Mode (${q>0 ? q+' item(s) delivery = '+money(totalDel) : (b2cCustomDel>0 ? '₹'+b2cCustomDel+' per item' : '1–5 Qty: ₹250 | 6–9 Qty: ₹150')})`;
    if(discEl && discount(p)) discEl.style.display = 'inline-block';
   }
- }
-
- function addFromCard(id){
-  let p=getProducts().find(x=>x.id===id);
-  if(!p) return;
-  let hasVariations=Object.values(p.variations||{}).some(values=>Array.isArray(values)&&values.length);
-  if(hasVariations){ openDetails(id); return; }
-  addToCart(id,false,{});
- }
-
- function toggleCardAction(button, type){
-  let active=button.classList.toggle('active');
-  button.textContent=type==='favorite'?(active?'♥':'♡'):(active?'✓':'▣');
-  button.setAttribute('aria-pressed',String(active));
  }
 
  function getSelectedVariations(){
@@ -1074,16 +1253,56 @@ window.C = (() => {
   return `${street}, ${landmark}, ${city}, ${state} - ${pincode}`;
  }
 
- function validateCustomerAddress({name, phone, street, landmark, pincode, city, state}){
-  if(!name || name.length < 2) return 'Please customer ka pura naam (Full Name) dalein.';
+ async function validateCustomerAddressStrict({name, phone, street, landmark, pincode, city, state}){
+  if(!name || name.length < 3 || !/^[a-zA-Z\s.]+$/.test(name)){
+   return 'Please customer ka sahi Full Name (kam se kam 3 letters) dalein.';
+  }
   let cleanPhone = phone.replace(/\D/g,'');
-  if(cleanPhone.length !== 10) return 'Please sahi 10-digit Mobile Number dalein.';
-  if(!street || street.length < 4) return 'Please House / Flat / Shop / Street No. pura dalein.';
-  if(!landmark || landmark.length < 4) return 'Please Area / Colony aur Nearby Landmark (Opp / Near) zaroor dalein.';
+  if(!/^[6-9]\d{9}$/.test(cleanPhone) || /^(\d)\1{9}$/.test(cleanPhone)){
+   return 'Please valid 10-digit Indian Mobile Number dalein.';
+  }
+  if(!street || street.length < 5 || !/[a-zA-Z]/.test(street)){
+   return 'Please sahi House / Flat / Shop / Street No. dalein.';
+  }
+  if(!landmark || landmark.length < 5){
+   return 'Please sahi Area / Colony aur Nearby Landmark (Opp / Near) pura dalein.';
+  }
   let cleanPin = pincode.replace(/\D/g,'');
-  if(cleanPin.length !== 6) return 'Please sahi 6-digit Pincode dalein.';
-  if(!city || city.length < 2) return 'Please City (Shehar) ka naam dalein.';
-  if(!state || state.length < 2) return 'Please State (Rajya) ka naam dalein.';
+  if(!/^[1-9]\d{5}$/.test(cleanPin)){
+   return 'Please valid 6-digit Indian Pincode dalein.';
+  }
+  if(!city || city.length < 2){
+   return 'Please City / District ka sahi naam dalein.';
+  }
+  if(!state || !INDIAN_STATES.some(s => s.toLowerCase() === state.trim().toLowerCase())){
+   return 'Please list mein se sahi Indian State chunein.';
+  }
+
+  let pinInfo = await fetchIndiaPostPin(cleanPin);
+  if(pinInfo && pinInfo.valid === false){
+   return `❌ Pincode ${cleanPin} galat hai! India Post record mein yeh Pincode nahi mila.`;
+  }
+  if(pinInfo && pinInfo.valid){
+   let apiState = pinInfo.state.toLowerCase();
+   let userState = state.trim().toLowerCase();
+   if(apiState !== userState){
+    return `❌ Address Mismatch! Pincode ${cleanPin} "${pinInfo.state}" state ka hai, lekin aapne "${state}" chuna hai.`;
+   }
+   let apiDist = pinInfo.district.toLowerCase().replace(/[^a-z]/g,'');
+   let userCity = city.trim().toLowerCase().replace(/[^a-z]/g,'');
+   let areaMatched = pinInfo.areas.some(a => a.replace(/[^a-z]/g,'').includes(userCity) || userCity.includes(a.replace(/[^a-z]/g,'')));
+   if(!apiDist.includes(userCity) && !userCity.includes(apiDist) && !areaMatched){
+    return `❌ City Mismatch! Pincode ${cleanPin} "${pinInfo.district} (${pinInfo.state})" ka hai, "${city}" ka nahi!`;
+   }
+   let otherStates = INDIAN_STATES.map(s => s.toLowerCase()).filter(s => s !== apiState && s.length > 4);
+   let streetLow = street.toLowerCase();
+   let landLow = landmark.toLowerCase();
+   for(const stName of otherStates){
+    if(streetLow.includes(stName) || landLow.includes(stName)){
+     return `❌ Galat Address! Aapka Pincode ${pinInfo.state} ka hai, lekin address mein "${stName.toUpperCase()}" likha hai.`;
+    }
+   }
+  }
   return '';
  }
 
@@ -1094,7 +1313,7 @@ window.C = (() => {
   document.getElementById('c_editProfileToggleBtn').style.display = open ? 'none' : 'inline-block';
  }
 
- function saveProfile(){
+ async function saveProfile(){
   let name = document.getElementById('c_custName').value.trim();
   let phone = document.getElementById('c_custPhone').value.trim().replace(/\D/g,'');
   let email = document.getElementById('c_custEmail').value.trim();
@@ -1104,13 +1323,17 @@ window.C = (() => {
   let city = document.getElementById('c_custCity').value.trim();
   let state = document.getElementById('c_custState').value.trim();
 
-  let err = validateCustomerAddress({name, phone, street, landmark, pincode, city, state});
+  let btn = document.getElementById('c_saveProfBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Verifying Pincode & Address...'; }
+  let err = await validateCustomerAddressStrict({name, phone, street, landmark, pincode, city, state});
+  if(btn){ btn.disabled = false; btn.textContent = 'Save Profile & Address'; }
   if(err){ alert(err); return; }
 
   let fullAddr = buildFullAddress({street, landmark, city, state, pincode});
   let p = { name, phone, email, street, landmark, pincode, city, state, address: fullAddr };
   localStorage.setItem(PROFILE, JSON.stringify(p));
-  alert('Profile & full address saved!');
+  alert('Verified Profile & Address Saved!');
+  renderDeliveryLocation();
   renderProfile();
  }
 
@@ -1123,7 +1346,7 @@ window.C = (() => {
   document.getElementById('c_custLandmark').value = p.landmark||'';
   document.getElementById('c_custPincode').value = p.pincode||'';
   document.getElementById('c_custCity').value = p.city||'';
-  document.getElementById('c_custState').value = p.state||'';
+  document.getElementById('c_custState').innerHTML = stateOptionsHTML(p.state||'');
 
   let isComplete = p.name && p.phone && p.street && p.landmark && p.pincode && p.city && p.state;
   if(isComplete){
@@ -1150,9 +1373,9 @@ window.C = (() => {
   let activeHtml = activeOrders.map(o=>`<div class="itemrow"><div style="flex:1">
    <div style="display:flex;justify-content:space-between;align-items:center">
     <b>Order No: ${esc(o.number)}</b>
-    <span class="orderBadge" style="background:#eaf4ff;color:#0756a5">${esc(o.status||'Pending')}</span>
+    <span class="orderBadge" style="background:#eaf4ff;color:#0756a5">${esc(o.status||'Confirmed')}</span>
    </div>
-   <div class="small">${esc(o.date)} • Payment: <b>${esc(o.paymentMethod||'COD')}</b></div>
+   <div class="small">${esc(o.date)} • Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
    <div class="small">${(o.items||[]).map(i=>esc((i.name||'')+(i.vKey?' ('+i.vKey+')':'')+' × '+i.qty)).join(', ')}</div>
    <div><b>${money(o.total)}</b> (Delivery: ${money(o.deliveryFee||0)})</div>
   </div></div>`).join('');
@@ -1164,7 +1387,7 @@ window.C = (() => {
     <b>Order No: ${esc(o.number)}</b>
     <span class="orderBadge" style="background:#dcfce7;color:#166534">${esc(o.status)}</span>
    </div>
-   <div class="small">${esc(o.date)} • Payment: <b>${esc(o.paymentMethod||'COD')}</b></div>
+   <div class="small">${esc(o.date)} • Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
    <div class="small">${(o.items||[]).map(i=>esc((i.name||'')+' × '+i.qty)).join(', ')}</div>
    <div><b>${money(o.total)}</b></div>
   </div></div>`).join('') || '<div class="small">No completed orders yet.</div>';
@@ -1186,7 +1409,7 @@ window.C = (() => {
   let codAdv = getCodAdvanceAmount();
 
   document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
-   <h3>Complete Delivery Address (All Fields Required *)</h3>
+   <h3>Complete Delivery Address (Pincode Verified *)</h3>
    <label class="addrLbl">Customer Full Name *</label>
    <input class="field" id="c_coName" placeholder="Customer Full Name" value="${esc(pr.name||'')}">
    <label class="addrLbl">10-Digit Mobile Number *</label>
@@ -1194,33 +1417,31 @@ window.C = (() => {
    <label class="addrLbl">House / Flat / Shop / Street No. *</label>
    <input class="field" id="c_coStreet" placeholder="e.g. Shop 12, Shanti Complex, Street 4" value="${esc(pr.street||'')}">
    <label class="addrLbl">Area / Colony &amp; Nearby Landmark (Opp / Near) *</label>
-   <input class="field" id="c_coLandmark" placeholder="e.g. Andheri West, Opp. Metro Station / Near Temple" value="${esc(pr.landmark||'')}">
+   <input class="field" id="c_coLandmark" placeholder="e.g. Kalawad Road, Opp. SBI Bank / Near Bus Stand" value="${esc(pr.landmark||'')}">
    <div class="row">
     <div>
      <label class="addrLbl">6-Digit Pincode *</label>
-     <input class="field" id="c_coPincode" type="tel" maxlength="6" placeholder="e.g. 400058" value="${esc(pr.pincode||'')}">
+     <input class="field" id="c_coPincode" type="tel" maxlength="6" placeholder="e.g. 360006" value="${esc(pr.pincode||'')}" oninput="C.onPincodeInput('co')">
+     <span class="pinStatus" id="c_coPinStatus"></span>
     </div>
     <div>
-     <label class="addrLbl">City *</label>
-     <input class="field" id="c_coCity" placeholder="e.g. Mumbai / Rajkot" value="${esc(pr.city||'')}">
+     <label class="addrLbl">City / District *</label>
+     <input class="field" id="c_coCity" placeholder="Auto-filled from Pincode" value="${esc(pr.city||'')}">
     </div>
    </div>
    <label class="addrLbl">State *</label>
-   <input class="field" id="c_coState" placeholder="e.g. Maharashtra / Gujarat" value="${esc(pr.state||'')}">
+   <select class="field" id="c_coState">${stateOptionsHTML(pr.state||'')}</select>
 
-   <h3>Payment Option (Select to Open Full-Screen QR)</h3>
+   <h3>Payment Method (Razorpay Secure Checkout)</h3>
    <div style="margin:8px 0 12px">
     <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
-     <input type="radio" name="c_payOpt" value="COD" onclick="C.openFullQrPayment('COD')">
-     <span>💵 Cash on Delivery (COD) — <b>${money(codAdv)} Advance Online QR</b> (Baaki ${money(Math.max(0, grandTotal - codAdv))} Cash on Delivery)</span>
+     <input type="radio" name="c_payOpt" value="COD" checked>
+     <span>💵 Cash on Delivery (COD) — <b>${money(codAdv)} Advance via Razorpay</b> (Baaki ${money(Math.max(0, grandTotal - codAdv))} Cash on Delivery)</span>
     </label>
     <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
-     <input type="radio" name="c_payOpt" value="Online" onclick="C.openFullQrPayment('Online')">
-     <span>📱 Online Payment (QR Code) — <b>Full Payment ${money(grandTotal)}</b></span>
+     <input type="radio" name="c_payOpt" value="Online">
+     <span>💳 Online Payment (UPI / QR / Card) — <b>Full Payment ${money(grandTotal)} via Razorpay</b></span>
     </label>
-   </div>
-   <div id="c_payExtraFields" style="margin-bottom:12px">
-    <div class="notice">Upar diye gaye <b>COD</b> ya <b>Online Payment</b> option par click karke Full-Screen QR Code se payment karein.</div>
    </div>
 
    <h3>Order Summary (${orderGroups.length} Separate Bills/Parcels)</h3>
@@ -1232,11 +1453,12 @@ window.C = (() => {
     </div>`;
    }).join('')}
    <div class="total" style="margin-top:10px">Grand Total: ${money(grandTotal)}</div>
-   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.handleCheckoutSubmit()">Proceed to QR Payment &amp; Order</button>
+   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.startRazorpayCheckout()">🔒 Pay &amp; Place Order via Razorpay</button>
   </div>`;
+  if(pr.pincode && pr.pincode.length === 6) onPincodeInput('co');
  }
 
- function getCheckoutAddressData(){
+ async function getCheckoutAddressData(){
   let name = document.getElementById('c_coName')?.value.trim() || '';
   let phone = (document.getElementById('c_coPhone')?.value.trim() || '').replace(/\D/g,'');
   let street = document.getElementById('c_coStreet')?.value.trim() || '';
@@ -1244,135 +1466,8 @@ window.C = (() => {
   let pincode = (document.getElementById('c_coPincode')?.value.trim() || '').replace(/\D/g,'');
   let city = document.getElementById('c_coCity')?.value.trim() || '';
   let state = document.getElementById('c_coState')?.value.trim() || '';
-  let err = validateCustomerAddress({name, phone, street, landmark, pincode, city, state});
+  let err = await validateCustomerAddressStrict({name, phone, street, landmark, pincode, city, state});
   return { err, name, phone, street, landmark, pincode, city, state, fullAddress: buildFullAddress({street, landmark, city, state, pincode}) };
- }
-
- function compressPaymentScreenshot(file){
-  return new Promise((resolve, reject) => {
-   let reader = new FileReader();
-   reader.onerror = () => reject(new Error('Could not read screenshot'));
-   reader.onload = () => {
-    let img = new Image();
-    img.onerror = () => reject(new Error('Invalid screenshot image'));
-    img.onload = () => {
-     let scale = Math.min(1, 720 / Math.max(img.naturalWidth, img.naturalHeight));
-     let canvas = document.createElement('canvas');
-     canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-     canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-     let ctx = canvas.getContext('2d');
-     ctx.fillStyle = '#ffffff';
-     ctx.fillRect(0, 0, canvas.width, canvas.height);
-     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-     let q = 0.72;
-     let out = canvas.toDataURL('image/webp', q);
-     if(!out.startsWith('data:image/webp')) out = canvas.toDataURL('image/jpeg', q);
-     while(out.length > 65000 && q > 0.3){
-      q -= 0.1;
-      out = out.startsWith('data:image/webp') ? canvas.toDataURL('image/webp', q) : canvas.toDataURL('image/jpeg', q);
-     }
-     resolve(out);
-    };
-    img.src = reader.result;
-   };
-   reader.readAsDataURL(file);
-  });
- }
-
- async function handlePaymentProofUpload(input){
-  let file = input.files?.[0];
-  input.value = '';
-  if(!file || !file.type.startsWith('image/')){ alert('Please valid payment screenshot image select karein.'); return; }
-  let st = document.getElementById('c_proofStatus');
-  if(st) st.textContent = '⏳ Loading screenshot...';
-  try{
-   paymentProofData = await compressPaymentScreenshot(file);
-   let prev = document.getElementById('c_proofPreviewImg');
-   if(prev){ prev.src = paymentProofData; prev.style.display = 'block'; }
-   if(st) st.textContent = '✅ Screenshot attached!';
-  }catch(err){
-   alert('Screenshot load failed: ' + err.message);
-  }
- }
-
- function validateStrictUtr(utr){
-  let clean = String(utr||'').trim();
-  if(!/^\d{12}$/.test(clean)){
-   return 'Please sahi 12 ankon (digits) ka UTR / UPI Ref No. dalein (sirf 12 numbers allowed hain).';
-  }
-  // Block fake/dummy patterns like 111111111111, 000000000000, 123456789012, 987654321098
-  if(/^(\d)\1{11}$/.test(clean) || clean === '123456789012' || clean === '012345678901' || clean === '987654321098'){
-   return 'Yeh nakli (dummy) UTR number hai! Kripya asli UPI payment receipt ka 12-digit UTR dalein.';
-  }
-  return '';
- }
-
- function openFullQrPayment(mode){
-  selectedPayMode = mode;
-  let addr = getCheckoutAddressData();
-  if(addr.err){
-   alert(addr.err);
-   document.querySelectorAll('input[name="c_payOpt"]').forEach(r => r.checked = false);
-   return;
-  }
-
-  let s = window.storeSettings || {};
-  let upiId = (s.upiId || '').trim();
-  let qrImg = s.qrImage || '';
-  let c = getCart(), orderGroups = getProcessedCartOrders(c);
-  let grandTotal = orderGroups.reduce((sum, grp) => sum + grp.subtotal + grp.deliveryFee, 0);
-  let codAdv = getCodAdvanceAmount();
-  let payableNow = (mode === 'COD') ? codAdv : grandTotal;
-  let remCod = Math.max(0, grandTotal - payableNow);
-
-  let upiLink = upiId ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(s.name||'KEstore')}&am=${payableNow.toFixed(2)}&cu=INR` : '';
-  let displayQr = qrImg || (upiLink ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiLink)}` : '');
-
-  let existingRef = document.getElementById('c_payRef')?.value.trim() || '';
-
-  document.getElementById('c_fqrHeader').textContent = (mode === 'COD')
-   ? `COD Advance Payment (${money(payableNow)})`
-   : `Full Online Payment (${money(payableNow)})`;
-
-  document.getElementById('c_fqrBody').innerHTML = `
-   <div class="fqrSub">${mode === 'COD' ? 'COD Order Confirm karne ke liye Advance Online Pay karein' : 'Pura Online Payment QR Code se karein'}</div>
-   <div class="fqrAmt">${money(payableNow)}</div>
-   ${mode === 'COD' ? `<div style="font-size:12px;color:#b45309;background:#fef3c7;padding:5px 8px;border-radius:8px;margin:4px 0;font-weight:700">Order Total: ${money(grandTotal)} | Advance: ${money(payableNow)} | Cash on Delivery: ${money(remCod)}</div>` : `<div style="font-size:12px;color:#166534;background:#dcfce7;padding:5px 8px;border-radius:8px;margin:4px 0;font-weight:700">100% Paid Online (Delivery par ₹0 dena hoga)</div>`}
-   ${displayQr ? `<img src="${esc(displayQr)}" alt="Scan QR Code to Pay">` : `<div class="notice" style="margin:12px 0">Admin ne abhi QR Code ya UPI ID set nahi kiya hai. Please Admin se sampark karein.</div>`}
-   ${upiId ? `<div style="font-size:13px;margin-top:4px"><b>UPI ID:</b> <code>${esc(upiId)}</code></div>` : ''}
-   <div style="text-align:left;margin-top:12px">
-    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">1. Payment ke baad Exact 12-digit UTR / UPI Ref No. dalein *</label>
-    <input class="field" id="c_payRef" type="tel" maxlength="12" inputmode="numeric" value="${esc(existingRef)}" placeholder="Enter 12-digit UTR Number" style="margin:0;border:2px solid #0756a5">
-   </div>
-   <div class="proofBox">
-    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:5px;color:#07366c">2. Payment Screenshot Upload Karein (Compulsory) *</label>
-    <input type="file" accept="image/*" onchange="C.handlePaymentProofUpload(this)">
-    <div id="c_proofStatus" class="small" style="margin-top:4px;font-weight:700;color:#0756a5">${paymentProofData ? '✅ Screenshot attached!' : 'Receipt screenshot upload karna zaroori hai.'}</div>
-    <img id="c_proofPreviewImg" class="proofPreview" src="${esc(paymentProofData)}" style="${paymentProofData ? 'display:block' : ''}" alt="Payment Proof">
-   </div>
-  `;
-
-  let extraBox = document.getElementById('c_payExtraFields');
-  if(extraBox){
-   extraBox.innerHTML = `<div class="notice"><b>Selected:</b> ${mode === 'COD' ? `COD (${money(payableNow)} Advance Online + ${money(remCod)} COD)` : `Online Full Payment (${money(payableNow)})`} <button type="button" class="linkBtn" style="padding:2px 6px" onclick="C.openFullQrPayment('${mode}')">Show Full QR Again ↗</button></div>`;
-  }
-
-  document.getElementById('c_fullQrModal').style.display = 'block';
- }
-
- function closeFullQrModal(){
-  document.getElementById('c_fullQrModal').style.display = 'none';
- }
-
- function handleCheckoutSubmit(){
-  let addr = getCheckoutAddressData();
-  if(addr.err){ alert(addr.err); return; }
-  let chosen = document.querySelector('input[name="c_payOpt"]:checked')?.value;
-  if(!chosen){
-   alert('Please COD ya Online Payment mein se ek option chunein.');
-   return;
-  }
-  openFullQrPayment(chosen);
  }
 
  function generateOrderNumber(firstSku){
@@ -1389,42 +1484,92 @@ window.C = (() => {
   return sku5 + dd + mm + seq3;
  }
 
- async function placeOrder(){
-  let c = getCart(), p = getProducts();
-  let addr = getCheckoutAddressData();
-  if(addr.err){ alert(addr.err); return; }
-
-  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || selectedPayMode;
-  let payRef = (document.getElementById('c_payRef')?.value.trim() || '').replace(/\D/g,'');
-
+ async function startRazorpayCheckout(){
+  let c = getCart();
   if(!c.length){ alert('Your cart is empty.'); return; }
-  if(!payOpt){ alert('Please COD ya Online Payment option chunein.'); return; }
 
-  let utrErr = validateStrictUtr(payRef);
-  if(utrErr){ alert(utrErr); return; }
+  let btn = document.getElementById('c_confirmOrderBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Verifying Address...'; }
 
-  if(!paymentProofData){
-   alert('Please UPI payment ka screenshot upload karein — bina screenshot ke order confirm nahi hoga.');
+  let addr = await getCheckoutAddressData();
+  if(addr.err){
+   alert(addr.err);
+   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
    return;
   }
 
-  let btn = document.getElementById('c_fqrConfirmBtn');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Verifying UTR & Placing Order...'; }
+  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
+  selectedPayMode = payOpt;
 
-  // Check if UTR was already used in Firestore (Duplicate UTR Block)
-  try {
-   if(window.db && window.fbLib){
-    const utrDocRef = window.fbLib.doc(window.db, "used_utrs", payRef);
-    const utrSnap = await window.fbLib.getDoc(utrDocRef);
-    if(utrSnap.exists()){
-     alert('⚠️ Yeh UTR number (' + payRef + ') pehle hi kisi order mein use ho chuka hai! Purana ya duplicate UTR allowed nahi hai.');
-     if(btn){ btn.disabled = false; btn.textContent = '✅ Confirm & Place Order'; }
+  let s = window.storeSettings || {};
+  let rzpKey = (s.razorpayKeyId || '').trim();
+  if(!rzpKey){
+   alert('Admin ne abhi Razorpay Key ID set nahi kiya hai. Please Admin Panel > Seller Form mein Razorpay Key ID dalein.');
+   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
+   return;
+  }
+  if(typeof window.Razorpay !== 'function'){
+   alert('Razorpay SDK load nahi hua hai. Internet connection check karke page refresh karein.');
+   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
+   return;
+  }
+
+  let orderGroups = getProcessedCartOrders(c);
+  let grandTotal = orderGroups.reduce((sum, grp) => sum + grp.subtotal + grp.deliveryFee, 0);
+  let codAdv = getCodAdvanceAmount();
+  let payableNow = (payOpt === 'COD') ? Math.min(codAdv, grandTotal) : grandTotal;
+  let amountInPaise = Math.round(payableNow * 100);
+
+  let options = {
+   key: rzpKey,
+   amount: amountInPaise,
+   currency: 'INR',
+   name: s.name || 'श्रीEstore (Tools Hub Rajkot)',
+   description: payOpt === 'COD' ? `COD Advance Payment (₹${payableNow})` : `Full Order Payment (₹${payableNow})`,
+   prefill: {
+    name: addr.name,
+    contact: addr.phone,
+    email: getProfile().email || ''
+   },
+   notes: {
+    payment_mode: payOpt,
+    pincode: addr.pincode,
+    city: addr.city
+   },
+   theme: { color: '#0756a5' },
+   handler: async function(response){
+    let rzpPaymentId = response.razorpay_payment_id || '';
+    if(!rzpPaymentId){
+     alert('Payment ID nahi mila. Order place nahi hua.');
+     if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
      return;
     }
+    await finalizeOrderAfterRazorpay(addr, payOpt, rzpPaymentId);
+   },
+   modal: {
+    ondismiss: function(){
+     if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
+    }
    }
-  } catch(checkErr){
-   console.warn('UTR duplicate check skipped (check Firestore rules for used_utrs):', checkErr);
+  };
+
+  try{
+   let rzp = new window.Razorpay(options);
+   rzp.on('payment.failed', function(resp){
+    alert('Payment Failed: ' + (resp.error?.description || 'Transaction declined'));
+    if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
+   });
+   rzp.open();
+  }catch(err){
+   alert('Razorpay error: ' + err.message);
+   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
   }
+ }
+
+ async function finalizeOrderAfterRazorpay(addr, payOpt, rzpPaymentId){
+  let c = getCart(), p = getProducts();
+  let btn = document.getElementById('c_confirmOrderBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Confirming Order...'; }
 
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
@@ -1432,7 +1577,6 @@ window.C = (() => {
   let localOrders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
 
   try {
-   let createdOrderNums = [];
    for (let idx = 0; idx < orderGroups.length; idx++) {
     const grp = orderGroups[idx];
     let groupTotalWithDelivery = grp.subtotal + grp.deliveryFee;
@@ -1449,24 +1593,23 @@ window.C = (() => {
 
     let firstSku = orderItems[0]?.sku || 'KESTR';
     let num = generateOrderNumber(firstSku);
-    createdOrderNums.push(num);
     let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
     let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
     let payMethodLabel = (payOpt === 'COD')
-     ? `COD (Adv ₹${advancePaid} Paid, Due ₹${codDue})`
-     : `Online QR Full Paid`;
+     ? `COD (Razorpay Adv ₹${advancePaid} Paid, Due ₹${codDue})`
+     : `Razorpay Full Paid`;
 
     let orderObj = {
      number: num,
      date: new Date().toLocaleString(),
      timestamp: Date.now(),
      sortOrder: Date.now(),
-     status: 'Pending',
+     status: 'Confirmed',
+     paymentVerified: true,
      total: groupTotalWithDelivery,
      deliveryFee: grp.deliveryFee,
      paymentMethod: payMethodLabel,
-     paymentRef: payRef,
-     paymentScreenshot: idx === 0 ? paymentProofData : '',
+     paymentRef: rzpPaymentId,
      advancePaid: advancePaid,
      codBalanceDue: codDue,
      isB2B: grp.isB2B,
@@ -1489,18 +1632,6 @@ window.C = (() => {
     localOrders.unshift(orderObj);
    }
 
-   // Record this UTR in used_utrs so it can never be reused
-   if(window.db && window.fbLib){
-    try{
-     await window.fbLib.setDoc(window.fbLib.doc(window.db, "used_utrs", payRef), {
-      utr: payRef,
-      orderNumbers: createdOrderNums,
-      phone: addr.phone,
-      createdAt: Date.now()
-     });
-    }catch(e){ console.warn('Could not save used_utrs:', e); }
-   }
-
    localStorage.setItem(ORDERS, JSON.stringify(localOrders));
    localStorage.setItem(PROFILE, JSON.stringify({
     name: addr.name,
@@ -1513,51 +1644,48 @@ window.C = (() => {
     state: addr.state,
     address: addr.fullAddress
    }));
-   paymentProofData = '';
    saveCart([]);
-   closeFullQrModal();
 
    let paidNowSummary = (payOpt === 'COD') ? codAdv : grandTotal;
    document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
-    <h2>Orders Submitted (Pending Payment Verification)</h2>
-    <p>Total <b>${orderGroups.length}</b> separate bills/orders sent to KEstore.</p>
-    <p>Grand Total: <b>${money(grandTotal)}</b> • Paid Online: <b>${money(paidNowSummary)}</b> (${esc(payOpt)}) • UTR Ref: <code>${esc(payRef)}</code></p>
-    <p class="small"><b>Delivery Address:</b> ${esc(addr.fullAddress)}</p>
+    <h2 style="color:#168047">✅ Payment Verified &amp; Order Confirmed!</h2>
+    <p>Total <b>${orderGroups.length}</b> separate bills/orders confirmed with KEstore.</p>
+    <p>Grand Total: <b>${money(grandTotal)}</b> • Paid via Razorpay: <b>${money(paidNowSummary)}</b> (${esc(payOpt)})</p>
+    <p>Razorpay Payment ID: <code>${esc(rzpPaymentId)}</code></p>
+    <p class="small"><b>Verified Address:</b> ${esc(addr.fullAddress)}</p>
     <button class="primary" onclick="C.showPage('c_profile')">View My Orders</button>
    </div>`;
   } catch(err){
-   console.error('Place order failed:', err);
-   alert('Order failed: ' + err.message);
-   if(btn){ btn.disabled = false; btn.textContent = '✅ Confirm & Place Order'; }
+   console.error('Order save after Razorpay failed:', err);
+   alert('Payment received (ID: ' + rzpPaymentId + '), but order save error: ' + err.message);
+   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
   }
  }
 
- setInterval(()=>{
-  let arr = liveProducts().filter(p=>p.showcase===true || (Array.isArray(p.showcase)&&p.showcase.length>0));
-  if(!arr.length) arr = liveProducts();
-  if(arr.length>1){ showcaseIndex=(showcaseIndex+1)%arr.length; renderTopShowcase(); }
- }, 3500);
-
  return {
-  onProductsUpdated(){ renderHome(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
+  onProductsUpdated(){ renderHome(); renderCategoryBrowser(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
   onSettingsUpdated(){ renderCareBanners(); },
-  showPage, openDetails, handleDetailQtyChange, addToCart, addFromCard, toggleCardAction, changeQty, removeCart,
-  renderCart, renderCheckout, openFullQrPayment, closeFullQrModal, handleCheckoutSubmit, handlePaymentProofUpload, placeOrder, openCategory,
-  searchNow, searchFromPage, openSearchTab, renderListing, saveProfile, toggleProfileForm,
-  init(){ renderCats(); renderHome(); updateCartCount(); }
+  onPincodeInput, onHeroScroll,
+  showPage, openDetails, selectDetailImage, detailTouchStart, detailTouchEnd, handleDetailQtyChange, addToCart, changeQty, removeCart,
+  renderCart, renderCheckout, startRazorpayCheckout, openCategory,
+  searchNow, searchFromPage, openSearchTab, openCategoriesTab, renderListing, renderCategoryBrowser, saveProfile, toggleProfileForm,
+  init(){
+   renderCats(); renderCategoryBrowser(); renderHome(); updateCartCount();
+   if(!heroRotationTimer) heroRotationTimer = setInterval(advanceHeroRotation, 4000);
+  }
  };
 })();
 C.init();
 
 /* ==================== 2. ADMIN PANEL APP (A - WHITE THEME) ==================== */
 window.A = (() => {
- const NOTES = 'kestore_notes_v1', ORDER_SEQ_KEY = 'kestore_custom_order_seq_v1', PROD_SEQ_KEY = 'kestore_custom_prod_seq_v1';
- let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,upiId:'',qrImage:''};
+ const ORDER_SEQ_KEY = 'kestore_custom_order_seq_v1', PROD_SEQ_KEY = 'kestore_custom_prod_seq_v1';
+ let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,razorpayKeyId:''};
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
- let tempQrImage = '';
- let activeCellEdit = null;
+ let productHeroImage = '';
+ let activeBulkCol = null;
  let selectedMoveProdId = null;
 
  function products(){ return cloudProducts; }
@@ -1572,6 +1700,7 @@ window.A = (() => {
     snap.forEach(d => list.push({ id: d.id, ...d.data() }));
     cloudProducts = list;
     refresh();
+    if(document.getElementById('a_heroEditor')?.classList.contains('active')) renderHeroEditor();
    }, err => console.error("Admin products error:", err));
   }
   if(!unsubOrders){
@@ -1581,7 +1710,6 @@ window.A = (() => {
     list.sort((a,b)=>(b.timestamp||new Date(b.date).getTime()||0)-(a.timestamp||new Date(a.date).getTime()||0));
     cloudOrders = list;
     refresh();
-    renderLiveFrontOrders();
     renderToday();
     if(document.getElementById('a_manager').classList.contains('active')){ renderOrders(); renderGST(); }
    }, err => console.error("Admin orders error:", err));
@@ -1589,7 +1717,6 @@ window.A = (() => {
   window.fbLib.getDoc(window.fbLib.doc(window.db, "settings", "store_profile")).then(snap => {
    if(snap.exists()){
     cloudSettings = { ...cloudSettings, ...snap.data() };
-    tempQrImage = cloudSettings.qrImage || '';
     renderGST();
     syncProfileVisibility();
    }
@@ -1671,20 +1798,18 @@ window.A = (() => {
  }
 
  function showPage(id){
+  if(activeBulkCol) commitAndCloseBulkColumn();
   if(id !== 'a_login' && window.adminUser === null && window.firebaseAuthChecked) id = 'a_login';
   document.querySelectorAll('#adminApp .a-page').forEach(x=>x.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
-  document.querySelectorAll('#adminApp .bottom button').forEach(b=>b.classList.remove('active'));
-  let navMap = {a_dashboard:'a_nav_dashboard',a_today:'a_nav_dashboard',a_stock:'a_nav_dashboard',a_lowstock:'a_nav_dashboard',a_products:'a_nav_products',a_manager:'a_nav_manager',a_login:'a_nav_login'};
-  if(navMap[id]) document.getElementById(navMap[id])?.classList.add('active');
   window.scrollTo(0,0);
-  if(id==='a_dashboard') renderLiveFrontOrders();
-  if(id==='a_products'){ activeCellEdit = null; selectedMoveProdId = null; renderProducts(); }
+  if(id==='a_products'){ activeBulkCol = null; selectedMoveProdId = null; renderProducts(); }
+  if(id==='a_heroEditor'){ renderHeroEditor(); }
   if(id==='a_stock') renderStock();
   if(id==='a_lowstock') renderLow();
   if(id==='a_manager'){ renderOrders(); renderGST(); }
   if(id==='a_today') renderToday();
-  if(id==='a_login'){ renderGST(); syncProfileVisibility(); renderNotes(); }
+  if(id==='a_login'){ renderGST(); syncProfileVisibility(); }
  }
 
  function syncProfileVisibility(){
@@ -1726,9 +1851,9 @@ window.A = (() => {
    document.getElementById('a_loginPanel').scrollIntoView({behavior:'smooth',block:'start'});
   }
  }
- function openNotebook(){
-  showPage('a_login');
-  document.getElementById('a_notebookSection').scrollIntoView({behavior:'smooth',block:'start'});
+ function openHeroEditor(){
+  closeModal();
+  showPage('a_heroEditor');
  }
  function openOrderList(){
   showPage('a_manager');
@@ -1743,23 +1868,152 @@ window.A = (() => {
   let p = products(), orders = readOrders();
   const productCount = document.getElementById('a_productCount');
   const lowCount = document.getElementById('a_lowCount');
+  const lowBtn = document.getElementById('a_lowStockDashBtn');
   const todayCount = document.getElementById('a_todayCount');
+  let lowNum = p.filter(x=>(+x.stock||0)<=5).length;
+
   if(productCount) productCount.textContent = `${p.length} products`;
-  if(lowCount) lowCount.textContent = p.filter(x=>(+x.stock||0)<=5).length;
+  if(lowCount) lowCount.textContent = lowNum;
+  if(lowBtn) lowBtn.classList.toggle('hasLow', lowNum > 0);
   if(todayCount) todayCount.textContent = orders.filter(o=>new Date(o.timestamp||o.date).toDateString()===new Date().toDateString()&&!['Shipped','Delivered','Complete','Cancelled'].includes(o.status)).length;
-  renderLiveFrontOrders();
-  if(document.getElementById('a_products').classList.contains('active') && !activeCellEdit) renderProducts();
+  if(document.getElementById('a_products').classList.contains('active') && !activeBulkCol) renderProducts();
  }
 
- function renderLiveFrontOrders(){
-  let el = document.getElementById('a_liveFrontOrders');
-  if(!el) return;
-  let live = readOrders().filter(x=>!['Delivered','Complete','Cancelled'].includes(x.status)).slice(0,10);
-  el.innerHTML = live.map(orderCardHTML).join('') || '<p class="muted">No active live orders right now.</p>';
-  bindOrderCardLongPress();
+ /* ==================== HERO CARD EDITOR ==================== */
+ function getHeroThemeGradient(t){
+  const map = {
+   0: 'linear-gradient(180deg,rgba(15,23,42,0.86) 0%,rgba(15,23,42,0.18) 46%,rgba(15,23,42,0.78) 100%)',
+   1: 'linear-gradient(180deg,rgba(250,204,21,0.94) 0%,rgba(250,204,21,0.15) 45%,rgba(17,24,39,0.72) 100%)',
+   2: 'linear-gradient(180deg,rgba(248,250,252,0.92) 0%,rgba(248,250,252,0.12) 45%,rgba(15,23,42,0.72) 100%)',
+   3: 'linear-gradient(180deg,rgba(109,40,217,0.88) 0%,rgba(109,40,217,0.18) 46%,rgba(30,27,75,0.80) 100%)',
+   4: 'linear-gradient(180deg,rgba(8,145,178,0.9) 0%,rgba(6,182,212,0.16) 46%,rgba(8,47,73,0.82) 100%)',
+   5: 'linear-gradient(180deg,rgba(234,88,12,0.9) 0%,rgba(251,146,60,0.16) 46%,rgba(124,45,18,0.84) 100%)',
+   6: 'linear-gradient(180deg,rgba(5,150,105,0.9) 0%,rgba(16,185,129,0.16) 46%,rgba(6,78,59,0.84) 100%)',
+   7: 'linear-gradient(180deg,rgba(255,228,230,0.94) 0%,rgba(255,241,242,0.12) 46%,rgba(136,19,55,0.78) 100%)'
+  };
+  return map[t % 8] || map[0];
  }
 
- /* ==================== 11-COLUMN PRODUCT LIST: PEN ICON CELL EDIT & KRAM ACTIONS/MOVE ==================== */
+ function renderHeroEditor(){
+  let all = products();
+  let showcased = all.filter(p => isShowcased(p) || Boolean(p.showcaseImage));
+  let list = showcased.length ? showcased.slice(0, 8) : all.slice(0, 8);
+  let host = document.getElementById('a_heroEditorList');
+  if(!host) return;
+  if(!list.length){
+   host.innerHTML = '<div class="panel muted" style="text-align:center">No products available for Hero Showcase.</div>';
+   return;
+  }
+
+  host.innerHTML = list.map((p, idx) => {
+   let id = esc(p.id);
+   let sc = p.heroScheme || {};
+   let enabled = sc.enabled !== false;
+   let pct = (Number(p.mrp) > Number(p.price) && Number(p.mrp) > 0)
+    ? Math.round(((Number(p.mrp) - Number(p.price)) / Number(p.mrp)) * 100)
+    : 0;
+   let autoHeadline = pct >= 5 ? `Up to ${pct}% off` : `Top Pick Deal`;
+   let headline = (sc.headline && sc.headline.trim()) ? sc.headline : autoHeadline;
+   let subline = (sc.subline && sc.subline.trim()) ? sc.subline : p.name;
+   let themeIdx = (sc.theme !== undefined && sc.theme !== '') ? Number(sc.theme) : (idx % 8);
+   let txtColor = [1, 2, 7].includes(themeIdx) ? '#111827' : '#ffffff';
+   let imgSrc = p.showcaseImage || (p.images||[]).find(Boolean) || p.image || '';
+
+   return `<div class="heroEdCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+     <b>#${idx+1} • ${esc(p.name)}</b>
+     <span class="badge">${isShowcased(p) || p.showcaseImage ? '⭐ Showcase Active' : 'Auto Live'}</span>
+    </div>
+
+    <div class="heroPreviewBox" style="color:${txtColor}">
+     ${imgSrc ? `<img src="${esc(imgSrc)}" alt="${esc(p.name)}">` : ''}
+     ${enabled ? `
+      <div class="heroPreviewShade" style="background:${getHeroThemeGradient(themeIdx)}"></div>
+      <div class="heroPreviewTop">
+       <div style="font-size:21px;font-weight:900;line-height:1.1">${esc(headline)}</div>
+       <div style="font-size:12px;font-weight:700;margin-top:3px">${esc(subline)}</div>
+      </div>
+      <div class="heroPreviewBot">
+       <div style="background:rgba(255,255,255,0.95);color:#111827;border-radius:9px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px">
+        <span>${money(p.price)}</span>
+        <span style="color:#0756a5;font-size:10px">VIEW ›</span>
+       </div>
+      </div>
+     ` : ''}
+    </div>
+
+    <div class="formGrid2">
+     <div>
+      <label style="font-size:11px;font-weight:700">Scheme Offer Headline</label>
+      <input class="field" id="he_head_${id}" value="${esc(headline)}" placeholder="e.g. Up to 25% off">
+     </div>
+     <div>
+      <label style="font-size:11px;font-weight:700">Scheme Colour Theme</label>
+      <select class="field" id="he_theme_${id}">
+       <option value="0" ${themeIdx===0?'selected':''}>Dark Slate</option>
+       <option value="1" ${themeIdx===1?'selected':''}>Bright Yellow</option>
+       <option value="2" ${themeIdx===2?'selected':''}>Clean Light</option>
+       <option value="3" ${themeIdx===3?'selected':''}>Royal Purple</option>
+       <option value="4" ${themeIdx===4?'selected':''}>Ocean Cyan</option>
+       <option value="5" ${themeIdx===5?'selected':''}>Sunset Ember</option>
+       <option value="6" ${themeIdx===6?'selected':''}>Emerald Glow</option>
+       <option value="7" ${themeIdx===7?'selected':''}>Rose Quartz</option>
+      </select>
+     </div>
+    </div>
+    <label style="font-size:11px;font-weight:700">Scheme Subtitle</label>
+    <input class="field" id="he_sub_${id}" value="${esc(subline)}" placeholder="Product tagline">
+
+    <label class="checkrow" style="margin:6px 0 10px">
+     <input type="checkbox" id="he_en_${id}" ${enabled?'checked':''}>
+     <span>Show System Scheme Overlay (Uncheck karke scheme hata sakte hain — sirf full banner image dikhegi)</span>
+    </label>
+
+    <div class="row">
+     <button type="button" class="btn ghost" onclick="document.getElementById('he_file_${id}').click()">📸 Change Hero Image</button>
+     <input type="file" accept="image/*" id="he_file_${id}" style="display:none" onchange="A.uploadHeroEditorImage(this,'${id}')">
+     <button type="button" class="btn" onclick="A.saveHeroScheme('${id}')">💾 Save Hero Card</button>
+    </div>
+   </div>`;
+  }).join('');
+ }
+
+ async function uploadHeroEditorImage(input, id){
+  let file = input.files?.[0];
+  input.value = '';
+  if(!file || !file.type.startsWith('image/')) return;
+  let x = products().find(a=>a.id===id);
+  if(!x) return;
+  try{
+   let compressed = await smartCompressImage(file, 900, 34000);
+   await saveSingleProductToFirebase({ ...x, showcaseImage: compressed, showcase: true });
+   renderHeroEditor();
+  }catch(err){
+   alert('Hero image upload failed: ' + err.message);
+  }
+ }
+
+ async function saveHeroScheme(id){
+  let x = products().find(a=>a.id===id);
+  if(!x) return;
+  let headline = document.getElementById(`he_head_${id}`)?.value.trim() || '';
+  let subline = document.getElementById(`he_sub_${id}`)?.value.trim() || '';
+  let theme = Number(document.getElementById(`he_theme_${id}`)?.value ?? 0);
+  let enabled = Boolean(document.getElementById(`he_en_${id}`)?.checked);
+  try{
+   await saveSingleProductToFirebase({
+    ...x,
+    showcase: true,
+    heroScheme: { enabled, headline, subline, theme }
+   });
+   alert('Hero Card updated!');
+   renderHeroEditor();
+  }catch(err){
+   alert('Save failed: ' + err.message);
+  }
+ }
+
+ /* ==================== 12-COLUMN PRODUCT LIST: HEADER LONG-PRESS BULK EDIT & STICKY KRAM ==================== */
  function getCustomProdSeq(){
   return JSON.parse(localStorage.getItem(PROD_SEQ_KEY) || '[]');
  }
@@ -1785,7 +2039,7 @@ window.A = (() => {
 
  function selectProductForMove(id){
   closeQuick();
-  activeCellEdit = null;
+  if(activeBulkCol) commitAndCloseBulkColumn();
   selectedMoveProdId = (selectedMoveProdId === id) ? null : id;
   renderProducts();
  }
@@ -1803,48 +2057,64 @@ window.A = (() => {
   renderProducts();
  }
 
- function calcGstPerPiece(price, gstRate){
-  let pr = Number(price) || 0;
-  let r = Number(gstRate ?? 18);
-  if(r <= 0 || pr <= 0) return 0;
-  return pr - (pr / (1 + r / 100));
+ function calcRowFinancials(p){
+  let sellerPrice = Number(p.sellerPrice ?? p.costPrice ?? 0);
+  let gstRate = Number(p.gstRate ?? 18);
+  let b2cPrice = Number(p.price || 0);
+  let gstAmt = Number.isFinite(Number(p.gstAmount)) && p.gstAmount !== undefined && p.gstAmount !== ''
+   ? Number(p.gstAmount)
+   : (gstRate > 0 && b2cPrice > 0 ? (b2cPrice - (b2cPrice / (1 + gstRate / 100))) : 0);
+  let delCharge = Number(p.deliveryChargeB2C ?? p.deliveryCharge ?? 0);
+  let profit = Number.isFinite(Number(p.profit)) && p.profit !== undefined && p.profit !== ''
+   ? Number(p.profit)
+   : Math.max(0, b2cPrice - (sellerPrice + gstAmt + delCharge));
+  let total = sellerPrice + gstAmt + delCharge + profit;
+  return { sellerPrice, gstRate, gstAmt, delCharge, profit, total };
+ }
+
+ function stockClass(stk){
+  let n = Number(stk) || 0;
+  if(n <= 5) return 'stockLow';
+  if(n <= 15) return 'stockMed';
+  return 'stockGood';
  }
 
  function renderProducts(){
-  let filtered = getOrderedProducts();
-  document.getElementById('a_productListTable').innerHTML = filtered.map((p,idx)=>rowHTML(p,idx+1,filtered.length)).join('') || '<tr><td colspan="11" class="muted" style="text-align:center">No products found.</td></tr>';
-  bindProductLongPress();
-  if(activeCellEdit){
-   let inp = document.getElementById('singleCellInp');
-   if(inp){
-    inp.focus();
-    if(inp.select) inp.select();
+  document.querySelectorAll('#a_prodTable th.colEditable').forEach(th => {
+   th.classList.toggle('colEditingActive', th.dataset.col === activeBulkCol);
+  });
+
+  let banner = document.getElementById('a_colEditStatusBanner');
+  if(banner){
+   if(activeBulkCol){
+    const colNames = {sku:'SKU',stock:'Stock',hsn:'HSN Code',sellerPrice:'Seller Price (+)',gstRate:'GST (+)',delivery:'Delivery Charges (+)',profit:'Profit (=)',total:'Total',mrp:'MRP',price:'B2C Price',b2bPrice:'B2B Price'};
+    banner.style.display = 'flex';
+    banner.style.justifyContent = 'space-between';
+    banner.style.alignItems = 'center';
+    banner.innerHTML = `<span>✏️ Editing Column: <b>${colNames[activeBulkCol]||activeBulkCol}</b> (Column ke bahar touch karne par save hoga)</span><button type="button" class="btn" style="padding:6px 12px;font-size:12px;min-height:32px" onclick="A.commitAndCloseBulkColumn()">Save Column ✓</button>`;
+   } else {
+    banner.style.display = 'none';
    }
   }
- }
 
- function penBtn(id, field, title){
-  return `<button type="button" class="penEditBtn" onclick="event.stopPropagation();A.startSingleCellEdit('${id}','${field}')" title="${title}">✏️</button>`;
+  let filtered = getOrderedProducts();
+  document.getElementById('a_productListTable').innerHTML = filtered.map((p,idx)=>rowHTML(p,idx+1,filtered.length)).join('') || '<tr><td colspan="14" class="muted" style="text-align:center">No products found.</td></tr>';
+  bindProductLongPress();
  }
 
  function rowHTML(p, index=1, totalCount=1){
   let id = esc(p.id);
   let image = (p.images||[]).find(Boolean) || p.image || '';
   let imageHTML = image ? `<img class="productThumb" src="${esc(image)}" alt="${esc(p.name)}" onerror="this.hidden=true">` : `<span class="productThumb" aria-hidden="true"></span>`;
-  let sellerPriceVal = Number(p.sellerPrice ?? p.costPrice ?? 0);
+  let fin = calcRowFinancials(p);
   let mrpVal = Number(p.mrp || 0);
   let b2cVal = Number(p.price || 0);
   let b2bVal = Number(p.b2bPrice) || Math.round(b2cVal * 0.85);
-  let gstRateVal = Number(p.gstRate ?? 18);
-  let gstPerPc = calcGstPerPiece(b2cVal, gstRateVal);
-  let delB2c = Number(p.deliveryChargeB2C ?? p.deliveryCharge ?? 0);
-  let delB2b = Number(p.deliveryChargeB2B ?? p.deliveryCharge ?? 0);
-
-  let isEd = (fld) => activeCellEdit && activeCellEdit.id === p.id && activeCellEdit.field === fld;
   let isMoveSel = selectedMoveProdId === p.id;
+  let edCol = activeBulkCol;
 
   let kramCell = isMoveSel
-   ? `<td class="kramCell" data-id="${id}" style="background:#dbeafe">
+   ? `<td class="stickyKram kramCell" data-id="${id}">
       <div style="display:flex;align-items:center;gap:4px">
        <b>${index}</b>
        <button type="button" class="moveBtn" ${index===1?'disabled':''} onclick="event.stopPropagation();A.moveProductPosition('${id}',-1)" title="Move Up">↑</button>
@@ -1852,129 +2122,197 @@ window.A = (() => {
        <button type="button" class="moveBtn" style="background:#16a34a" onclick="event.stopPropagation();A.selectProductForMove('${id}')" title="Done">✓</button>
       </div>
      </td>`
-   : `<td class="openFormCell kramCell" data-id="${id}" onclick="A.editProduct('${id}')" title="Tap: Full Form | Hold 5s: Actions &amp; Move"><b>${index}</b></td>`;
+   : `<td class="stickyKram openFormCell kramCell" data-id="${id}" onclick="A.editProduct('${id}')" title="Tap: Full Form | Hold 5s: Actions &amp; Move"><b>${index}</b></td>`;
 
-  let nameCell = isEd('name')
-   ? `<td class="colName editingCell"><input class="inlineInp wide" id="singleCellInp" value="${esc(p.name)}" onblur="A.commitSingleCellEdit('${id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td class="colName"><div class="cellValWrap"><div><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></div>${penBtn(id,'name','Edit Product Name')}</div></td>`;
+  let skuCell = edCol === 'sku'
+   ? `<td class="colEditingCell" data-col-cell="sku"><input class="colBulkInp med" data-pid="${id}" data-col="sku" value="${esc(p.sku)}"></td>`
+   : `<td><code>${esc(p.sku)}</code></td>`;
 
-  let skuCell = isEd('sku')
-   ? `<td class="editingCell"><input class="inlineInp med" id="singleCellInp" value="${esc(p.sku)}" onblur="A.commitSingleCellEdit('${id}','sku',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td><div class="cellValWrap"><code>${esc(p.sku)}</code>${penBtn(id,'sku','Edit SKU')}</div></td>`;
+  let stockCell = edCol === 'stock'
+   ? `<td class="colEditingCell" data-col-cell="stock"><input class="colBulkInp" type="number" min="0" step="1" data-pid="${id}" data-col="stock" value="${Number(p.stock)||0}"></td>`
+   : `<td><span class="${stockClass(p.stock)}">${p.stock<=0?'Out (0)':p.stock}</span></td>`;
 
-  let stockCell = isEd('stock')
-   ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step="1" value="${Number(p.stock)||0}" onblur="A.commitSingleCellEdit('${id}','stock',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td><div class="cellValWrap"><span class="${p.stock<=5?'stockLow':'stockGood'}">${p.stock<=0?'Out (0)':p.stock}</span>${penBtn(id,'stock','Edit Stock')}</div></td>`;
+  let hsnCell = edCol === 'hsn'
+   ? `<td class="colEditingCell" data-col-cell="hsn"><input class="colBulkInp med" data-pid="${id}" data-col="hsn" value="${esc(p.hsn||'')}"></td>`
+   : `<td><code>${esc(p.hsn||'-')}</code></td>`;
 
-  let sellerCell = isEd('sellerPrice')
-   ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${sellerPriceVal}" onblur="A.commitSingleCellEdit('${id}','sellerPrice',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td><div class="cellValWrap"><b>₹${sellerPriceVal}</b>${penBtn(id,'sellerPrice','Edit Seller Price')}</div></td>`;
+  let sellerCell = edCol === 'sellerPrice'
+   ? `<td class="colEditingCell" data-col-cell="sellerPrice"><input class="colBulkInp" type="number" min="0" step=".01" data-pid="${id}" data-col="sellerPrice" value="${fin.sellerPrice}"></td>`
+   : `<td><b>₹${fin.sellerPrice.toFixed(2)}</b></td>`;
 
-  let mrpCell = isEd('mrp')
-   ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${mrpVal}" onblur="A.commitSingleCellEdit('${id}','mrp',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td><div class="cellValWrap"><span style="text-decoration:line-through;color:#6b7280">₹${mrpVal}</span>${penBtn(id,'mrp','Edit MRP')}</div></td>`;
+  let gstCell = edCol === 'gstRate'
+   ? `<td class="colEditingCell" data-col-cell="gstRate"><select class="colBulkInp" data-pid="${id}" data-col="gstRate">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==fin.gstRate?'selected':''}>${v}%</option>`).join('')}</select></td>`
+   : `<td><b>₹${fin.gstAmt.toFixed(2)}</b> <span class="muted">(${fin.gstRate}%)</span></td>`;
 
-  let b2cCell = isEd('price')
-   ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${b2cVal}" onblur="A.commitSingleCellEdit('${id}','price',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td><div class="cellValWrap"><b style="color:#07366c">₹${b2cVal}</b>${penBtn(id,'price','Edit B2C Price')}</div></td>`;
+  let delCell = edCol === 'delivery'
+   ? `<td class="colEditingCell" data-col-cell="delivery"><input class="colBulkInp" type="number" min="0" step=".01" data-pid="${id}" data-col="delivery" value="${fin.delCharge}"></td>`
+   : `<td><b>₹${fin.delCharge.toFixed(2)}</b></td>`;
 
-  let b2bCell = isEd('b2bPrice')
-   ? `<td class="editingCell"><input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${b2bVal}" onblur="A.commitSingleCellEdit('${id}','b2bPrice',this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()"></td>`
-   : `<td><div class="cellValWrap"><div><b style="color:#d97706">₹${b2bVal}</b><div class="muted">${p.b2bMinQty||10}+ Qty</div></div>${penBtn(id,'b2bPrice','Edit B2B Price')}</div></td>`;
+  let profitCell = edCol === 'profit'
+   ? `<td class="colEditingCell" data-col-cell="profit"><input class="colBulkInp" type="number" step=".01" data-pid="${id}" data-col="profit" value="${fin.profit.toFixed(2)}"></td>`
+   : `<td><b style="color:#16a34a">₹${fin.profit.toFixed(2)}</b></td>`;
 
-  let gstCell = isEd('gstRate')
-   ? `<td class="editingCell"><select class="inlineInp" id="singleCellInp" onchange="A.commitSingleCellEdit('${id}','gstRate',this.value)" onblur="A.cancelSingleCellEdit()">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==gstRateVal?'selected':''}>${v}%</option>`).join('')}</select></td>`
-   : `<td><div class="cellValWrap"><div><b>₹${gstPerPc.toFixed(2)}</b><div class="muted">(${gstRateVal}%)</div></div>${penBtn(id,'gstRate','Edit GST Rate')}</div></td>`;
+  let totalCell = edCol === 'total'
+   ? `<td class="colEditingCell" data-col-cell="total"><input class="colBulkInp" type="number" min="0" step=".01" data-pid="${id}" data-col="total" value="${fin.total.toFixed(2)}"></td>`
+   : `<td><b style="color:#07366c">₹${fin.total.toFixed(2)}</b></td>`;
 
-  let delCell = isEd('delivery')
-   ? `<td class="editingCell"><div style="display:flex;gap:4px">
-      <input class="inlineInp" id="singleCellInp" type="number" min="0" step=".01" value="${delB2c}" placeholder="B2C" onkeydown="if(event.key==='Enter')document.getElementById('singleCellInpB2B').focus()">
-      <input class="inlineInp" id="singleCellInpB2B" type="number" min="0" step=".01" value="${delB2b}" placeholder="B2B" onblur="A.commitDeliveryCellEdit('${id}')" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')A.cancelSingleCellEdit()">
-     </div></td>`
-   : `<td><div class="cellValWrap"><div><b>₹${delB2c}</b> / <span style="color:#d97706">₹${delB2b}</span><div class="muted">B2C / B2B</div></div>${penBtn(id,'delivery','Edit Delivery Charges')}</div></td>`;
+  let mrpCell = edCol === 'mrp'
+   ? `<td class="colEditingCell" data-col-cell="mrp"><input class="colBulkInp" type="number" min="0" step=".01" data-pid="${id}" data-col="mrp" value="${mrpVal}"></td>`
+   : `<td><span style="text-decoration:line-through;color:#6b7280">₹${mrpVal}</span></td>`;
+
+  let b2cCell = edCol === 'price'
+   ? `<td class="colEditingCell" data-col-cell="price"><input class="colBulkInp" type="number" min="0" step=".01" data-pid="${id}" data-col="price" value="${b2cVal}"></td>`
+   : `<td><b style="color:#07366c">₹${b2cVal}</b></td>`;
+
+  let b2bCell = edCol === 'b2bPrice'
+   ? `<td class="colEditingCell" data-col-cell="b2bPrice"><input class="colBulkInp" type="number" min="0" step=".01" data-pid="${id}" data-col="b2bPrice" value="${b2bVal}"></td>`
+   : `<td><div><b style="color:#d97706">₹${b2bVal}</b><div class="muted">${p.b2bMinQty||10}+ Qty</div></div></td>`;
 
   return `<tr class="productrow ${isMoveSel?'selectedMoveRow':''}" data-id="${id}">
    ${kramCell}
    <td class="openFormCell" onclick="A.editProduct('${id}')" title="Tap to open full form">${imageHTML}</td>
-   ${nameCell}
+   <td class="colName"><b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'')} ${p.live===false?'<span style="color:#dc2626">(Hidden)</span>':''}</div></td>
    ${skuCell}
    ${stockCell}
+   ${hsnCell}
    ${sellerCell}
+   ${gstCell}
+   ${delCell}
+   ${profitCell}
+   ${totalCell}
    ${mrpCell}
    ${b2cCell}
    ${b2bCell}
-   ${gstCell}
-   ${delCell}
   </tr>`;
  }
 
- function startSingleCellEdit(id, field){
+ function activateColumnBulkEdit(col){
+  if(activeBulkCol && activeBulkCol !== col){
+   commitAndCloseBulkColumn();
+  }
   selectedMoveProdId = null;
-  activeCellEdit = { id, field };
+  activeBulkCol = col;
   renderProducts();
+  let firstInp = document.querySelector(`#a_productListTable [data-col="${col}"]`);
+  if(firstInp){ firstInp.focus(); if(firstInp.select) firstInp.select(); }
  }
 
- function cancelSingleCellEdit(){
-  activeCellEdit = null;
+ async function commitAndCloseBulkColumn(){
+  if(!activeBulkCol) return;
+  let col = activeBulkCol;
+  let inputs = Array.from(document.querySelectorAll(`#a_productListTable [data-col="${col}"]`));
+  activeBulkCol = null;
+
+  let updates = [];
+  inputs.forEach(inp => {
+   let pid = inp.dataset.pid;
+   let orig = products().find(x => x.id === pid);
+   if(!orig) return;
+   let raw = inp.value;
+   let updated = { ...orig };
+   let fin = calcRowFinancials(orig);
+   let changed = false;
+
+   if(col === 'sku' || col === 'hsn'){
+    let txt = String(raw||'').trim();
+    if(txt && updated[col] !== txt){ updated[col] = txt; changed = true; }
+   } else if(col === 'stock'){
+    let n = Math.max(0, Math.round(Number(raw)));
+    if(Number.isFinite(n) && Number(updated.stock) !== n){ updated.stock = n; changed = true; }
+   } else if(col === 'sellerPrice'){
+    let n = Number(raw);
+    if(Number.isFinite(n) && n >= 0 && fin.sellerPrice !== n){
+     updated.sellerPrice = n;
+     updated.totalCost = n + fin.gstAmt + fin.delCharge + fin.profit;
+     changed = true;
+    }
+   } else if(col === 'gstRate'){
+    let r = Number(raw);
+    if(Number.isFinite(r) && r >= 0 && fin.gstRate !== r){
+     updated.gstRate = r;
+     let b2c = Number(updated.price || 0);
+     let newGstAmt = (r > 0 && b2c > 0) ? (b2c - (b2c / (1 + r / 100))) : 0;
+     updated.gstAmount = Number(newGstAmt.toFixed(2));
+     updated.totalCost = fin.sellerPrice + updated.gstAmount + fin.delCharge + fin.profit;
+     changed = true;
+    }
+   } else if(col === 'delivery'){
+    let n = Number(raw);
+    if(Number.isFinite(n) && n >= 0 && fin.delCharge !== n){
+     updated.deliveryCharge = n;
+     updated.deliveryChargeB2C = n;
+     updated.totalCost = fin.sellerPrice + fin.gstAmt + n + fin.profit;
+     changed = true;
+    }
+   } else if(col === 'profit'){
+    let n = Number(raw);
+    if(Number.isFinite(n) && fin.profit !== n){
+     updated.profit = n;
+     updated.totalCost = fin.sellerPrice + fin.gstAmt + fin.delCharge + n;
+     changed = true;
+    }
+   } else if(col === 'total'){
+    let n = Number(raw);
+    if(Number.isFinite(n) && n >= 0 && Math.abs(fin.total - n) > 0.005){
+     updated.totalCost = n;
+     updated.profit = Number((n - (fin.sellerPrice + fin.gstAmt + fin.delCharge)).toFixed(2));
+     changed = true;
+    }
+   } else if(col === 'mrp' || col === 'price' || col === 'b2bPrice'){
+    let n = Number(raw);
+    if(Number.isFinite(n) && n >= 0 && Number(updated[col]) !== n){
+     updated[col] = n;
+     changed = true;
+    }
+   }
+
+   if(changed) updates.push(updated);
+  });
+
   renderProducts();
+  for(const item of updates){
+   try{
+    await saveSingleProductToFirebase(item);
+   }catch(err){
+    console.error('Bulk column save error:', err);
+   }
+  }
  }
 
- async function commitSingleCellEdit(id, field, rawVal){
-  let x = products().find(a=>a.id===id);
-  activeCellEdit = null;
-  if(!x){ renderProducts(); return; }
-
-  let updated = { ...x };
-  if(field === 'name' || field === 'sku'){
-   let txt = String(rawVal||'').trim();
-   if(!txt){ renderProducts(); return; }
-   if(updated[field] === txt){ renderProducts(); return; }
-   updated[field] = txt;
-  } else {
-   let num = Number(rawVal);
-   if(!Number.isFinite(num) || num < 0){ renderProducts(); return; }
-   if(field === 'stock') num = Math.round(num);
-   if(Number(updated[field]) === num){ renderProducts(); return; }
-   updated[field] = num;
-  }
-
-  renderProducts();
-  try{
-   await saveSingleProductToFirebase(updated);
-  }catch(err){
-   alert('Auto-save failed: ' + err.message);
-  }
- }
-
- async function commitDeliveryCellEdit(id){
-  let x = products().find(a=>a.id===id);
-  let b2cVal = Number(document.getElementById('singleCellInp')?.value);
-  let b2bVal = Number(document.getElementById('singleCellInpB2B')?.value);
-  activeCellEdit = null;
-  if(!x || !Number.isFinite(b2cVal) || b2cVal < 0 || !Number.isFinite(b2bVal) || b2bVal < 0){
-   renderProducts();
-   return;
-  }
-  renderProducts();
-  try{
-   await saveSingleProductToFirebase({
-    ...x,
-    deliveryCharge: b2cVal,
-    deliveryChargeB2C: b2cVal,
-    deliveryChargeB2B: b2bVal
+ function initProductColumnHeaderLongPress(){
+  let hTimer = null;
+  document.querySelectorAll('#a_prodTable th.colEditable').forEach(th => {
+   let col = th.dataset.col;
+   th.addEventListener('touchstart', () => {
+    hTimer = setTimeout(() => activateColumnBulkEdit(col), 700);
+   }, {passive:true});
+   th.addEventListener('touchend', () => clearTimeout(hTimer));
+   th.addEventListener('touchmove', () => clearTimeout(hTimer));
+   th.addEventListener('mousedown', () => {
+    hTimer = setTimeout(() => activateColumnBulkEdit(col), 700);
    });
-  }catch(err){
-   alert('Delivery auto-save failed: ' + err.message);
-  }
+   th.addEventListener('mouseup', () => clearTimeout(hTimer));
+   th.addEventListener('mouseleave', () => clearTimeout(hTimer));
+   th.addEventListener('contextmenu', e => { e.preventDefault(); activateColumnBulkEdit(col); });
+  });
+
+  document.addEventListener('pointerdown', (e) => {
+   if(!activeBulkCol) return;
+   const target = e.target;
+   if(target.closest(`[data-col-cell="${activeBulkCol}"]`)) return;
+   if(target.closest(`th[data-col="${activeBulkCol}"]`)) return;
+   if(target.closest('#a_colEditStatusBanner')) return;
+   commitAndCloseBulkColumn();
+  });
  }
 
  function renderStock(){
-  document.getElementById('a_productListTable').innerHTML = products().map((p,i)=>rowHTML(p,i+1,products().length)).join('') || '<tr><td colspan="11" class="muted" style="text-align:center">No products.</td></tr>';
+  document.getElementById('a_productListTable').innerHTML = products().map((p,i)=>rowHTML(p,i+1,products().length)).join('') || '<tr><td colspan="14" class="muted" style="text-align:center">No products.</td></tr>';
   bindProductLongPress(); showPage('a_products');
  }
  function renderLow(){
   let lowProducts = products().filter(p=>(+p.stock||0)<=5);
-  document.getElementById('a_lowList').innerHTML = lowProducts.length ? `<div class="tablewrap"><table class="productTable"><thead><tr><th>1. Kram</th><th>2. Image</th><th>3. Product Name</th><th>4. SKU</th><th>5. Stock</th><th>6. Seller Price</th><th>7. MRP</th><th>8. B2C Price</th><th>9. B2B Price</th><th>10. GST / Pc</th><th>11. Delivery</th></tr></thead><tbody>${lowProducts.map((p,i)=>rowHTML(p,i+1,lowProducts.length)).join('')}</tbody></table></div>` : '<div class="panel muted" style="text-align:center">No low stock products.</div>';
+  document.getElementById('a_lowList').innerHTML = lowProducts.length ? `<div class="tablewrap"><table class="productTable"><thead><tr><th class="stickyKram">1. Kram</th><th>2. Image</th><th>3. Product Name</th><th>SKU</th><th>Stock</th><th>HSN</th><th>Seller Price</th><th>GST</th><th>Delivery</th><th>Profit</th><th>Total</th><th>MRP</th><th>B2C</th><th>B2B</th></tr></thead><tbody>${lowProducts.map((p,i)=>rowHTML(p,i+1,lowProducts.length)).join('')}</tbody></table></div>` : '<div class="panel muted" style="text-align:center">No low stock products.</div>';
   bindProductLongPress();
  }
 
@@ -2038,71 +2376,173 @@ window.A = (() => {
  function newProduct(){ productForm(null); }
  function editProduct(id){ productForm(products().find(x=>x.id===id)); }
 
+ /* ==================== 3-PAGE PRODUCT LISTING FORM (DIRECT CLICK TABS + 9 ROWS) ==================== */
  function productForm(p, isDuplicate=false){
-  let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],sellerPrice:'',mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],desc:'',live:true,showcase:false,variations:{}};
+  let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],sellerPrice:'',deliveryChargeB2C:'',profit:'',mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],showcaseImage:'',desc:'',live:true,showcase:false,variations:{}};
   let b2bDefault = x.b2bPrice || (x.price ? Math.round(x.price * 0.85) : '');
   let defaultPct = (x.price && x.b2bPrice) ? (((x.price - x.b2bPrice)/x.price)*100).toFixed(1) : '15';
-  let hasVariations = Object.values(x.variations||{}).some(v=>Array.isArray(v)&&v.length);
+  let sellerVal = x.sellerPrice ?? '';
+  let delVal = x.deliveryChargeB2C ?? x.deliveryCharge ?? '';
+  let profitVal = x.profit ?? '';
+  let initialGstRate = Number(x.gstRate ?? 18);
+  let initialGstAmount = Number.isFinite(Number(x.gstAmount)) && x.gstAmount !== undefined && x.gstAmount !== ''
+   ? Number(x.gstAmount)
+   : (initialGstRate > 0 && Number(x.price) > 0 ? Number(x.price) - Number(x.price) / (1 + initialGstRate / 100) : 0);
+  let totalCalcVal = (Number(sellerVal)||0) + initialGstAmount + (Number(delVal)||0) + (Number(profitVal)||0);
 
   productUploadImages = Array(4).fill('');
   let savedImages = [...(x.images||[])];
   if(x.image && !savedImages.includes(x.image)) savedImages.unshift(x.image);
   savedImages.filter(Boolean).slice(0,4).forEach((src,i)=>{ productUploadImages[i]=src; });
+  productHeroImage = x.showcaseImage || '';
 
-  openModal(`<button class="close" onclick="A.closeModal()">×</button><h2>${p && !isDuplicate ? 'Edit Product' : 'New Product Listing'}</h2>
-   <div class="productStepNav"><div class="productStepBadge active" data-product-step-label="1">1. Details</div><div class="productStepBadge" data-product-step-label="2">2. GST &amp; Price</div><div class="productStepBadge" data-product-step-label="3">3. Photos</div></div>
+  openModal(`<button class="close" onclick="A.closeModal()">×</button>
+   <h2 style="margin:0 0 6px">${p && !isDuplicate ? 'Edit Product' : 'New Product Listing'}</h2>
+
+   <div class="productStepNav">
+    <button type="button" class="productStepBadge active" data-product-step-label="1" onclick="A.goProductStep(1)">1. Details</button>
+    <button type="button" class="productStepBadge" data-product-step-label="2" onclick="A.goProductStep(2)">2. GST &amp; Price</button>
+    <button type="button" class="productStepBadge" data-product-step-label="3" onclick="A.goProductStep(3)">3. Photos</button>
+   </div>
+
+   <!-- PAGE 1: ROWS 1 TO 4 -->
    <section data-product-step="1">
-    <label>Product Name *</label><input class="field" id="a_fName" value="${esc(x.name)}" required>
-    <label>SKU Code *</label><input class="field" id="a_fSku" value="${esc(x.sku)}" required>
-    <label>Description</label><textarea class="field" id="a_fDesc">${esc(x.desc||'')}</textarea>
-    <label>Stock *</label><input class="field" id="a_fStock" type="number" min="0" step="1" value="${x.stock}" required>
-    <label>Categories *</label><select class="field" id="a_fCat" required>${CATS.map(c=>`<option ${c===x.cat?'selected':''}>${c}</option>`).join('')}</select>
-    <button type="button" class="btn ghost" style="margin:8px 0" onclick="A.toggleVariationFields()">＋ Add / Edit Variations</button>
-    <div id="a_variationFields" style="display:${hasVariations?'block':'none'}">
-     <label>Colour (comma-separated)</label><input class="field" id="a_fColour" placeholder="e.g. Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}">
-     <label>Size (comma-separated)</label><input class="field" id="a_fSize" placeholder="e.g. S, M, L" value="${esc((x.variations?.Size||[]).join(','))}">
-     <label>Weight (comma-separated)</label><input class="field" id="a_fWeight" placeholder="e.g. 500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}">
-     <label>Combo (comma-separated)</label><input class="field" id="a_fCombo" placeholder="e.g. Tool Only, Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}">
+    <div class="formRowBox">
+     <span class="formRowTag">Row 1 • Product Name</span>
+     <input class="field" id="a_fName" placeholder="Enter Product Name *" value="${esc(x.name)}" required>
     </div>
-    <div class="row" style="margin-top:10px"><button type="button" class="btn" onclick="A.goProductStep(2)">Continue to Step 2 →</button></div>
+
+    <div class="formRowBox">
+     <span class="formRowTag">Row 2 • Description</span>
+     <textarea class="field" id="a_fDesc" rows="2" placeholder="Enter Product Description">${esc(x.desc||'')}</textarea>
+    </div>
+
+    <div class="formRowBox">
+     <span class="formRowTag">Row 3 • SKU, Stock &amp; Categories</span>
+     <div class="formGrid3">
+      <div><label>SKU Code *</label><input class="field" id="a_fSku" placeholder="SKU" value="${esc(x.sku)}" required></div>
+      <div><label>Stock *</label><input class="field" id="a_fStock" type="number" min="0" step="1" placeholder="Qty" value="${x.stock}" required></div>
+      <div><label>Category *</label><select class="field" id="a_fCat" required>${CATS.map(c=>`<option ${c===x.cat?'selected':''}>${c}</option>`).join('')}</select></div>
+     </div>
+    </div>
+
+    <div class="formRowBox">
+     <span class="formRowTag">Row 4 • Variations (Comma-Separated)</span>
+     <div class="formGrid4">
+      <div><label>Colour</label><input class="field" id="a_fColour" placeholder="Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}"></div>
+      <div><label>Size</label><input class="field" id="a_fSize" placeholder="S, M, L" value="${esc((x.variations?.Size||[]).join(','))}"></div>
+      <div><label>Weight</label><input class="field" id="a_fWeight" placeholder="500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}"></div>
+      <div><label>Combo</label><input class="field" id="a_fCombo" placeholder="Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}"></div>
+     </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+     <button type="button" class="btn" onclick="A.goProductStep(2)">Continue to Page 2 →</button>
+    </div>
    </section>
+
+   <!-- PAGE 2: ROWS 5 TO 8 + MAKE LIVE WITHOUT IMAGE -->
    <section data-product-step="2" style="display:none">
-    <label>GST Rate *</label><select class="field" id="a_fGst">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
-    <label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN code" required>
-    <label>Seller Price (₹)</label><input class="field" id="a_fSellerPrice" type="number" min="0" step=".01" value="${x.sellerPrice??''}" placeholder="Purchase / Seller rate">
-    <label>MRP (₹) *</label><input class="field" id="a_fMrp" type="number" min="0" step=".01" value="${x.mrp??''}" required>
-    <label>B2C Price (₹) *</label><input class="field" id="a_fPrice" type="number" min="0" step=".01" value="${x.price??''}" oninput="A.calcB2bPercent()" required>
-    <label>B2B Price (₹)</label><input class="field" id="a_fB2bPrice" type="number" min="0" step=".01" value="${b2bDefault}" oninput="A.calcB2bPercent()">
-    <label>B2B Discount (%)</label><input class="field" id="a_fB2bPct" type="number" min="0" max="100" value="${defaultPct}" oninput="A.calcB2bPriceFromPct()">
-    <label>B2B Min Qty</label><input class="field" id="a_fB2bMin" type="number" min="1" value="${x.b2bMinQty||10}">
+    <div class="formRowBox">
+     <span class="formRowTag">Row 5 • HSN Code &amp; GST Rate</span>
+     <div class="formGrid2">
+      <div><label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN Code" required></div>
+      <div><label>GST Rate *</label>      <select class="field" id="a_fGst" onchange="A.recalcFormTotal()">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
+</div>
+     </div>
+    </div>
+
+    <div class="formRowBox">
+     <span class="formRowTag">Row 6 • Seller Price + GST + Delivery Charges + Profit = Total</span>
+     <div class="formGrid5">
+      <div><label>Seller Price (+)</label><input class="field" id="a_fSellerPrice" type="number" min="0" step=".01" value="${sellerVal}" placeholder="0" oninput="A.recalcFormTotal()"></div>
+      <div><label>GST Amount (+)</label><input class="field" id="a_fGstAmount" type="number" readonly value="${initialGstAmount.toFixed(2)}" placeholder="Auto GST" style="background:#f3f4f6"></div>
+      <div><label>Delivery (+)</label><input class="field" id="a_fDeliveryPrice" type="number" min="0" step=".01" value="${delVal}" placeholder="0" oninput="A.recalcFormTotal()"></div>
+      <div><label>Profit (+)</label><input class="field" id="a_fProfitPrice" type="number" step=".01" value="${profitVal}" placeholder="0" oninput="A.recalcFormTotal()"></div>
+      <div><label>Total (=)</label><input class="field" id="a_fTotalCalc" type="number" readonly value="${totalCalcVal ? totalCalcVal.toFixed(2) : ''}" placeholder="Auto Total" style="background:#eef2ff;font-weight:800;color:#07366c"></div>
+     </div>
+    </div>
+
+    <div class="formRowBox">
+     <span class="formRowTag">Row 7 • MRP &amp; B2C Price</span>
+     <div class="formGrid2">
+      <div><label>MRP Price (₹) *</label><input class="field" id="a_fMrp" type="number" min="0" step=".01" value="${x.mrp??''}" placeholder="MRP" required></div>
+      <div><label>B2C Price (₹) *</label><input class="field" id="a_fPrice" type="number" min="0" step=".01" value="${x.price??''}" placeholder="B2C Price" oninput="A.calcB2bPercent();A.recalcFormTotal()" required></div>
+     </div>
+    </div>
+
+    <div class="formRowBox">
+     <span class="formRowTag">Row 8 • B2B Price, B2B Discount (%) &amp; B2B Min Qty</span>
+     <div class="formGrid3">
+      <div><label>B2B Price (₹)</label><input class="field" id="a_fB2bPrice" type="number" min="0" step=".01" value="${b2bDefault}" placeholder="B2B Price" oninput="A.calcB2bPercent()"></div>
+      <div><label>B2B Discount (%)</label><input class="field" id="a_fB2bPct" type="number" min="0" max="100" step=".1" value="${defaultPct}" placeholder="%" oninput="A.calcB2bPriceFromPct()"></div>
+      <div><label>B2B Min Qty</label><input class="field" id="a_fB2bMin" type="number" min="1" value="${x.b2bMinQty||10}" placeholder="10"></div>
+     </div>
+    </div>
+
     <div class="row" style="margin-top:10px;flex-wrap:wrap">
-     <button type="button" class="btn ghost" onclick="A.goProductStep(1)">← Back</button>
-     <button type="button" class="btn ghost" id="a_saveNoPhotoBtn" onclick="A.saveProduct('${esc(x.id)}',false)">Save Product (Add Photos Later)</button>
-     <button type="button" class="btn" onclick="A.goProductStep(3)">Continue to Photos →</button>
+     <button type="button" class="btn" style="background:#16a34a" id="a_saveNoPhotoBtn" onclick="A.saveProduct('${esc(x.id)}',false,true)">🚀 Save &amp; Make Live (Without Image)</button>
+     <button type="button" class="btn" onclick="A.goProductStep(3)">Continue to Page 3 (Photos) →</button>
     </div>
-    ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>
-    <button type="button" class="btn danger" style="margin-top:8px;width:100%" onclick="A.closeModal();A.deleteProd('${esc(x.id)}')">🗑️ Delete Product</button>` : ''}
+    ${p && !isDuplicate ? `<div class="row" style="margin-top:8px">
+     <button type="button" class="btn ghost" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>
+     <button type="button" class="btn danger" onclick="A.closeModal();A.deleteProd('${esc(x.id)}')">🗑️ Delete Product</button>
+    </div>` : ''}
    </section>
+
+   <!-- PAGE 3: ROW 9 (4 PRODUCT IMAGES + 1 FULL-BLEED SHOWCASE HERO IMAGE BOX) -->
    <section data-product-step="3" style="display:none">
-    <label>Product Photos (Select or Paste up to 4 Photos at Once)</label>
-    <div class="bulkPhotoBox" onclick="document.getElementById('a_bulkPhotoInput').click()">
-     <div style="font-size:24px;margin-bottom:4px">📸</div>
-     <b style="color:#07366c;font-size:14px">Tap Here to Select 1 to 4 Photos Together</b>
-     <div class="muted" style="margin-top:3px">Auto-compressed to ~25 KB HD • Or paste (Ctrl+V) image directly</div>
-     <input id="a_bulkPhotoInput" type="file" accept="image/*" multiple style="display:none" onchange="A.handleBulkProductImages(this)">
+    <div class="formRowBox">
+     <span class="formRowTag">Row 9 • 4 Product Photos &amp; 1 Showcase Hero Image</span>
+     <div class="bulkPhotoBox" onclick="document.getElementById('a_bulkPhotoInput').click()">
+      <div style="font-size:22px;margin-bottom:3px">📸</div>
+      <b style="color:#07366c;font-size:13px">Tap Here to Select 1 to 4 Product Photos Together</b>
+      <div class="muted" style="margin-top:2px">Auto-compressed to ~25 KB HD • Or tap any individual slot below</div>
+      <input id="a_bulkPhotoInput" type="file" accept="image/*" multiple style="display:none" onchange="A.handleBulkProductImages(this)">
+     </div>
+     <div id="a_photoCompressStatus" class="muted" style="text-align:center;margin-bottom:6px"></div>
+
+     <div class="imageGrid5">
+      ${Array.from({length:4},(_,i)=>`<div class="imageSlot" onclick="document.getElementById('a_singlePhotoInput${i}').click()" title="Tap to upload Photo ${i+1}">
+       <button type="button" class="imgClearBtn" id="a_imgClear${i}" onclick="event.stopPropagation();A.clearProductImage(${i})">×</button>
+       <img id="a_uploadPreview${i}" alt="Photo ${i+1}">
+       <div class="slotLbl">Photo ${i+1}${i===0?'<br>(Main)':''}</div>
+       <input id="a_singlePhotoInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleSingleSlotImage(this,${i})">
+      </div>`).join('')}
+
+      <div class="imageSlot heroSlot" onclick="document.getElementById('a_heroPhotoInput').click()" title="Tap to upload Showcase Hero Image">
+       <button type="button" class="imgClearBtn" id="a_heroImgClear" onclick="event.stopPropagation();A.clearHeroImage()">×</button>
+       <img id="a_heroUploadPreview" alt="Showcase Hero">
+       <div class="slotLbl">⭐ Showcase<br>Hero Image</div>
+       <input id="a_heroPhotoInput" type="file" accept="image/*" style="display:none" onchange="A.handleHeroSlotImage(this)">
+      </div>
+     </div>
+     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="muted" style="font-size:11px">⭐ <b>Showcase Hero Image:</b> Edge-to-edge full card mein dikhegi; click karne par single normal image wala details page khulega.</span>
+      <button type="button" class="btn ghost" style="padding:6px 10px;font-size:11px;min-height:34px" onclick="A.openHeroEditor()">🎨 Edit Hero Scheme</button>
+     </div>
     </div>
-    <div id="a_photoCompressStatus" class="muted" style="text-align:center;margin-bottom:6px"></div>
-    <div class="imageGrid">${Array.from({length:4},(_,i)=>`<div class="imageSlot" onclick="document.getElementById('a_singlePhotoInput${i}').click()" title="Tap to replace Photo ${i+1}">
-     <button type="button" class="imgClearBtn" id="a_imgClear${i}" onclick="event.stopPropagation();A.clearProductImage(${i})">×</button>
-     <img id="a_uploadPreview${i}" alt="Photo ${i+1}">
-     <div class="slotLbl">Photo ${i+1}${i===0?'<br>(Main)':''}</div>
-     <input id="a_singlePhotoInput${i}" type="file" accept="image/*" style="display:none" onchange="A.handleSingleSlotImage(this,${i})">
-    </div>`).join('')}</div>
-    <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button><button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true)">Save Product &amp; Photos</button></div>
-    ${p && !isDuplicate ? `<button type="button" class="btn ghost" style="margin-top:8px;width:100%" onclick="A.duplicateProduct('${esc(x.id)}')">📑 Duplicate Listing</button>` : ''}
+
+    <div class="row" style="margin-top:10px">
+     <button type="button" class="btn ghost" onclick="A.goProductStep(2)">← Back</button>
+     <button type="button" class="btn" id="a_saveProdBtn" onclick="A.saveProduct('${esc(x.id)}',true,true)">✅ Save &amp; Publish Product</button>
+    </div>
    </section>`);
 
   renderAllPhotoSlots();
+ }
+
+ function recalcFormTotal(){
+  let s = Number(document.getElementById('a_fSellerPrice')?.value) || 0;
+  let d = Number(document.getElementById('a_fDeliveryPrice')?.value) || 0;
+  let pr = Number(document.getElementById('a_fProfitPrice')?.value) || 0;
+  let price = Number(document.getElementById('a_fPrice')?.value) || 0;
+  let rate = Number(document.getElementById('a_fGst')?.value) || 0;
+  let gst = rate > 0 && price > 0 ? price - price / (1 + rate / 100) : 0;
+  let gstEl = document.getElementById('a_fGstAmount');
+  let totEl = document.getElementById('a_fTotalCalc');
+  if(gstEl) gstEl.value = gst.toFixed(2);
+  if(totEl) totEl.value = (s + gst + d + pr).toFixed(2);
  }
 
  function renderAllPhotoSlots(){
@@ -2116,6 +2556,13 @@ window.A = (() => {
    }
    if(clr) clr.classList.toggle('visible', Boolean(src));
   }
+  let hImg = document.getElementById('a_heroUploadPreview');
+  let hClr = document.getElementById('a_heroImgClear');
+  if(hImg){
+   if(productHeroImage){ hImg.src = productHeroImage; hImg.classList.add('visible'); }
+   else { hImg.removeAttribute('src'); hImg.classList.remove('visible'); }
+  }
+  if(hClr) hClr.classList.toggle('visible', Boolean(productHeroImage));
  }
 
  async function handleBulkProductImages(input){
@@ -2161,8 +2608,27 @@ window.A = (() => {
   }
  }
 
+ async function handleHeroSlotImage(input){
+  let file = input.files?.[0];
+  input.value = '';
+  if(!file || !file.type.startsWith('image/')) return;
+  let statusEl = document.getElementById('a_photoCompressStatus');
+  if(statusEl) statusEl.textContent = '⏳ Compressing Showcase Hero image...';
+  try{
+   productHeroImage = await smartCompressImage(file, 900, 34000);
+   renderAllPhotoSlots();
+   if(statusEl) statusEl.textContent = '✅ Showcase Hero image ready!';
+  }catch(err){
+   alert('Could not load Showcase Hero image: ' + err.message);
+  }
+ }
+
  function clearProductImage(index){
   productUploadImages[index] = '';
+  renderAllPhotoSlots();
+ }
+ function clearHeroImage(){
+  productHeroImage = '';
   renderAllPhotoSlots();
  }
 
@@ -2186,22 +2652,17 @@ window.A = (() => {
  });
 
  function goProductStep(step){
-  if(step===2){
-   const name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
-   const stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
-   if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); return; }
-  }
-  if(step===3 && !validateProductPricing()) return;
   document.querySelectorAll('#a_modal [data-product-step]').forEach(el=>el.style.display=el.getAttribute('data-product-step')===String(step)?'block':'none');
   document.querySelectorAll('#a_modal [data-product-step-label]').forEach(el=>el.classList.toggle('active',el.getAttribute('data-product-step-label')===String(step)));
-  document.getElementById('a_modal').scrollTop=0;
+  const modal = document.getElementById('a_modal');
+  if(modal) modal.scrollTop = 0;
  }
 
  function validateProductPricing(){
   const hsn=document.getElementById('a_fHsn').value.trim();
   const mrpInput=document.getElementById('a_fMrp').value.trim(), priceInput=document.getElementById('a_fPrice').value.trim();
   const mrp=Number(mrpInput), price=Number(priceInput);
-  if(!hsn||mrpInput===''||priceInput===''){ alert('GST Rate, HSN Code, MRP and B2C Price are required.'); return false; }
+  if(!hsn||mrpInput===''||priceInput===''){ alert('HSN Code, GST Rate, MRP and B2C Price are required.'); return false; }
   if(!Number.isFinite(mrp)||mrp<0||!Number.isFinite(price)||price<0){ alert('Enter valid MRP and B2C Price.'); return false; }
   const pct=Number(document.getElementById('a_fB2bPct').value);
   if(!Number.isFinite(pct)||pct<0||pct>100){ alert('B2B Discount must be between 0 and 100%.'); return false; }
@@ -2210,11 +2671,6 @@ window.A = (() => {
   const b2bInput=document.getElementById('a_fB2bPrice').value.trim();
   if(b2bInput!==''&&(!Number.isFinite(Number(b2bInput))||Number(b2bInput)<0)){ alert('Enter a valid B2B Price.'); return false; }
   return true;
- }
-
- function toggleVariationFields(){
-  let box=document.getElementById('a_variationFields');
-  if(box) box.style.display=box.style.display==='none'?'block':'none';
  }
 
  function calcB2bPercent(){
@@ -2228,15 +2684,21 @@ window.A = (() => {
   if(retail > 0) document.getElementById('a_fB2bPrice').value = Math.round(retail - (retail*(pct/100)));
  }
 
- async function saveProduct(id, withPhotos=true){
+ async function saveProduct(id, withPhotos=true, makeLive=true){
   let old = products().find(x=>x.id===id);
   let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
-  if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Product Name, SKU and valid Stock are required.'); goProductStep(1); return; }
+  if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Page 1 par Product Name, SKU aur valid Stock bharna zaroori hai.'); goProductStep(1); return; }
   if(!validateProductPricing()){ goProductStep(2); return; }
 
   let sellerPrice=Number(document.getElementById('a_fSellerPrice')?.value) || 0;
+  let deliveryChargeVal=Number(document.getElementById('a_fDeliveryPrice')?.value) || 0;
+  let profitVal=Number(document.getElementById('a_fProfitPrice')?.value) || 0;
   let price=Number(document.getElementById('a_fPrice').value), mrp=Number(document.getElementById('a_fMrp').value);
+  let gstRateVal=Number(document.getElementById('a_fGst').value);
+  let gstAmountVal=gstRateVal > 0 && price > 0 ? Number((price - price / (1 + gstRateVal / 100)).toFixed(2)) : 0;
+  let totalCostVal=sellerPrice + gstAmountVal + deliveryChargeVal + profitVal;
+
   let hsn=document.getElementById('a_fHsn').value.trim();
   let b2bInput=document.getElementById('a_fB2bPrice').value.trim();
   let b2bPrice=b2bInput===''?Math.round(price*(1-Number(document.getElementById('a_fB2bPct').value)/100)):Number(b2bInput);
@@ -2245,24 +2707,34 @@ window.A = (() => {
 
   try{
    let finalImages=[];
+   let finalHeroImage='';
    if(withPhotos){
     finalImages=productUploadImages.filter(Boolean).slice(0,4);
+    finalHeroImage=productHeroImage || '';
    }else{
     let keepImages=old?.images?.length?old.images:(old?.image?[old.image]:[]);
     finalImages=keepImages.filter(Boolean).slice(0,4);
+    finalHeroImage=old?.showcaseImage || '';
    }
    let x={
     id,name,sku,cat:document.getElementById('a_fCat').value,
-    sellerPrice,mrp,price,b2bPrice,
+    sellerPrice,
+    deliveryCharge:deliveryChargeVal,
+    deliveryChargeB2C:deliveryChargeVal,
+    deliveryChargeB2B:Number(old?.deliveryChargeB2B) || deliveryChargeVal,
+    profit:profitVal,
+    totalCost:totalCostVal,
+    mrp,price,b2bPrice,
     b2bMinQty:Number(document.getElementById('a_fB2bMin').value)||10,
-    gstRate:Number(document.getElementById('a_fGst').value),stock,
-    deliveryCharge:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
-    deliveryChargeB2C:Number(old?.deliveryChargeB2C??old?.deliveryCharge)||0,
-    deliveryChargeB2B:Number(old?.deliveryChargeB2B??old?.deliveryCharge)||0,
-    images:finalImages,image:finalImages[0]||'',desc:document.getElementById('a_fDesc').value,
+    gstRate:gstRateVal,gstAmount:gstAmountVal,stock,
+    images:finalImages,
+    image:finalImages[0]||'',
+    showcaseImage:finalHeroImage,
+    heroScheme: old?.heroScheme || { enabled: true },
+    desc:document.getElementById('a_fDesc').value,
     hsn,
-    live:old?old.live!==false:true,
-    showcase:old?isShowcased(old):false,
+    live:makeLive ? true : (old?old.live!==false:true),
+    showcase:finalHeroImage ? true : (old?isShowcased(old):false),
     variations:{
      Size:document.getElementById('a_fSize').value.split(',').map(s=>s.trim()).filter(Boolean),
      Colour:document.getElementById('a_fColour').value.split(',').map(s=>s.trim()).filter(Boolean),
@@ -2276,7 +2748,7 @@ window.A = (() => {
   }catch(err){
    console.error('Save product error:',err);
    alert('Could not save product: '+err.message);
-   if(btn){ btn.disabled=false; btn.textContent=withPhotos?'Save Product & Photos':'Save Product (Add Photos Later)'; }
+   if(btn){ btn.disabled=false; btn.textContent=withPhotos?'✅ Save & Publish Product':'🚀 Save & Make Live (Without Image)'; }
   }
  }
 
@@ -2349,15 +2821,15 @@ window.A = (() => {
   return `<div class="ordercard" data-num="${esc(o.number)}">
    <div style="display:flex;justify-content:space-between;align-items:center">
     <b>Order No: ${esc(o.number)}</b>
-    <span class="badge">${esc(o.status||'Pending')}</span>
+    <span class="badge">${esc(o.status||'Confirmed')}</span>
    </div>
-   <div class="muted" style="margin-top:4px">${esc(o.date)} • Pay: <b>${esc(o.paymentMethod||'COD')}</b>${o.paymentRef?` (UTR: ${esc(o.paymentRef)})`:''} • Del: ${money(o.deliveryFee||0)}</div>
+   <div class="muted" style="margin-top:4px">${esc(o.date)} • Pay: <b>${esc(o.paymentMethod||'Razorpay')}</b>${o.paymentRef?` (ID: ${esc(o.paymentRef)})`:''} • Del: ${money(o.deliveryFee||0)}</div>
    <p style="margin:8px 0 4px"><b>${esc(o.customer?.name||'Customer')}</b> • ${esc(o.customer?.phone||'')}</p>
    <p class="muted" style="margin:0 0 8px">${esc(o.customer?.address||'')}</p>
    <p style="margin:6px 0">${itemsText}</p>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
     <b>Total: ${money(o.total)}</b>
-    <span class="muted">Hold 5s for Print, Proof &amp; Actions ⋮</span>
+    <span class="muted">Hold 5s for Print &amp; Actions ⋮</span>
    </div>
   </div>`;
  }
@@ -2376,7 +2848,7 @@ window.A = (() => {
    <td><span class="muted">${esc(o.date)}</span></td>
    <td><b>${esc(o.customer?.name||'Customer')}</b><br><span class="muted">${esc(o.customer?.phone||'')}</span>${firstProd?`<div class="muted" style="font-size:10.5px">${esc(firstProd)}</div>`:''}</td>
    <td><b>${money(o.total)}</b><br><span class="muted" style="font-size:10px">${esc(o.paymentMethod||'')}</span></td>
-   <td><span class="badge">${esc(o.status||'Pending')}</span></td>
+   <td><span class="badge">${esc(o.status||'Confirmed')}</span></td>
   </tr>`;
  }
 
@@ -2437,22 +2909,13 @@ window.A = (() => {
  }
  function applyOrderSort(k){ orderSort=k; closeQuick(); renderOrders(); }
 
- function viewPaymentProof(num){
-  let o = readOrders().find(x=>x.number===num);
-  if(!o) return;
-  openModal(`<button class="close" onclick="A.closeModal()">×</button><h3>Payment Proof — Order ${esc(o.number)}</h3>
-   <p><b>UTR / Ref No:</b> <code>${esc(o.paymentRef||'N/A')}</code> • <b>Method:</b> ${esc(o.paymentMethod||'')}</p>
-   ${o.paymentScreenshot ? `<img src="${esc(o.paymentScreenshot)}" style="width:100%;max-height:70vh;object-fit:contain;border:1px solid #cbd5e1;border-radius:10px" alt="Payment Receipt">` : '<p class="muted">Is order mein screenshot attach nahi hai.</p>'}`);
- }
-
  function openOrderMenu(num){
   let o = readOrders().find(x=>x.number===num);
   if(!o) return;
   document.getElementById('a_quickHost').innerHTML = `<div class="modalShade" style="display:block" onclick="A.closeQuick()">
    <div class="quick" onclick="event.stopPropagation()">
     <h3>Order No: ${esc(o.number)}</h3>
-    <div class="qsec">PAYMENT &amp; PRINT</div>
-    <button onclick="A.closeQuick();A.viewPaymentProof('${esc(o.number)}')">🖼️ View Payment Screenshot (UTR: ${esc(o.paymentRef||'-')})</button>
+    <div class="qsec">PRINT &amp; RECEIPT</div>
     <button onclick="A.closeQuick();A.printParcelLabel('${esc(o.number)}')">1. 🏷️ Label Print</button>
     <button onclick="A.closeQuick();A.printBillInvoice('${esc(o.number)}')">2. 🧾 Bill Print</button>
     <div class="qsec">ORDER STATUS</div>
@@ -2579,7 +3042,7 @@ window.A = (() => {
    <div style="border-bottom:2px solid #000;padding-bottom:8px">
     <div style="font-size:22px;font-weight:900">${esc(bName)}</div>
     <div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:17px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B PARCEL</span>':''}</div>
-    <div style="font-size:11px;margin-top:2px">Date: ${esc(o.date)} | Payment: <b>${esc(o.paymentMethod||'COD')}</b></div>
+    <div style="font-size:11px;margin-top:2px">Date: ${esc(o.date)} | Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
      <div style="flex:1;min-width:0">${generateBarcodeSVG(o.number)}<div style="font-family:monospace;font-size:11px;font-weight:900;letter-spacing:1.5px;margin-top:2px">${esc(o.number)}</div></div>
      <div>${generateOfflineQRSVG(o.number)}</div>
@@ -2686,10 +3149,7 @@ window.A = (() => {
   document.getElementById('a_sellerState').value = s.state||'';
   document.getElementById('a_invoicePrefix').value = s.prefix||'';
   document.getElementById('a_sellerCodAdvance').value = s.codAdvance || 49;
-  document.getElementById('a_sellerUpi').value = s.upiId||'';
-  let qrPrev = document.getElementById('a_qrPreviewImg');
-  if(s.qrImage){ qrPrev.src=s.qrImage; qrPrev.style.display='block'; tempQrImage=s.qrImage; }
-  else { qrPrev.style.display='none'; tempQrImage=''; }
+  document.getElementById('a_sellerRazorpayKey').value = s.razorpayKeyId||'';
  }
 
  function printGSTReturnPDF(){
@@ -2698,7 +3158,7 @@ window.A = (() => {
   let ordHtml = st.active.map((o,i)=>{
    let tx=0, gst=0;
    (o.items||[]).forEach(it=>{ let pr=Number(it.price||0),r=Number(it.gstRate??18),lt=pr*(Number(it.qty)||0),t=r===0?lt:lt/(1+r/100); tx+=t; gst+=(lt-t); });
-   return `<tr><td style="text-align:center">${i+1}</td><td><b>${esc(o.number)}</b></td><td>${esc(o.date)}</td><td>${esc(o.status||'Pending')}</td><td style="text-align:right">${money(tx)}</td><td style="text-align:right">${money(gst)}</td><td style="text-align:right"><b>${money(o.total)}</b></td></tr>`;
+   return `<tr><td style="text-align:center">${i+1}</td><td><b>${esc(o.number)}</b></td><td>${esc(o.date)}</td><td>${esc(o.status||'Confirmed')}</td><td style="text-align:right">${money(tx)}</td><td style="text-align:right">${money(gst)}</td><td style="text-align:right"><b>${money(o.total)}</b></td></tr>`;
   }).join('') || '<tr><td colspan="7" style="text-align:center">No active orders</td></tr>';
 
   let html = `<div id="pdfPrintableArea" class="printBox">
@@ -2737,22 +3197,6 @@ window.A = (() => {
   a.href=url; a.download='KEstore-GST-Return.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
 
- async function handleQrUpload(input){
-  let file = input.files?.[0];
-  if(!file) return;
-  try{
-   tempQrImage = await smartCompressImage(file, 500, 45000);
-   let img = document.getElementById('a_qrPreviewImg');
-   img.src = tempQrImage; img.style.display='block';
-  }catch(err){ alert('Could not load QR image'); }
-  input.value='';
- }
- function clearQrImage(){
-  tempQrImage = '';
-  let img = document.getElementById('a_qrPreviewImg');
-  img.src=''; img.style.display='none';
- }
-
  async function saveGSTSettings(){
   let codAdvVal = Number(document.getElementById('a_sellerCodAdvance').value);
   if(!Number.isFinite(codAdvVal) || codAdvVal < 1){
@@ -2767,37 +3211,16 @@ window.A = (() => {
    state: document.getElementById('a_sellerState').value.trim(),
    prefix: document.getElementById('a_invoicePrefix').value.trim(),
    codAdvance: codAdvVal,
-   upiId: document.getElementById('a_sellerUpi').value.trim(),
-   qrImage: tempQrImage
+   razorpayKeyId: document.getElementById('a_sellerRazorpayKey').value.trim()
   };
   try{
    await window.fbLib.setDoc(window.fbLib.doc(window.db, "settings", "store_profile"), newSettings);
    cloudSettings = newSettings;
    window.storeSettings = { ...window.storeSettings, ...newSettings };
    syncProfileVisibility();
-   alert('Profile & settings saved to Firebase!');
+   alert('Profile & Razorpay settings saved to Firebase!');
   }catch(err){ alert('Failed to save settings: '+err.message); }
  }
-
- /* LOCAL NOTES */
- function notes(){ return JSON.parse(localStorage.getItem(NOTES)||'[]'); }
- function addNote(){
-  let t=document.getElementById('a_noteTitle').value.trim();
-  if(!t){ alert('Enter note title'); return; }
-  let n=notes();
-  n.unshift({id:Date.now(),title:t,text:document.getElementById('a_noteText').value,date:document.getElementById('a_noteDate').value,time:document.getElementById('a_noteTime').value,done:false});
-  localStorage.setItem(NOTES,JSON.stringify(n));
-  document.getElementById('a_noteTitle').value=''; document.getElementById('a_noteText').value='';
-  renderNotes();
- }
- function renderNotes(){
-  let n=notes();
-  document.getElementById('a_pendingNotes').innerHTML = n.filter(x=>!x.done).map(noteHTML).join('') || '<p class="muted">No pending notes.</p>';
-  document.getElementById('a_completedNotes').innerHTML = n.filter(x=>x.done).map(noteHTML).join('') || '<p class="muted">No completed notes.</p>';
- }
- function noteHTML(x){ return `<div class="note"><b>${esc(x.title)}</b><p style="margin:4px 0">${esc(x.text)}</p><span class="muted">${x.date||''} ${x.time||''}</span><div class="row" style="margin-top:6px"><button class="btn ghost" onclick="A.completeNote(${x.id})">${x.done?'Reopen':'Completed'}</button><button class="btn danger" onclick="A.deleteNote(${x.id})">Delete</button></div></div>`; }
- function completeNote(id){ localStorage.setItem(NOTES,JSON.stringify(notes().map(x=>x.id===id?{...x,done:!x.done}:x))); renderNotes(); }
- function deleteNote(id){ if(confirm('Delete this note?')){ localStorage.setItem(NOTES,JSON.stringify(notes().filter(x=>x.id!==id))); renderNotes(); } }
 
  /* AUTHENTICATION */
  async function demoLogin(){
@@ -2823,7 +3246,7 @@ window.A = (() => {
  }
 
  initHeaderSortLongPress();
- renderNotes();
+ initProductColumnHeaderLongPress();
 
  return {
   get cloudSettings(){ return cloudSettings; },
@@ -2846,17 +3269,17 @@ window.A = (() => {
     if(window.location.hash === '#admin') showPage('a_login');
    }
   },
-  showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openNotebook, openOrderList, openGSTManagement,
-  newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, toggleVariationFields, goProductStep,
-  clearProductImage, handleBulkProductImages, handleSingleSlotImage, saveProduct,
-  startSingleCellEdit, cancelSingleCellEdit, commitSingleCellEdit, commitDeliveryCellEdit,
+  showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openHeroEditor, openOrderList, openGSTManagement,
+  uploadHeroEditorImage, saveHeroScheme,
+  newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, recalcFormTotal, goProductStep,
+  clearProductImage, clearHeroImage, handleBulkProductImages, handleSingleSlotImage, handleHeroSlotImage, saveProduct,
+  activateColumnBulkEdit, commitAndCloseBulkColumn,
   selectProductForMove, moveProductPosition,
   closeModal, closeQuick, toggleShowcase, toggleLive, deleteProd,
-  renderProducts, renderOrders, applyOrderSort, moveOrderPosition, viewPaymentProof, setOrderStatus, deleteOrder,
+  renderProducts, renderOrders, applyOrderSort, moveOrderPosition, setOrderStatus, deleteOrder,
   printParcelLabel, printBillInvoice, printGSTReturnPDF, exportGST,
   closePrintView, downloadCurrentPDF, triggerDevicePrint,
-  handleQrUpload, clearQrImage, saveGSTSettings, renderGST,
-  addNote, completeNote, deleteNote, demoLogin, logout
+  saveGSTSettings, renderGST, demoLogin, logout
  };
 })();
 
