@@ -745,7 +745,7 @@ window.addEventListener('hashchange', applyRoute);
 
 /* ==================== SHARED FIRESTORE STORE DATA ==================== */
 window.storeProducts = [];
-window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,razorpayKeyId:''};
+window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'KE',codAdvance:49,razorpayKeyId:''};
 
 window.initStoreFirebase = function(){
  if (!window.db || !window.fbLib) return;
@@ -1631,19 +1631,25 @@ window.C = (() => {
   return { err, name, phone, street, landmark, pincode, city, state, fullAddress: buildFullAddress({street, landmark, city, state, pincode}) };
  }
 
- function generateOrderNumber(firstSku){
-  let cleanSku = String(firstSku||'KESTR').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
-  let sku5 = cleanSku.padEnd(5,'0').slice(0,5);
-  let now = new Date();
-  let dd = String(now.getDate()).padStart(2,'0');
-  let mm = String(now.getMonth()+1).padStart(2,'0');
-  let dateKey = dd+mm+'_'+now.getFullYear();
-  let seqObj = JSON.parse(localStorage.getItem(SEQ_KEY)||'{}');
-  let nextNum = (seqObj.date===dateKey?(Number(seqObj.count)||0):0)+1;
-  localStorage.setItem(SEQ_KEY, JSON.stringify({date:dateKey,count:nextNum}));
-  let seq3 = String(nextNum).padStart(3,'0').slice(-3);
-  return sku5 + dd + mm + seq3;
- }
+   function generateOrderNumber(productId){
+   const prefix = 'KE';
+   let product = getProducts().find(p=>p.id===productId);
+   let listingPosition = Number(product?.listingKram);
+   if(!Number.isInteger(listingPosition) || listingPosition < 1){
+    let productIndex = getProducts().findIndex(p=>p.id===productId);
+    listingPosition = productIndex >= 0 ? productIndex + 1 : 1;
+   }
+   let listing3 = String(listingPosition).padStart(3,'0').slice(-3);
+   let now = new Date();
+   let dd = String(now.getDate()).padStart(2,'0');
+   let mm = String(now.getMonth()+1).padStart(2,'0');
+   let dateKey = dd+mm+'_'+now.getFullYear();
+   let seqObj = JSON.parse(localStorage.getItem(SEQ_KEY)||'{}');
+   let nextNum = (seqObj.date===dateKey?(Number(seqObj.count)||0):0)+1;
+   localStorage.setItem(SEQ_KEY, JSON.stringify({date:dateKey,count:nextNum}));
+   let seq3 = String(nextNum).padStart(3,'0').slice(-3);
+   return prefix + listing3 + seq3 + dd + mm;
+  }
 
  async function startRazorpayCheckout(){
   let c = getCart();
@@ -1764,8 +1770,8 @@ window.C = (() => {
      orderItems.push({...it, name:x?.name||'Product', sku:x?.sku||'', price:eff, originalPrice:x?.price||0, gstRate:x?.gstRate??18, hsn:x?.hsn||''});
     }
 
-    let firstSku = orderItems[0]?.sku || 'KESTR';
-    let num = generateOrderNumber(firstSku);
+         let firstProductId = grp.items[0]?.id;
+     let num = generateOrderNumber(firstProductId);
     let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
     let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
     let payMethodLabel = (payOpt === 'COD')
@@ -1868,11 +1874,12 @@ window.A = (() => {
  function startFirebaseListeners(){
   if(!window.db || !window.fbLib) return;
   if(!unsubProducts){
-   unsubProducts = window.fbLib.onSnapshot(window.fbLib.collection(window.db, "products"), snap => {
-    let list = [];
-    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-    cloudProducts = list;
-    refresh();
+       unsubProducts = window.fbLib.onSnapshot(window.fbLib.collection(window.db, "products"), snap => {
+     let list = [];
+     snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+     cloudProducts = list;
+     if(list.length && list.some(p => !Number.isInteger(Number(p.listingKram)) || Number(p.listingKram) < 1)) persistProductKram();
+     refresh();
     if(document.getElementById('a_heroEditor')?.classList.contains('active')) renderHeroEditor();
    }, err => console.error("Admin products error:", err));
   }
@@ -2174,41 +2181,62 @@ window.A = (() => {
   localStorage.setItem(PROD_SEQ_KEY, JSON.stringify(arr));
  }
 
- function getOrderedProducts(){
-  let q = (document.getElementById('a_productSearch')?.value||'').toLowerCase();
-  let list = products().filter(p=>(p.name+' '+p.sku+' '+p.cat).toLowerCase().includes(q));
-  let seq = getCustomProdSeq();
-  if(seq.length){
-   list.sort((a,b)=>{
-    let ia = seq.indexOf(a.id), ib = seq.indexOf(b.id);
-    if(ia === -1 && ib === -1) return 0;
-    if(ia === -1) return 1;
-    if(ib === -1) return -1;
-    return ia - ib;
-   });
+   let syncingProductKram = false;
+  function orderProductsBySavedSequence(list){
+   let seq = getCustomProdSeq();
+   if(seq.length){
+    list.sort((a,b)=>{
+     let ia = seq.indexOf(a.id), ib = seq.indexOf(b.id);
+     if(ia === -1 && ib === -1) return 0;
+     if(ia === -1) return 1;
+     if(ib === -1) return -1;
+     return ia - ib;
+    });
+   }
+   return list;
   }
-  return list;
- }
 
- function selectProductForMove(id){
+  async function persistProductKram(){
+   if(syncingProductKram || !window.db || !window.fbLib) return;
+   syncingProductKram = true;
+   try{
+    let ordered = orderProductsBySavedSequence([...products()]);
+    for(let i=0;i<ordered.length;i++){
+     let item = ordered[i];
+     if(Number(item.listingKram) !== i+1){
+      await saveSingleProductToFirebase({...item, listingKram:i+1});
+     }
+    }
+   }catch(err){ console.error('Product Kram sync failed:', err); }
+   finally{ syncingProductKram = false; }
+  }
+
+  function getOrderedProducts(){
+   let q = (document.getElementById('a_productSearch')?.value||'').toLowerCase();
+   let list = products().filter(p=>(p.name+' '+p.sku+' '+p.cat).toLowerCase().includes(q));
+   return orderProductsBySavedSequence(list);
+  }
+
+  function selectProductForMove(id){
   closeQuick();
   if(activeBulkCol) commitAndCloseBulkColumn();
   selectedMoveProdId = (selectedMoveProdId === id) ? null : id;
   renderProducts();
  }
 
- function moveProductPosition(id, dir){
-  let ordered = getOrderedProducts().map(p => p.id);
-  let idx = ordered.indexOf(id);
-  if(idx === -1) return;
-  let targetIdx = idx + dir;
-  if(targetIdx < 0 || targetIdx >= ordered.length) return;
-  let temp = ordered[idx];
-  ordered[idx] = ordered[targetIdx];
-  ordered[targetIdx] = temp;
-  saveCustomProdSeq(ordered);
-  renderProducts();
- }
+   async function moveProductPosition(id, dir){
+   let ordered = orderProductsBySavedSequence([...products()]).map(p => p.id);
+   let idx = ordered.indexOf(id);
+   if(idx === -1) return;
+   let targetIdx = idx + dir;
+   if(targetIdx < 0 || targetIdx >= ordered.length) return;
+   let temp = ordered[idx];
+   ordered[idx] = ordered[targetIdx];
+   ordered[targetIdx] = temp;
+   saveCustomProdSeq(ordered);
+   renderProducts();
+   await persistProductKram();
+  }
 
  function calcRowFinancials(p){
   let sellerPrice = Number(p.sellerPrice ?? p.costPrice ?? 0);
@@ -2869,9 +2897,12 @@ window.A = (() => {
     finalImages=keepImages.filter(Boolean).slice(0,4);
     finalHeroImage=old?.showcaseImage || '';
    }
-   let x={
-    id,name,sku,cat:document.getElementById('a_fCat').value,
-    sellerPrice,
+       let orderedCount = orderProductsBySavedSequence([...products()]).length;
+    let listingKram = Number(old?.listingKram);
+    if(!Number.isInteger(listingKram) || listingKram < 1) listingKram = orderedCount + 1;
+    let x={
+     id,name,sku,listingKram,cat:document.getElementById('a_fCat').value,
+     sellerPrice,
     deliveryCharge:deliveryChargeVal,
     deliveryChargeB2C:deliveryChargeVal,
     deliveryChargeB2B:Number(old?.deliveryChargeB2B) || deliveryChargeVal,
@@ -3180,22 +3211,29 @@ window.A = (() => {
   btn.textContent = oldText;
   triggerDevicePrint();
  }
- function triggerDevicePrint(){ try{ window.print(); }catch(e){} }
+   function triggerDevicePrint(){ try{ window.print(); }catch(e){} }
 
- function printParcelLabel(num){
+  function formatDocumentDate(order){
+   let date = order?.timestamp ? new Date(Number(order.timestamp)) : new Date(order?.date || '');
+   if(Number.isNaN(date.getTime())) return String(order?.date || '');
+   return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
+  }
+
+  function printParcelLabel(num){
   let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
   if(!o) return;
-  let bName = s.name || 'KEstore (Tools Hub Rajkot)';
-  let totalQty = (o.items||[]).reduce((sum,i)=>sum+(+i.qty||0),0);
+     let bName = s.name || 'KEstore (Tools Hub Rajkot)';
+   let printDate = formatDocumentDate(o);
+   let totalQty = (o.items||[]).reduce((sum,i)=>sum+(+i.qty||0),0);
   let itemRows = (o.items||[]).map((i,idx)=>{
    let p=products().find(x=>x.id===i.id), nm=i.name||p?.name||'Product', sk=i.sku||p?.sku||'';
-   return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(nm)}</b>${sk?` <span>[${esc(sk)}]</span>`:''}${i.vKey?`<br><span style="font-size:10px">${esc(i.vKey)}</span>`:''}</td><td style="text-align:center;font-size:13px;font-weight:900">${i.qty}</td></tr>`;
+   return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(nm)}</b></td><td style="text-align:center;font-size:13px;font-weight:900">${i.qty}</td></tr>`;
   }).join('');
   let html = `<div id="pdfPrintableArea" class="printBox">
    <div style="border-bottom:2px solid #000;padding-bottom:8px">
     <div style="font-size:22px;font-weight:900">${esc(bName)}</div>
     <div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:17px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B PARCEL</span>':''}</div>
-    <div style="font-size:11px;margin-top:2px">Date: ${esc(o.date)} | Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
+         <div style="font-size:11px;margin-top:2px">Date: ${esc(printDate)} | Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
      <div style="flex:1;min-width:0">${generateBarcodeSVG(o.number)}<div style="font-family:monospace;font-size:11px;font-weight:900;letter-spacing:1.5px;margin-top:2px">${esc(o.number)}</div></div>
      <div>${generateOfflineQRSVG(o.number)}</div>
@@ -3224,16 +3262,17 @@ window.A = (() => {
  function printBillInvoice(num){
   let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
   if(!o) return;
-  let bName = s.name || 'KEstore (Tools Hub Rajkot)', totalTaxable=0, totalGst=0;
-  let rows = (o.items||[]).map((i,idx)=>{
+     let bName = s.name || 'KEstore (Tools Hub Rajkot)', totalTaxable=0, totalGst=0;
+   let printDate = formatDocumentDate(o);
+   let rows = (o.items||[]).map((i,idx)=>{
    let pr=Number(i.price||0), rate=Number(i.gstRate??18), lineTotal=pr*i.qty, taxable=rate===0?lineTotal:lineTotal/(1+rate/100), gstAmt=lineTotal-taxable;
    totalTaxable+=taxable; totalGst+=gstAmt;
-   return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(i.name)}</b>${i.vKey?`<div style="font-size:10px">${esc(i.vKey)}</div>`:''}</td><td style="text-align:center"><b>${i.qty}</b><div style="font-size:10px">× ${money(pr)}</div></td><td style="text-align:center"><b>${rate}%</b></td><td style="text-align:right;font-weight:900">${money(lineTotal)}</td></tr>`;
+   return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(i.name||'Product')}</b></td><td style="text-align:center"><b>${i.qty}</b><div style="font-size:10px">× ${money(pr)}</div></td><td style="text-align:center"><b>${rate}%</b></td><td style="text-align:right;font-weight:900">${money(lineTotal)}</td></tr>`;
   }).join('');
   let html = `<div id="pdfPrintableArea" class="printBox">
    <div style="border-bottom:2px solid #000;padding-bottom:8px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
-     <div><div style="font-size:22px;font-weight:900;color:#07366c">${esc(bName)}</div><div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:16px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B INVOICE</span>':''}</div><div style="font-size:11px;margin-top:2px"><b>Date:</b> ${esc(o.date)}</div>${s.gstin?`<div style="font-size:11px;margin-top:2px"><b>GSTIN:</b> ${esc(s.gstin)}</div>`:''}</div>
+     <div><div style="font-size:22px;font-weight:900;color:#07366c">${esc(bName)}</div><div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:16px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B INVOICE</span>':''}</div><div style="font-size:11px;margin-top:2px"><b>Date:</b> ${esc(printDate)}</div>${s.gstin?`<div style="font-size:11px;margin-top:2px"><b>GSTIN:</b> ${esc(s.gstin)}</div>`:''}</div>
      <div style="font-size:11px;font-weight:900;border:1.5px solid #000;padding:3px 6px;white-space:nowrap">TAX INVOICE</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
