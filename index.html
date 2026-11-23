@@ -21,7 +21,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
   import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app-check.js";
-  import { getFirestore, collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch, runTransaction } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -47,7 +47,7 @@
 
   window.db = db;
   window.adminAuth = auth;
-  window.fbLib = { collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch };
+  window.fbLib = { collection, getDocs, setDoc, doc, getDoc, updateDoc, deleteDoc, addDoc, onSnapshot, writeBatch, runTransaction };
   window.adminAuthApi = { signInWithEmailAndPassword, signOut, onAuthStateChanged };
 
   if (typeof window.initStoreFirebase === "function") window.initStoreFirebase();
@@ -771,7 +771,7 @@ window.initStoreFirebase = function(){
 
 /* ==================== 1. CUSTOMER STOREFRONT APP (C) ==================== */
 window.C = (() => {
- const CART = 'kestore_cart_v1', PROFILE = 'kestore_profile_v1', ORDERS = 'kestore_orders_v1', SEQ_KEY = 'kestore_daily_seq_v1', RECENT_KEY = 'kestore_recent_search_v1';
+ const CART = 'kestore_cart_v1', PROFILE = 'kestore_profile_v1', ORDERS = 'kestore_orders_v1', RECENT_KEY = 'kestore_recent_search_v1';
  let catFilter = '', currentDetail = null, selectedPayMode = 'COD';
  const pinCache = {};
  let heroRotationIndex = 0, heroRotationTimer = null;
@@ -1631,24 +1631,33 @@ window.C = (() => {
   return { err, name, phone, street, landmark, pincode, city, state, fullAddress: buildFullAddress({street, landmark, city, state, pincode}) };
  }
 
-   function generateOrderNumber(productId){
-   const prefix = 'KE';
-   let product = getProducts().find(p=>p.id===productId);
+  async function generateOrderNumber(productId){
+   if(!window.db || !window.fbLib?.runTransaction) throw new Error('Global bill numbering is unavailable: Firebase connection is required.');
+   const product = getProducts().find(p=>p.id===productId);
    let listingPosition = Number(product?.listingKram);
    if(!Number.isInteger(listingPosition) || listingPosition < 1){
-    let productIndex = getProducts().findIndex(p=>p.id===productId);
+    const productIndex = getProducts().findIndex(p=>p.id===productId);
     listingPosition = productIndex >= 0 ? productIndex + 1 : 1;
    }
-   let listing3 = String(listingPosition).padStart(3,'0').slice(-3);
-   let now = new Date();
-   let dd = String(now.getDate()).padStart(2,'0');
-   let mm = String(now.getMonth()+1).padStart(2,'0');
-   let dateKey = dd+mm+'_'+now.getFullYear();
-   let seqObj = JSON.parse(localStorage.getItem(SEQ_KEY)||'{}');
-   let nextNum = (seqObj.date===dateKey?(Number(seqObj.count)||0):0)+1;
-   localStorage.setItem(SEQ_KEY, JSON.stringify({date:dateKey,count:nextNum}));
-   let seq3 = String(nextNum).padStart(3,'0').slice(-3);
-   return prefix + listing3 + seq3 + dd + mm;
+   if(listingPosition > 999) throw new Error('Product listing Kram is over 999; this bill format supports only three Kram digits.');
+
+   const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone:'Asia/Kolkata', day:'2-digit', month:'2-digit', year:'numeric'
+   }).formatToParts(new Date()).reduce((out, part)=>{ out[part.type] = part.value; return out; }, {});
+   const dd = parts.day, mm = parts.month, yyyy = parts.year;
+   const dateKey = `${yyyy}${mm}${dd}`;
+   const counterRef = window.fbLib.doc(window.db, 'order_sequences', dateKey);
+   const nextNum = await window.fbLib.runTransaction(window.db, async transaction=>{
+    const counterSnap = await transaction.get(counterRef);
+    const current = counterSnap.exists() ? Number(counterSnap.data().count) || 0 : 0;
+    if(current >= 999) throw new Error('Aaj ki bill sequence limit (999) poori ho gayi hai; next bill number issue nahi kiya ja sakta.');
+    const next = current + 1;
+    transaction.set(counterRef, { count:next, dateKey, updatedAt:Date.now() });
+    return next;
+   });
+   const listing3 = String(listingPosition).padStart(3,'0');
+   const seq3 = String(nextNum).padStart(3,'0');
+   return `KE${listing3}${seq3}${dd}${mm}`;
   }
 
  async function startRazorpayCheckout(){
@@ -1771,7 +1780,7 @@ window.C = (() => {
     }
 
          let firstProductId = grp.items[0]?.id;
-     let num = generateOrderNumber(firstProductId);
+     let num = await generateOrderNumber(firstProductId);
     let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
     let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
     let payMethodLabel = (payOpt === 'COD')
