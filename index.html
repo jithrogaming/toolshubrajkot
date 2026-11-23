@@ -1777,14 +1777,6 @@ window.C = (() => {
     let orderItems = [];
     for (const it of grp.items) {
      let x = p.find(a=>a.id===it.id);
-     let newStock = x ? Math.max(0, Number(x.stock) - it.qty) : 0;
-     if(x && window.db && window.fbLib){
-      try {
-       await window.fbLib.updateDoc(window.fbLib.doc(window.db, "products", String(x.id)), { stock: newStock });
-      } catch (stockErr) {
-       console.warn("Product stock update skipped:", stockErr);
-      }
-     }
      let eff = it.unitPrice || x?.price || 0;
      orderItems.push({...it, name:x?.name||'Product', sku:x?.sku||'', price:eff, originalPrice:x?.price||0, gstRate:x?.gstRate??18, hsn:x?.hsn||''});
     }
@@ -1826,6 +1818,17 @@ window.C = (() => {
 
     if(window.db && window.fbLib){
      await window.fbLib.setDoc(window.fbLib.doc(window.db, "orders", String(num)), orderObj);
+     for (const it of grp.items) {
+      let x = p.find(a=>a.id===it.id);
+      let newStock = x ? Math.max(0, Number(x.stock) - it.qty) : 0;
+      if(x){
+       try {
+        await window.fbLib.updateDoc(window.fbLib.doc(window.db, "products", String(x.id)), { stock: newStock });
+       } catch (stockErr) {
+        console.warn("Product stock update skipped:", stockErr);
+       }
+      }
+     }
     }
     localOrders.unshift(orderObj);
    }
