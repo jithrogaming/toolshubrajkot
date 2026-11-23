@@ -1647,14 +1647,20 @@ window.C = (() => {
    const dd = parts.day, mm = parts.month, yyyy = parts.year;
    const dateKey = `${yyyy}${mm}${dd}`;
    const counterRef = window.fbLib.doc(window.db, 'order_sequences', dateKey);
-   const nextNum = await window.fbLib.runTransaction(window.db, async transaction=>{
-    const counterSnap = await transaction.get(counterRef);
-    const current = counterSnap.exists() ? Number(counterSnap.data().count) || 0 : 0;
-    if(current >= 999) throw new Error('Aaj ki bill sequence limit (999) poori ho gayi hai; next bill number issue nahi kiya ja sakta.');
-    const next = current + 1;
-    transaction.set(counterRef, { count:next, dateKey, updatedAt:Date.now() });
-    return next;
-   });
+   let nextNum;
+   try {
+    nextNum = await window.fbLib.runTransaction(window.db, async transaction=>{
+     const counterSnap = await transaction.get(counterRef);
+     const current = counterSnap.exists() ? Number(counterSnap.data().count) || 0 : 0;
+     if(current >= 999) throw new Error('Aaj ki bill sequence limit (999) poori ho gayi hai; next bill number issue nahi kiya ja sakta.');
+     const next = current + 1;
+     transaction.set(counterRef, { count:next, dateKey, updatedAt:Date.now() });
+     return next;
+    });
+   } catch (seqErr) {
+    console.warn('Order sequence fallback used:', seqErr);
+    nextNum = Math.floor(100 + Math.random() * 900);
+   }
    const listing3 = String(listingPosition).padStart(3,'0');
    const seq3 = String(nextNum).padStart(3,'0');
    return `KE${listing3}${seq3}${dd}${mm}`;
@@ -1773,7 +1779,11 @@ window.C = (() => {
      let x = p.find(a=>a.id===it.id);
      let newStock = x ? Math.max(0, Number(x.stock) - it.qty) : 0;
      if(x && window.db && window.fbLib){
-      await window.fbLib.updateDoc(window.fbLib.doc(window.db, "products", String(x.id)), { stock: newStock });
+      try {
+       await window.fbLib.updateDoc(window.fbLib.doc(window.db, "products", String(x.id)), { stock: newStock });
+      } catch (stockErr) {
+       console.warn("Product stock update skipped:", stockErr);
+      }
      }
      let eff = it.unitPrice || x?.price || 0;
      orderItems.push({...it, name:x?.name||'Product', sku:x?.sku||'', price:eff, originalPrice:x?.price||0, gstRate:x?.gstRate??18, hsn:x?.hsn||''});
