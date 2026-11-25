@@ -163,7 +163,11 @@ button{cursor:pointer}
 #customerApp .qty{display:flex;gap:8px;align-items:center;margin-top:7px}
 #customerApp .qty button{background:#eaf4ff;color:var(--navy);border-radius:7px;padding:5px 10px;font-weight:700}
 
-/* SINGLE LARGE PRODUCT DETAILS IMAGE (SAME 440PX HEIGHT AS HERO IMAGE, NO DOUBLE IMAGE) */
+/* COMPACT LOGIN ICON BUTTON (CUSTOMER & ADMIN) */
+.compactIconLauncher{display:inline-flex;align-items:center;gap:10px;background:#ffffff;border:1.5px solid #cbd5e1;border-radius:999px;padding:9px 16px;font-weight:800;color:#07366c;box-shadow:0 3px 10px rgba(7,54,108,0.08);cursor:pointer}
+.compactIconLauncher .icoCircle{width:34px;height:34px;border-radius:50%;background:#eaf4ff;color:#0756a5;display:inline-grid;place-items:center;font-size:17px}
+
+/* SINGLE LARGE PRODUCT DETAILS IMAGE */
 #customerApp .detailImg{width:100%;height:260px;max-height:260px;object-fit:contain;background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;display:block}
 #customerApp .thumbs{display:flex;gap:7px;margin:8px 0}
 #customerApp .thumbs img{width:58px;height:58px;object-fit:contain;background:#fff;border:2px solid transparent;border-radius:8px;cursor:pointer}
@@ -204,7 +208,7 @@ button{cursor:pointer}
 /* ================= ADMIN PANEL STYLES (WHITE THEME) ================= */
 #adminApp{background:#f4f6f9;color:#111827;min-height:100vh}
 #adminApp .top{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;background:#ffffff;border-bottom:1px solid #e5e7eb;z-index:20;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
-#adminApp .logo{font-size:22px;font-weight:900;letter-spacing:.5px;color:#07366c;cursor:pointer}
+#adminApp .logo{font-size:20px;font-weight:900;letter-spacing:.3px;color:#07366c;cursor:pointer}
 #adminApp .wrap{max-width:1100px;margin:auto;padding:18px 14px 28px}
 #adminApp .sellerMenu{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0}
 #adminApp .sellerMenuPair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -357,7 +361,7 @@ button{cursor:pointer}
 }
 
 /* Responsive, touch-friendly admin controls */
-#adminApp button:not(.imgClearBtn):not(.moveBtn):not(.productStepBadge){min-height:46px}
+#adminApp button:not(.imgClearBtn):not(.moveBtn):not(.productStepBadge):not(.compactIconLauncher){min-height:46px}
 #adminApp .btn{padding:12px 16px;font-size:14px}
 #adminApp .row{flex-wrap:wrap;align-items:stretch}
 #adminApp .row>*{flex:1 1 220px}
@@ -392,7 +396,7 @@ button{cursor:pointer}
 
  <main class="wrap">
   <section id="c_home" class="c-page active">
-   <!-- Full-bleed showcase cards, below photo-led categories -->
+   <!-- Full-bleed showcase cards -->
    <div class="heroTrack" id="c_heroTrack" onscroll="C.onHeroScroll()"></div>
    <div class="heroDots" id="c_heroDots"></div>
 
@@ -462,18 +466,20 @@ button{cursor:pointer}
   </section>
 
   <section id="c_profile" class="c-page">
-   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-    <h2 class="pageTitle" style="margin:8px 0">Customer Profile &amp; Orders</h2>
-    <button class="ghostBtn" id="c_editProfileToggleBtn" style="display:none;font-size:12px" onclick="C.toggleProfileForm(true)">✏️ Edit Profile</button>
-   </div>
-
-   <div class="panel" id="c_profileSummaryCard" style="display:none">
-    <div style="font-weight:800;font-size:15px" id="c_profSumName"></div>
-    <div class="small" id="c_profSumPhone"></div>
-    <div class="small" id="c_profSumAddr"></div>
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 12px">
+    <h2 class="pageTitle" style="margin:0">Customer Profile &amp; Orders</h2>
+    <!-- COMPACT ICON LAUNCHER: SHOWN WHEN PROFILE IS SAVED & FORM IS HIDDEN -->
+    <button class="compactIconLauncher" id="c_profileIconBtn" style="display:none" onclick="C.toggleProfileForm(true)" title="Open Saved Profile & Address">
+     <span class="icoCircle">👤</span>
+     <span id="c_profileIconLabel" style="font-size:12px">Profile</span>
+    </button>
    </div>
 
    <div class="panel" id="c_profileFormPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+     <b style="color:var(--navy)">Login / Save Delivery Address</b>
+     <button class="ghostBtn" id="c_closeProfFormBtn" style="display:none;padding:4px 10px;font-size:11px" onclick="C.toggleProfileForm(false)">Hide ✕</button>
+    </div>
     <label class="addrLbl">Full Name *</label>
     <input class="field" id="c_custName" placeholder="Customer Full Name">
     <label class="addrLbl">10-Digit Mobile Number *</label>
@@ -535,7 +541,7 @@ button{cursor:pointer}
 <!-- ==================== 2. ADMIN PANEL (WHITE THEME) ==================== -->
 <div id="adminApp" class="app-hidden">
  <header class="top">
-  <div class="logo" onclick="A.showPage('a_dashboard')">KEstore Admin</div>
+  <div class="logo" onclick="A.showPage('a_dashboard')">Tools Hub Rajkot Admin</div>
   <button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="switchToCustomer()">View Store ↗</button>
  </header>
 
@@ -661,40 +667,50 @@ button{cursor:pointer}
    </details>
   </section>
 
-  <!-- 4. UNIFIED SELLER FORM & LOGIN -->
+  <!-- 4. UNIFIED SELLER FORM & LOGIN (COLLAPSES TO SINGLE LOGIN ICON AFTER SAVE) -->
   <section id="a_login" class="a-page">
    <div class="headFlex">
     <h2 class="title">Seller Form &amp; Login</h2>
     <button class="btn ghost" style="padding:7px 12px;font-size:12px" onclick="A.showPage('a_dashboard')">← Back</button>
    </div>
 
-   <div class="panel" id="a_loginPanel">
-    <h3 style="margin:0 0 8px">Admin Login</h3>
-    <input class="field" placeholder="Admin Email" id="a_loginEmail">
-    <input class="field" placeholder="Password" id="a_loginPassword" type="password">
-    <div id="a_authStatus" class="muted" role="status">Checking Firebase authentication…</div>
-    <div class="row" style="margin-top:8px">
-     <button class="btn" onclick="A.demoLogin()">Secure Login</button>
-     <button class="btn ghost" onclick="A.logout()">Logout</button>
-    </div>
+   <!-- COMPACT LOGIN ICON VIEW: SHOWN AUTOMATICALLY ONCE LOGIN + SELLER FORM ARE COMPLETE -->
+   <div id="a_collapsedAccountBar" class="hidden" style="text-align:center;padding:36px 12px">
+    <button type="button" class="compactIconLauncher" onclick="A.expandSellerAccountSection()" title="Tap to open Admin Login & Seller Form">
+     <span class="icoCircle">🔐</span>
+     <span>Admin Login &amp; Seller Form</span>
+    </button>
    </div>
 
-   <div class="panel" id="a_profileFormPanel">
-    <h3 style="margin:0 0 6px">Shop Details • GST, RTO &amp; Razorpay Payment</h3>
-    <p class="muted">Business profile, GSTIN, Care Number, COD Advance Amount aur Razorpay Key ID Cloud (Firestore) par save honge.</p>
-    <input class="field" id="a_sellerName" placeholder="Business Name">
-    <input class="field" id="a_sellerGstin" placeholder="GSTIN">
-    <textarea class="field" id="a_sellerAddress" placeholder="Full RTO Return Address"></textarea>
-    <input class="field" id="a_sellerPhone" placeholder="Customer Care Phone Number">
-    <div class="row">
-     <input class="field" id="a_sellerState" placeholder="State">
-     <input class="field" id="a_invoicePrefix" placeholder="Invoice Prefix">
+   <div id="a_fullAccountWrap">
+    <div class="panel" id="a_loginPanel">
+     <h3 style="margin:0 0 8px">Admin Login</h3>
+     <input class="field" placeholder="Admin Email" id="a_loginEmail">
+     <input class="field" placeholder="Password" id="a_loginPassword" type="password">
+     <div id="a_authStatus" class="muted" role="status">Checking Firebase authentication…</div>
+     <div class="row" style="margin-top:8px">
+      <button class="btn" onclick="A.demoLogin()">Secure Login</button>
+      <button class="btn ghost" onclick="A.logout()">Logout</button>
+     </div>
     </div>
-    <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">COD Advance Online Payment Amount (₹) *</label>
-    <input class="field" id="a_sellerCodAdvance" type="number" min="1" step="1" placeholder="e.g. 49">
-    <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">Razorpay Live Key ID (rzp_live_...) *</label>
-    <input class="field" id="a_sellerRazorpayKey" placeholder="e.g. rzp_live_xxxxxxxxxxxxxx">
-    <button class="btn" onclick="A.saveGSTSettings()">Save Profile &amp; Razorpay Settings</button>
+
+    <div class="panel" id="a_profileFormPanel">
+     <h3 style="margin:0 0 6px">Shop Details • GST, RTO &amp; Razorpay Payment</h3>
+     <p class="muted">Business profile, GSTIN, Care Number, COD Advance Amount aur Razorpay Key ID Cloud (Firestore) par save honge.</p>
+     <input class="field" id="a_sellerName" placeholder="Business Name">
+     <input class="field" id="a_sellerGstin" placeholder="GSTIN">
+     <textarea class="field" id="a_sellerAddress" placeholder="Full RTO Return Address"></textarea>
+     <input class="field" id="a_sellerPhone" placeholder="Customer Care Phone Number">
+     <div class="row">
+      <input class="field" id="a_sellerState" placeholder="State">
+      <input class="field" id="a_invoicePrefix" placeholder="Invoice Prefix">
+     </div>
+     <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">COD Advance Online Payment Amount (₹) *</label>
+     <input class="field" id="a_sellerCodAdvance" type="number" min="1" step="1" placeholder="e.g. 49">
+     <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">Razorpay Live Key ID (rzp_live_...) *</label>
+     <input class="field" id="a_sellerRazorpayKey" placeholder="e.g. rzp_live_xxxxxxxxxxxxxx">
+     <button class="btn" id="a_saveSellerBtn" onclick="A.saveGSTSettings()">Save Profile &amp; Razorpay Settings</button>
+    </div>
    </div>
   </section>
  </main>
@@ -734,7 +750,7 @@ function applyRoute(){
  const isAdmin = window.location.hash === '#admin' || new URLSearchParams(window.location.search).has('admin');
  document.getElementById('customerApp').classList.toggle('app-hidden', isAdmin);
  document.getElementById('adminApp').classList.toggle('app-hidden', !isAdmin);
- document.title = isAdmin ? 'KEstore Admin' : 'श्रीEstore | Tools Hub Rajkot';
+ document.title = isAdmin ? 'Tools Hub Rajkot Admin' : 'श्रीEstore | Tools Hub Rajkot';
  if (isAdmin && window.A) A.onOpen();
 }
 function switchToCustomer(){
@@ -745,7 +761,7 @@ window.addEventListener('hashchange', applyRoute);
 
 /* ==================== SHARED FIRESTORE STORE DATA ==================== */
 window.storeProducts = [];
-window.storeSettings = {name:'श्रीEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'KE',codAdvance:49,razorpayKeyId:''};
+window.storeSettings = {name:'Shree Estore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'THR',codAdvance:49,razorpayKeyId:''};
 
 window.initStoreFirebase = function(){
  if (!window.db || !window.fbLib) return;
@@ -764,7 +780,11 @@ window.initStoreFirebase = function(){
   if (snap.exists()) {
    window.storeSettings = { ...window.storeSettings, ...snap.data() };
    if (window.C) C.onSettingsUpdated();
-   if (window.A) { A.cloudSettings = { ...A.cloudSettings, ...snap.data() }; A.renderGST(); }
+   if (window.A) {
+    A.cloudSettings = { ...A.cloudSettings, ...snap.data() };
+    A.renderGST();
+    if (typeof A.syncProfileVisibility === 'function') A.syncProfileVisibility(false);
+   }
   }
  }, err => console.error("Settings sync error:", err));
 };
@@ -1191,7 +1211,7 @@ window.C = (() => {
   window.scrollTo(0,0);
  }
 
- /* PRODUCT DETAILS PAGE: SINGLE LARGE NORMAL IMAGE ONLY (440PX HEIGHT, NO DOUBLE IMAGE) */
+ /* PRODUCT DETAILS PAGE */
  function openDetails(id){
   let p = getProducts().find(x=>x.id===id);
   if(!p) return;
@@ -1468,10 +1488,28 @@ window.C = (() => {
  }
 
  function getProfile(){ return JSON.parse(localStorage.getItem(PROFILE)||'{}'); }
+ function hasSavedCustomerProfile(p){
+  return Boolean(p && p.name && p.phone && p.street && p.landmark && p.pincode && p.city && p.state);
+ }
+
+ /* CUSTOMER PROFILE FORM AUTO-HIDE AFTER SAVE -> COLLAPSES TO COMPACT ICON */
  function toggleProfileForm(open){
-  document.getElementById('c_profileFormPanel').style.display = open ? 'block' : 'none';
-  document.getElementById('c_profileSummaryCard').style.display = open ? 'none' : 'block';
-  document.getElementById('c_editProfileToggleBtn').style.display = open ? 'none' : 'inline-block';
+  let p = getProfile();
+  let isComplete = hasSavedCustomerProfile(p);
+  const formPanel = document.getElementById('c_profileFormPanel');
+  const iconBtn = document.getElementById('c_profileIconBtn');
+  const iconLbl = document.getElementById('c_profileIconLabel');
+  const closeBtn = document.getElementById('c_closeProfFormBtn');
+
+  if(open){
+   if(formPanel) formPanel.style.display = 'block';
+   if(iconBtn) iconBtn.style.display = 'none';
+   if(closeBtn) closeBtn.style.display = isComplete ? 'inline-block' : 'none';
+  } else {
+   if(formPanel) formPanel.style.display = 'none';
+   if(iconBtn) iconBtn.style.display = isComplete ? 'inline-flex' : 'none';
+   if(iconLbl && p.name) iconLbl.textContent = p.name.split(' ')[0];
+  }
  }
 
  async function saveProfile(){
@@ -1509,16 +1547,10 @@ window.C = (() => {
   document.getElementById('c_custCity').value = p.city||'';
   document.getElementById('c_custState').innerHTML = stateOptionsHTML(p.state||'');
 
-  let isComplete = p.name && p.phone && p.street && p.landmark && p.pincode && p.city && p.state;
-  if(isComplete){
-   document.getElementById('c_profSumName').textContent = p.name;
-   document.getElementById('c_profSumPhone').textContent = `📱 ${p.phone} ${p.email ? '• ' + p.email : ''}`;
-   document.getElementById('c_profSumAddr').textContent = `📍 ${buildFullAddress(p)}`;
+  if(hasSavedCustomerProfile(p)){
    toggleProfileForm(false);
   } else {
    toggleProfileForm(true);
-   document.getElementById('c_profileSummaryCard').style.display = 'none';
-   document.getElementById('c_editProfileToggleBtn').style.display = 'none';
   }
 
   let orders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
@@ -1562,36 +1594,60 @@ window.C = (() => {
   return (Number.isFinite(amt) && amt > 0) ? amt : 49;
  }
 
+ /* CHECKOUT: SAVED PROFILE CUSTOMERS SEE COMPACT ICON (NO RE-TYPING), GUEST VISITORS FILL FORM ON EVERY ORDER */
+ function toggleCheckoutAddressForm(open){
+  const formWrap = document.getElementById('c_coAddressFormWrap');
+  const iconBar = document.getElementById('c_coSavedIconBar');
+  if(formWrap) formWrap.style.display = open ? 'block' : 'none';
+  if(iconBar) iconBar.style.display = open ? 'none' : 'flex';
+ }
+
  function renderCheckout(){
   let c = getCart();
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
   let pr = getProfile();
+  let isLoggedInCustomer = hasSavedCustomerProfile(pr);
   let codAdv = getCodAdvanceAmount();
 
   document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
-   <h3>Complete Delivery Address (Pincode Verified *)</h3>
-   <label class="addrLbl">Customer Full Name *</label>
-   <input class="field" id="c_coName" placeholder="Customer Full Name" value="${esc(pr.name||'')}">
-   <label class="addrLbl">10-Digit Mobile Number *</label>
-   <input class="field" id="c_coPhone" type="tel" maxlength="10" placeholder="10-digit Mobile Number" value="${esc(pr.phone||'')}">
-   <label class="addrLbl">House / Flat / Shop / Street No. *</label>
-   <input class="field" id="c_coStreet" placeholder="e.g. Shop 12, Shanti Complex, Street 4" value="${esc(pr.street||'')}">
-   <label class="addrLbl">Area / Colony &amp; Nearby Landmark (Opp / Near) *</label>
-   <input class="field" id="c_coLandmark" placeholder="e.g. Kalawad Road, Opp. SBI Bank / Near Bus Stand" value="${esc(pr.landmark||'')}">
-   <div class="row">
-    <div>
-     <label class="addrLbl">6-Digit Pincode *</label>
-     <input class="field" id="c_coPincode" type="tel" maxlength="6" placeholder="e.g. 360006" value="${esc(pr.pincode||'')}" oninput="C.onPincodeInput('co')">
-     <span class="pinStatus" id="c_coPinStatus"></span>
+   ${isLoggedInCustomer ? `
+    <div id="c_coSavedIconBar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)">
+     <button type="button" class="compactIconLauncher" onclick="C.toggleCheckoutAddressForm(true)" title="Edit Delivery Address">
+      <span class="icoCircle">👤</span>
+      <span style="font-size:12px">${esc(pr.name)} • ${esc(pr.pincode)}</span>
+     </button>
+     <button type="button" class="linkBtn" style="font-size:12px" onclick="C.toggleCheckoutAddressForm(true)">Edit ✎</button>
     </div>
-    <div>
-     <label class="addrLbl">City / District *</label>
-     <input class="field" id="c_coCity" placeholder="Auto-filled from Pincode" value="${esc(pr.city||'')}">
+   ` : ''}
+
+   <div id="c_coAddressFormWrap" style="display:${isLoggedInCustomer ? 'none' : 'block'}">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+     <h3 style="margin:0 0 6px">Complete Delivery Address (Pincode Verified *)</h3>
+     ${isLoggedInCustomer ? `<button type="button" class="ghostBtn" style="padding:4px 10px;font-size:11px" onclick="C.toggleCheckoutAddressForm(false)">Hide ✕</button>` : ''}
     </div>
+    <label class="addrLbl">Customer Full Name *</label>
+    <input class="field" id="c_coName" placeholder="Customer Full Name" value="${esc(pr.name||'')}">
+    <label class="addrLbl">10-Digit Mobile Number *</label>
+    <input class="field" id="c_coPhone" type="tel" maxlength="10" placeholder="10-digit Mobile Number" value="${esc(pr.phone||'')}">
+    <label class="addrLbl">House / Flat / Shop / Street No. *</label>
+    <input class="field" id="c_coStreet" placeholder="e.g. Shop 12, Shanti Complex, Street 4" value="${esc(pr.street||'')}">
+    <label class="addrLbl">Area / Colony &amp; Nearby Landmark (Opp / Near) *</label>
+    <input class="field" id="c_coLandmark" placeholder="e.g. Kalawad Road, Opp. SBI Bank / Near Bus Stand" value="${esc(pr.landmark||'')}">
+    <div class="row">
+     <div>
+      <label class="addrLbl">6-Digit Pincode *</label>
+      <input class="field" id="c_coPincode" type="tel" maxlength="6" placeholder="e.g. 360006" value="${esc(pr.pincode||'')}" oninput="C.onPincodeInput('co')">
+      <span class="pinStatus" id="c_coPinStatus"></span>
+     </div>
+     <div>
+      <label class="addrLbl">City / District *</label>
+      <input class="field" id="c_coCity" placeholder="Auto-filled from Pincode" value="${esc(pr.city||'')}">
+     </div>
+    </div>
+    <label class="addrLbl">State *</label>
+    <select class="field" id="c_coState">${stateOptionsHTML(pr.state||'')}</select>
    </div>
-   <label class="addrLbl">State *</label>
-   <select class="field" id="c_coState">${stateOptionsHTML(pr.state||'')}</select>
 
    <h3>Payment Method (Razorpay Secure Checkout)</h3>
    <div style="margin:8px 0 12px">
@@ -1628,43 +1684,44 @@ window.C = (() => {
   let city = document.getElementById('c_coCity')?.value.trim() || '';
   let state = document.getElementById('c_coState')?.value.trim() || '';
   let err = await validateCustomerAddressStrict({name, phone, street, landmark, pincode, city, state});
+  if(err) toggleCheckoutAddressForm(true);
   return { err, name, phone, street, landmark, pincode, city, state, fullAddress: buildFullAddress({street, landmark, city, state, pincode}) };
  }
 
-  async function generateOrderNumber(productId){
-   if(!window.db || !window.fbLib?.runTransaction) throw new Error('Global bill numbering is unavailable: Firebase connection is required.');
-   const product = getProducts().find(p=>p.id===productId);
-   let listingPosition = Number(product?.listingKram);
-   if(!Number.isInteger(listingPosition) || listingPosition < 1){
-    const productIndex = getProducts().findIndex(p=>p.id===productId);
-    listingPosition = productIndex >= 0 ? productIndex + 1 : 1;
-   }
-   if(listingPosition > 999) throw new Error('Product listing Kram is over 999; this bill format supports only three Kram digits.');
-
-   const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone:'Asia/Kolkata', day:'2-digit', month:'2-digit', year:'numeric'
-   }).formatToParts(new Date()).reduce((out, part)=>{ out[part.type] = part.value; return out; }, {});
-   const dd = parts.day, mm = parts.month, yyyy = parts.year;
-   const dateKey = `${yyyy}${mm}${dd}`;
-   const counterRef = window.fbLib.doc(window.db, 'order_sequences', dateKey);
-   let nextNum;
-   try {
-    nextNum = await window.fbLib.runTransaction(window.db, async transaction=>{
-     const counterSnap = await transaction.get(counterRef);
-     const current = counterSnap.exists() ? Number(counterSnap.data().count) || 0 : 0;
-     if(current >= 999) throw new Error('Aaj ki bill sequence limit (999) poori ho gayi hai; next bill number issue nahi kiya ja sakta.');
-     const next = current + 1;
-     transaction.set(counterRef, { count:next, dateKey, updatedAt:Date.now() });
-     return next;
-    });
-   } catch (seqErr) {
-    console.warn('Order sequence fallback used:', seqErr);
-    nextNum = Math.floor(100 + Math.random() * 900);
-   }
-   const listing3 = String(listingPosition).padStart(3,'0');
-   const seq3 = String(nextNum).padStart(3,'0');
-   return `KE${listing3}${seq3}${dd}${mm}`;
+ async function generateOrderNumber(productId){
+  if(!window.db || !window.fbLib?.runTransaction) throw new Error('Global bill numbering is unavailable: Firebase connection is required.');
+  const product = getProducts().find(p=>p.id===productId);
+  let listingPosition = Number(product?.listingKram);
+  if(!Number.isInteger(listingPosition) || listingPosition < 1){
+   const productIndex = getProducts().findIndex(p=>p.id===productId);
+   listingPosition = productIndex >= 0 ? productIndex + 1 : 1;
   }
+  if(listingPosition > 999) throw new Error('Product listing Kram is over 999; this bill format supports only three Kram digits.');
+
+  const parts = new Intl.DateTimeFormat('en-GB', {
+   timeZone:'Asia/Kolkata', day:'2-digit', month:'2-digit', year:'numeric'
+  }).formatToParts(new Date()).reduce((out, part)=>{ out[part.type] = part.value; return out; }, {});
+  const dd = parts.day, mm = parts.month, yyyy = parts.year;
+  const dateKey = `${yyyy}${mm}${dd}`;
+  const counterRef = window.fbLib.doc(window.db, 'order_sequences', dateKey);
+  let nextNum;
+  try {
+   nextNum = await window.fbLib.runTransaction(window.db, async transaction=>{
+    const counterSnap = await transaction.get(counterRef);
+    const current = counterSnap.exists() ? Number(counterSnap.data().count) || 0 : 0;
+    if(current >= 999) throw new Error('Aaj ki bill sequence limit (999) poori ho gayi hai; next bill number issue nahi kiya ja sakta.');
+    const next = current + 1;
+    transaction.set(counterRef, { count:next, dateKey, updatedAt:Date.now() });
+    return next;
+   });
+  } catch (seqErr) {
+   console.warn('Order sequence fallback used:', seqErr);
+   nextNum = Math.floor(100 + Math.random() * 900);
+  }
+  const listing3 = String(listingPosition).padStart(3,'0');
+  const seq3 = String(nextNum).padStart(3,'0');
+  return `THR${listing3}${seq3}${dd}${mm}`;
+ }
 
  async function startRazorpayCheckout(){
   let c = getCart();
@@ -1781,8 +1838,8 @@ window.C = (() => {
      orderItems.push({...it, name:x?.name||'Product', sku:x?.sku||'', price:eff, originalPrice:x?.price||0, gstRate:x?.gstRate??18, hsn:x?.hsn||''});
     }
 
-         let firstProductId = grp.items[0]?.id;
-     let num = await generateOrderNumber(firstProductId);
+    let firstProductId = grp.items[0]?.id;
+    let num = await generateOrderNumber(firstProductId);
     let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
     let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
     let payMethodLabel = (payOpt === 'COD')
@@ -1834,23 +1891,27 @@ window.C = (() => {
    }
 
    localStorage.setItem(ORDERS, JSON.stringify(localOrders));
-   localStorage.setItem(PROFILE, JSON.stringify({
-    name: addr.name,
-    phone: addr.phone,
-    email: getProfile().email||'',
-    street: addr.street,
-    landmark: addr.landmark,
-    pincode: addr.pincode,
-    city: addr.city,
-    state: addr.state,
-    address: addr.fullAddress
-   }));
+   /* NOTE: Guest visitors do NOT auto-save profile unless they saved it in Profile tab */
+   let existingProf = getProfile();
+   if(hasSavedCustomerProfile(existingProf)){
+    localStorage.setItem(PROFILE, JSON.stringify({
+     ...existingProf,
+     name: addr.name,
+     phone: addr.phone,
+     street: addr.street,
+     landmark: addr.landmark,
+     pincode: addr.pincode,
+     city: addr.city,
+     state: addr.state,
+     address: addr.fullAddress
+    }));
+   }
    saveCart([]);
 
    let paidNowSummary = (payOpt === 'COD') ? codAdv : grandTotal;
    document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
     <h2 style="color:#168047">✅ Payment Verified &amp; Order Confirmed!</h2>
-    <p>Total <b>${orderGroups.length}</b> separate bills/orders confirmed with KEstore.</p>
+    <p>Total <b>${orderGroups.length}</b> separate bills/orders confirmed with Shree Estore (Tools Hub Rajkot).</p>
     <p>Grand Total: <b>${money(grandTotal)}</b> • Paid via Razorpay: <b>${money(paidNowSummary)}</b> (${esc(payOpt)})</p>
     <p>Razorpay Payment ID: <code>${esc(rzpPaymentId)}</code></p>
     <p class="small"><b>Verified Address:</b> ${esc(addr.fullAddress)}</p>
@@ -1868,7 +1929,7 @@ window.C = (() => {
   onSettingsUpdated(){ renderCareBanners(); },
   onPincodeInput, onHeroScroll, openPolicyModal, closePolicyModal,
   showPage, openDetails, selectDetailImage, detailTouchStart, detailTouchEnd, handleDetailQtyChange, addToCart, changeQty, removeCart,
-  renderCart, renderCheckout, startRazorpayCheckout, openCategory,
+  renderCart, renderCheckout, toggleCheckoutAddressForm, startRazorpayCheckout, openCategory,
   searchNow, searchFromPage, openSearchTab, openCategoriesTab, renderListing, renderCategoryBrowser, saveProfile, toggleProfileForm,
   init(){
    renderCats(); renderCategoryBrowser(); renderHome(); updateCartCount();
@@ -1881,27 +1942,39 @@ C.init();
 /* ==================== 2. ADMIN PANEL APP (A - WHITE THEME) ==================== */
 window.A = (() => {
  const ORDER_SEQ_KEY = 'kestore_custom_order_seq_v1', PROD_SEQ_KEY = 'kestore_custom_prod_seq_v1';
- let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'KEstore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'SC',codAdvance:49,razorpayKeyId:''};
+ let cloudProducts = [], cloudOrders = [], cloudSettings = {name:'Shree Estore (Tools Hub Rajkot)',gstin:'',address:'Rajkot, Gujarat',phone:'',state:'Gujarat',prefix:'THR',codAdvance:49,razorpayKeyId:''};
  let orderSort = 'date', currentPdfFileName = 'Document.pdf';
  let unsubProducts = null, unsubOrders = null;
  let productUploadImages = Array(4).fill('');
  let productHeroImage = '';
  let activeBulkCol = null;
  let selectedMoveProdId = null;
+ let sellerFormManuallyExpanded = false;
 
  function products(){ return cloudProducts; }
  function readOrders(){ return cloudOrders; }
  function getSellerSettings(){ return cloudSettings; }
 
+ function isSellerFormComplete(){
+  const s = cloudSettings || {};
+  return Boolean(
+   (s.name || '').trim() &&
+   (s.address || '').trim() &&
+   (s.phone || '').trim() &&
+   Number(s.codAdvance) > 0 &&
+   (s.razorpayKeyId || '').trim()
+  );
+ }
+
  function startFirebaseListeners(){
   if(!window.db || !window.fbLib) return;
   if(!unsubProducts){
-       unsubProducts = window.fbLib.onSnapshot(window.fbLib.collection(window.db, "products"), snap => {
-     let list = [];
-     snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-     cloudProducts = list;
-     if(list.length && list.some(p => !Number.isInteger(Number(p.listingKram)) || Number(p.listingKram) < 1)) persistProductKram();
-     refresh();
+   unsubProducts = window.fbLib.onSnapshot(window.fbLib.collection(window.db, "products"), snap => {
+    let list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+    cloudProducts = list;
+    if(list.length && list.some(p => !Number.isInteger(Number(p.listingKram)) || Number(p.listingKram) < 1)) persistProductKram();
+    refresh();
     if(document.getElementById('a_heroEditor')?.classList.contains('active')) renderHeroEditor();
    }, err => console.error("Admin products error:", err));
   }
@@ -1920,7 +1993,7 @@ window.A = (() => {
    if(snap.exists()){
     cloudSettings = { ...cloudSettings, ...snap.data() };
     renderGST();
-    syncProfileVisibility();
+    syncProfileVisibility(false);
    }
   }).catch(err => console.error("Settings fetch error:", err));
  }
@@ -2011,27 +2084,48 @@ window.A = (() => {
   if(id==='a_lowstock') renderLow();
   if(id==='a_manager'){ renderOrders(); renderGST(); }
   if(id==='a_today') renderToday();
-  if(id==='a_login'){ renderGST(); syncProfileVisibility(); }
+  if(id==='a_login'){ renderGST(); syncProfileVisibility(false); }
  }
 
- function syncProfileVisibility(){
+ /* AUTO-HIDE LOGIN + SELLER FORM SECTION ONCE BOTH ARE COMPLETE -> SHOW ONLY LOGIN ICON */
+ function syncProfileVisibility(forceOpen=false){
+  if(forceOpen) sellerFormManuallyExpanded = true;
+  const fullWrap = document.getElementById('a_fullAccountWrap');
+  const collapsedBar = document.getElementById('a_collapsedAccountBar');
   const loginPanel = document.getElementById('a_loginPanel');
   const profPanel = document.getElementById('a_profileFormPanel');
+
   if(!window.adminUser){
-   loginPanel.classList.remove('hidden');
-   profPanel.classList.add('hidden');
+   sellerFormManuallyExpanded = false;
+   if(collapsedBar) collapsedBar.classList.add('hidden');
+   if(fullWrap) fullWrap.classList.remove('hidden');
+   if(loginPanel) loginPanel.classList.remove('hidden');
+   if(profPanel) profPanel.classList.add('hidden');
+   return;
+  }
+
+  if(isSellerFormComplete() && !sellerFormManuallyExpanded){
+   if(fullWrap) fullWrap.classList.add('hidden');
+   if(collapsedBar) collapsedBar.classList.remove('hidden');
   } else {
-   loginPanel.classList.remove('hidden');
-   profPanel.classList.remove('hidden');
+   if(collapsedBar) collapsedBar.classList.add('hidden');
+   if(fullWrap) fullWrap.classList.remove('hidden');
+   if(loginPanel) loginPanel.classList.remove('hidden');
+   if(profPanel) profPanel.classList.remove('hidden');
   }
  }
- function toggleProfileEditPanel(){ syncProfileVisibility(); }
- function toggleLoginPanel(){ syncProfileVisibility(); }
+
+ function expandSellerAccountSection(){
+  syncProfileVisibility(true);
+ }
+ function toggleProfileEditPanel(){ syncProfileVisibility(true); }
+ function toggleLoginPanel(){ syncProfileVisibility(true); }
  function openLoginPanel(){ openSellerAndLogin(); }
  function openSellerForm(){ openSellerAndLogin(); }
  function openSellerAndLogin(){
+  sellerFormManuallyExpanded = false;
   showPage('a_login');
-  syncProfileVisibility();
+  syncProfileVisibility(false);
  }
  function openHeroEditor(){
   closeModal();
@@ -2203,62 +2297,62 @@ window.A = (() => {
   localStorage.setItem(PROD_SEQ_KEY, JSON.stringify(arr));
  }
 
-   let syncingProductKram = false;
-  function orderProductsBySavedSequence(list){
-   let seq = getCustomProdSeq();
-   if(seq.length){
-    list.sort((a,b)=>{
-     let ia = seq.indexOf(a.id), ib = seq.indexOf(b.id);
-     if(ia === -1 && ib === -1) return 0;
-     if(ia === -1) return 1;
-     if(ib === -1) return -1;
-     return ia - ib;
-    });
-   }
-   return list;
+ let syncingProductKram = false;
+ function orderProductsBySavedSequence(list){
+  let seq = getCustomProdSeq();
+  if(seq.length){
+   list.sort((a,b)=>{
+    let ia = seq.indexOf(a.id), ib = seq.indexOf(b.id);
+    if(ia === -1 && ib === -1) return 0;
+    if(ia === -1) return 1;
+    if(ib === -1) return -1;
+    return ia - ib;
+   });
   }
+  return list;
+ }
 
-  async function persistProductKram(){
-   if(syncingProductKram || !window.db || !window.fbLib) return;
-   syncingProductKram = true;
-   try{
-    let ordered = orderProductsBySavedSequence([...products()]);
-    for(let i=0;i<ordered.length;i++){
-     let item = ordered[i];
-     if(Number(item.listingKram) !== i+1){
-      await saveSingleProductToFirebase({...item, listingKram:i+1});
-     }
+ async function persistProductKram(){
+  if(syncingProductKram || !window.db || !window.fbLib) return;
+  syncingProductKram = true;
+  try{
+   let ordered = orderProductsBySavedSequence([...products()]);
+   for(let i=0;i<ordered.length;i++){
+    let item = ordered[i];
+    if(Number(item.listingKram) !== i+1){
+     await saveSingleProductToFirebase({...item, listingKram:i+1});
     }
-   }catch(err){ console.error('Product Kram sync failed:', err); }
-   finally{ syncingProductKram = false; }
-  }
+   }
+  }catch(err){ console.error('Product Kram sync failed:', err); }
+  finally{ syncingProductKram = false; }
+ }
 
-  function getOrderedProducts(){
-   let q = (document.getElementById('a_productSearch')?.value||'').toLowerCase();
-   let list = products().filter(p=>(p.name+' '+p.sku+' '+p.cat).toLowerCase().includes(q));
-   return orderProductsBySavedSequence(list);
-  }
+ function getOrderedProducts(){
+  let q = (document.getElementById('a_productSearch')?.value||'').toLowerCase();
+  let list = products().filter(p=>(p.name+' '+p.sku+' '+p.cat).toLowerCase().includes(q));
+  return orderProductsBySavedSequence(list);
+ }
 
-  function selectProductForMove(id){
+ function selectProductForMove(id){
   closeQuick();
   if(activeBulkCol) commitAndCloseBulkColumn();
   selectedMoveProdId = (selectedMoveProdId === id) ? null : id;
   renderProducts();
  }
 
-   async function moveProductPosition(id, dir){
-   let ordered = orderProductsBySavedSequence([...products()]).map(p => p.id);
-   let idx = ordered.indexOf(id);
-   if(idx === -1) return;
-   let targetIdx = idx + dir;
-   if(targetIdx < 0 || targetIdx >= ordered.length) return;
-   let temp = ordered[idx];
-   ordered[idx] = ordered[targetIdx];
-   ordered[targetIdx] = temp;
-   saveCustomProdSeq(ordered);
-   renderProducts();
-   await persistProductKram();
-  }
+ async function moveProductPosition(id, dir){
+  let ordered = orderProductsBySavedSequence([...products()]).map(p => p.id);
+  let idx = ordered.indexOf(id);
+  if(idx === -1) return;
+  let targetIdx = idx + dir;
+  if(targetIdx < 0 || targetIdx >= ordered.length) return;
+  let temp = ordered[idx];
+  ordered[idx] = ordered[targetIdx];
+  ordered[targetIdx] = temp;
+  saveCustomProdSeq(ordered);
+  renderProducts();
+  await persistProductKram();
+ }
 
  function calcRowFinancials(p){
   let sellerPrice = Number(p.sellerPrice ?? p.costPrice ?? 0);
@@ -2650,8 +2744,7 @@ window.A = (() => {
      <span class="formRowTag">Row 5 • HSN Code &amp; GST Rate</span>
      <div class="formGrid2">
       <div><label>HSN Code *</label><input class="field" id="a_fHsn" value="${esc(x.hsn||'')}" placeholder="HSN Code" required></div>
-      <div><label>GST Rate *</label>      <select class="field" id="a_fGst" onchange="A.recalcFormTotal()">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select>
-</div>
+      <div><label>GST Rate *</label><select class="field" id="a_fGst" onchange="A.recalcFormTotal()">${[0,.25,3,5,12,18,28].map(v=>`<option value="${v}" ${v==x.gstRate?'selected':''}>${v}%</option>`).join('')}</select></div>
      </div>
     </div>
 
@@ -2693,7 +2786,7 @@ window.A = (() => {
     </div>` : ''}
    </section>
 
-   <!-- PAGE 3: ROW 9 (4 PRODUCT IMAGES + 1 FULL-BLEED SHOWCASE HERO IMAGE BOX) -->
+   <!-- PAGE 3: ROW 9 -->
    <section data-product-step="3" style="display:none">
     <div class="formRowBox">
      <span class="formRowTag">Row 9 • 4 Product Photos &amp; 1 Showcase Hero Image</span>
@@ -2919,12 +3012,12 @@ window.A = (() => {
     finalImages=keepImages.filter(Boolean).slice(0,4);
     finalHeroImage=old?.showcaseImage || '';
    }
-       let orderedCount = orderProductsBySavedSequence([...products()]).length;
-    let listingKram = Number(old?.listingKram);
-    if(!Number.isInteger(listingKram) || listingKram < 1) listingKram = orderedCount + 1;
-    let x={
-     id,name,sku,listingKram,cat:document.getElementById('a_fCat').value,
-     sellerPrice,
+   let orderedCount = orderProductsBySavedSequence([...products()]).length;
+   let listingKram = Number(old?.listingKram);
+   if(!Number.isInteger(listingKram) || listingKram < 1) listingKram = orderedCount + 1;
+   let x={
+    id,name,sku,listingKram,cat:document.getElementById('a_fCat').value,
+    sellerPrice,
     deliveryCharge:deliveryChargeVal,
     deliveryChargeB2C:deliveryChargeVal,
     deliveryChargeB2B:Number(old?.deliveryChargeB2B) || deliveryChargeVal,
@@ -3167,7 +3260,7 @@ window.A = (() => {
 
  /* 100% OFFLINE SVG BARCODE & QR CODE */
  function generateBarcodeSVG(codeStr){
-  let s=String(codeStr||'KESTORE00001'), bars=[], x=4;
+  let s=String(codeStr||'THR00001'), bars=[], x=4;
   bars.push(`<rect x="${x}" y="2" width="3" height="38" fill="#000"/>`); x+=5;
   bars.push(`<rect x="${x}" y="2" width="1.5" height="38" fill="#000"/>`); x+=4;
   for(let i=0;i<s.length;i++){
@@ -3180,7 +3273,7 @@ window.A = (() => {
  }
 
  function generateOfflineQRSVG(codeStr){
-  let s=String(codeStr||'KESTORE00001'), size=13, cells=[];
+  let s=String(codeStr||'THR00001'), size=13, cells=[];
   function finder(rx,ry){
    cells.push(`<rect x="${rx}" y="${ry}" width="3" height="3" fill="#000"/>`);
    cells.push(`<rect x="${rx+0.6}" y="${ry+0.6}" width="1.8" height="1.8" fill="#fff"/>`);
@@ -3233,29 +3326,29 @@ window.A = (() => {
   btn.textContent = oldText;
   triggerDevicePrint();
  }
-   function triggerDevicePrint(){ try{ window.print(); }catch(e){} }
+ function triggerDevicePrint(){ try{ window.print(); }catch(e){} }
 
-  function formatDocumentDate(order){
-   let date = order?.timestamp ? new Date(Number(order.timestamp)) : new Date(order?.date || '');
-   if(Number.isNaN(date.getTime())) return String(order?.date || '');
-   return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
-  }
+ function formatDocumentDate(order){
+  let date = order?.timestamp ? new Date(Number(order.timestamp)) : new Date(order?.date || '');
+  if(Number.isNaN(date.getTime())) return String(order?.date || '');
+  return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
+ }
 
-  function printParcelLabel(num){
+ function printParcelLabel(num){
   let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
   if(!o) return;
-     let bName = s.name || 'KEstore (Tools Hub Rajkot)';
-   let printDate = formatDocumentDate(o);
-   let totalQty = (o.items||[]).reduce((sum,i)=>sum+(+i.qty||0),0);
+  let bName = s.name || 'Shree Estore (Tools Hub Rajkot)';
+  let printDate = formatDocumentDate(o);
+  let totalQty = (o.items||[]).reduce((sum,i)=>sum+(+i.qty||0),0);
   let itemRows = (o.items||[]).map((i,idx)=>{
-   let p=products().find(x=>x.id===i.id), nm=i.name||p?.name||'Product', sk=i.sku||p?.sku||'';
+   let p=products().find(x=>x.id===i.id), nm=i.name||p?.name||'Product';
    return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(nm)}</b></td><td style="text-align:center;font-size:13px;font-weight:900">${i.qty}</td></tr>`;
   }).join('');
   let html = `<div id="pdfPrintableArea" class="printBox">
    <div style="border-bottom:2px solid #000;padding-bottom:8px">
     <div style="font-size:22px;font-weight:900">${esc(bName)}</div>
     <div style="font-size:15px;font-weight:900;margin-top:4px">Order No: <span style="font-family:monospace;font-size:17px">${esc(o.number)}</span> ${o.isB2B?'<span style="background:#000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">B2B PARCEL</span>':''}</div>
-         <div style="font-size:11px;margin-top:2px">Date: ${esc(printDate)} | Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
+    <div style="font-size:11px;margin-top:2px">Date: ${esc(printDate)} | Payment: <b>${esc(o.paymentMethod||'Razorpay')}</b></div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #000">
      <div style="flex:1;min-width:0">${generateBarcodeSVG(o.number)}<div style="font-family:monospace;font-size:11px;font-weight:900;letter-spacing:1.5px;margin-top:2px">${esc(o.number)}</div></div>
      <div>${generateOfflineQRSVG(o.number)}</div>
@@ -3284,9 +3377,9 @@ window.A = (() => {
  function printBillInvoice(num){
   let o = readOrders().find(x=>x.number===num), s = getSellerSettings();
   if(!o) return;
-     let bName = s.name || 'KEstore (Tools Hub Rajkot)', totalTaxable=0, totalGst=0;
-   let printDate = formatDocumentDate(o);
-   let rows = (o.items||[]).map((i,idx)=>{
+  let bName = s.name || 'Shree Estore (Tools Hub Rajkot)', totalTaxable=0, totalGst=0;
+  let printDate = formatDocumentDate(o);
+  let rows = (o.items||[]).map((i,idx)=>{
    let pr=Number(i.price||0), rate=Number(i.gstRate??18), lineTotal=pr*i.qty, taxable=rate===0?lineTotal:lineTotal/(1+rate/100), gstAmt=lineTotal-taxable;
    totalTaxable+=taxable; totalGst+=gstAmt;
    return `<tr><td style="text-align:center;font-weight:700">${idx+1}</td><td><b>${esc(i.name||'Product')}</b></td><td style="text-align:center"><b>${i.qty}</b><div style="font-size:10px">× ${money(pr)}</div></td><td style="text-align:center"><b>${rate}%</b></td><td style="text-align:right;font-weight:900">${money(lineTotal)}</td></tr>`;
@@ -3356,7 +3449,7 @@ window.A = (() => {
    <p>Total Order Value (Incl. GST): <b>${money(st.total)}</b></p>`;
 
   let s = getSellerSettings();
-  document.getElementById('a_sellerName').value = s.name||'KEstore (Tools Hub Rajkot)';
+  document.getElementById('a_sellerName').value = s.name||'Shree Estore (Tools Hub Rajkot)';
   document.getElementById('a_sellerGstin').value = s.gstin||'';
   document.getElementById('a_sellerAddress').value = s.address||'';
   document.getElementById('a_sellerPhone').value = s.phone||'';
@@ -3378,7 +3471,7 @@ window.A = (() => {
   let html = `<div id="pdfPrintableArea" class="printBox">
    <div style="border-bottom:2px solid #000;padding-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start">
     <div>
-     <div style="font-size:20px;font-weight:900;color:#07366c">${esc(s.name||'KEstore (Tools Hub Rajkot)')} — GST RETURN STATEMENT</div>
+     <div style="font-size:20px;font-weight:900;color:#07366c">${esc(s.name||'Shree Estore (Tools Hub Rajkot)')} — GST RETURN STATEMENT</div>
      <div style="font-size:11px;margin-top:3px"><b>GSTIN:</b> ${esc(s.gstin||'Not Configured')} | <b>State:</b> ${esc(s.state||'Gujarat')}</div>
      <div style="font-size:11px"><b>Generated On:</b> ${new Date().toLocaleString()}</div>
     </div>
@@ -3397,7 +3490,7 @@ window.A = (() => {
     <table class="printTable"><thead><tr style="background:#eaf4ff"><th>#</th><th>Order No</th><th>Date</th><th>Status</th><th>Taxable</th><th>GST</th><th>Total</th></tr></thead><tbody>${ordHtml}</tbody></table>
    </div>
   </div>`;
-  openPrintStage('GST Return Report', 'KEstore_GST_Return_' + new Date().toISOString().slice(0,10) + '.pdf', html);
+  openPrintStage('GST Return Report', 'ToolsHubRajkot_GST_Return_' + new Date().toISOString().slice(0,10) + '.pdf', html);
  }
 
  function exportGST(){
@@ -3408,32 +3501,50 @@ window.A = (() => {
    return [x.number,x.date,x.customer?.name,x.customer?.phone,tx.toFixed(2),(gst/2).toFixed(2),(gst/2).toFixed(2),gst.toFixed(2),x.total,x.status].map(cell).join(',');
   }).join('\n');
   let blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='KEstore-GST-Return.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  a.href=url; a.download='ToolsHubRajkot-GST-Return.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
 
  async function saveGSTSettings(){
+  if(!window.adminUser){
+   alert('Please pehle Admin Login karein, uske baad Seller Form save karein.');
+   return;
+  }
   let codAdvVal = Number(document.getElementById('a_sellerCodAdvance').value);
   if(!Number.isFinite(codAdvVal) || codAdvVal < 1){
    alert('Please valid COD Advance Amount (₹) dalein.');
    return;
   }
+  let rzpVal = document.getElementById('a_sellerRazorpayKey').value.trim();
+  if(!rzpVal){
+   alert('Please Razorpay Live Key ID dalein.');
+   return;
+  }
   const newSettings = {
-   name: document.getElementById('a_sellerName').value.trim() || 'KEstore (Tools Hub Rajkot)',
+   name: document.getElementById('a_sellerName').value.trim() || 'Shree Estore (Tools Hub Rajkot)',
    gstin: document.getElementById('a_sellerGstin').value.trim(),
    address: document.getElementById('a_sellerAddress').value.trim(),
    phone: document.getElementById('a_sellerPhone').value.trim(),
    state: document.getElementById('a_sellerState').value.trim(),
    prefix: document.getElementById('a_invoicePrefix').value.trim(),
    codAdvance: codAdvVal,
-   razorpayKeyId: document.getElementById('a_sellerRazorpayKey').value.trim()
+   razorpayKeyId: rzpVal,
+   updatedAt: Date.now()
   };
+  const btn = document.getElementById('a_saveSellerBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Saving...'; }
   try{
-   await window.fbLib.setDoc(window.fbLib.doc(window.db, "settings", "store_profile"), newSettings);
+   await window.fbLib.setDoc(window.fbLib.doc(window.db, "settings", "store_profile"), newSettings, { merge: true });
    cloudSettings = newSettings;
    window.storeSettings = { ...window.storeSettings, ...newSettings };
-   syncProfileVisibility();
-   alert('Profile & Razorpay settings saved to Firebase!');
-  }catch(err){ alert('Failed to save settings: '+err.message); }
+   sellerFormManuallyExpanded = false;
+   syncProfileVisibility(false);
+   alert('Seller Profile & Razorpay settings saved!');
+  }catch(err){
+   console.error('Save settings error:', err);
+   alert('Save error: ' + (err.message || err.code || 'Check Firebase rules'));
+  }finally{
+   if(btn){ btn.disabled = false; btn.textContent = 'Save Profile & Razorpay Settings'; }
+  }
  }
 
  /* AUTHENTICATION */
@@ -3448,7 +3559,7 @@ window.A = (() => {
    document.getElementById('a_loginPassword').value='';
   }catch(err){
    console.error('Firebase login failed:',err);
-   const messages={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check internet connection.'};
+   const messages={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check internet connection.'};
    const msg = messages[err.code]||('Login failed: '+(err.message||err.code));
    if(status) status.textContent=msg; alert(msg);
   }
@@ -3474,16 +3585,16 @@ window.A = (() => {
    if(user){
     if(status) status.textContent = 'Signed in: ' + (user.email||'Firebase admin');
     startFirebaseListeners();
-    syncProfileVisibility();
+    syncProfileVisibility(false);
     showPage('a_dashboard');
    } else {
     if(status) status.textContent = 'Not signed in. Use your Firebase admin email and password.';
     stopFirebaseListeners();
-    syncProfileVisibility();
+    syncProfileVisibility(false);
     if(window.location.hash === '#admin') showPage('a_login');
    }
   },
-  showPage, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openSellerAndLogin, openHeroEditor, openOrderList, openGSTManagement,
+  showPage, syncProfileVisibility, expandSellerAccountSection, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openSellerAndLogin, openHeroEditor, openOrderList, openGSTManagement,
   uploadHeroEditorImage, saveHeroScheme,
   newProduct, editProduct, duplicateProduct, calcB2bPercent, calcB2bPriceFromPct, recalcFormTotal, goProductStep,
   clearProductImage, clearHeroImage, handleBulkProductImages, handleSingleSlotImage, handleHeroSlotImage, saveProduct,
