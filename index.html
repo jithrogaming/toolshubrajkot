@@ -36,7 +36,6 @@
 
   const app = initializeApp(firebaseConfig);
 
-  // Firebase App Check (Fraud Defense / reCAPTCHA Enterprise Site Key)
   const appCheck = initializeAppCheck(app, {
     provider: new ReCaptchaEnterpriseProvider('6LcN6CkuAAAAAO2mGx4aP6GnYvUqz-n46ee_23xn'),
     isTokenAutoRefreshEnabled: true
@@ -138,6 +137,7 @@ button{cursor:pointer}
 #customerApp .price{font-weight:800;color:var(--navy);font-size:16px;margin-top:3px}
 #customerApp .mrp{text-decoration:line-through;color:#8997a7;font-size:12px;margin-left:4px}
 #customerApp .discount{display:inline-block;background:#e5f7ec;color:#168047;padding:3px 6px;border-radius:6px;font-size:11px;font-weight:700;margin:4px 0}
+#customerApp .detailDiscount{font-size:18px;padding:8px 12px;border-radius:9px;margin:8px 0 10px}
 #customerApp .variantChooser{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0}
 #customerApp .variantChooser label{display:block;margin:8px 0 3px;font-size:12px}
 #customerApp .primary{background:var(--blue);color:#fff;border-radius:10px;padding:11px 12px;font-weight:700;width:100%;margin-top:8px}
@@ -417,6 +417,7 @@ button{cursor:pointer}
      <a href="policies.html#refund" onclick="event.preventDefault();C.openPolicyModal('refund')">Refund &amp; Cancellation</a>
      <a href="policies.html#shipping" onclick="event.preventDefault();C.openPolicyModal('shipping')">Shipping Policy</a>
      <a href="policies.html#contact" onclick="event.preventDefault();C.openPolicyModal('contact')">Contact Us</a>
+     <a href="#admin" onclick="event.preventDefault();window.location.hash='admin'">Seller Panel</a>
     </div>
     <div class="footer" style="padding:2px 0 0">©Shree Estore Powered by Tools Hub Rajkot . Your trusted tools shop</div>
    </div>
@@ -754,7 +755,10 @@ function applyRoute(){
  if (isAdmin && window.A) A.onOpen();
 }
 function switchToCustomer(){
- window.location.hash = '';
+ const url = new URL(window.location.href);
+ url.hash = '';
+ url.searchParams.delete('admin');
+ window.history.replaceState(null, '', url);
  applyRoute();
 }
 window.addEventListener('hashchange', applyRoute);
@@ -1211,7 +1215,7 @@ window.C = (() => {
   window.scrollTo(0,0);
  }
 
- /* PRODUCT DETAILS PAGE */
+ /* PRODUCT DETAILS PAGE (SPECIFICATIONS & VARIATIONS GROUPED TOGETHER) */
  function openDetails(id){
   let p = getProducts().find(x=>x.id===id);
   if(!p) return;
@@ -1229,24 +1233,38 @@ window.C = (() => {
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
   let b2cCustomDel = Number(p.deliveryChargeB2C ?? p.deliveryCharge) || 0;
   let defaultB2cText = b2cCustomDel > 0 ? `₹${b2cCustomDel} per item delivery` : `1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery`;
+  let detailKeywords = Array.isArray(p.searchKeywords) ? p.searchKeywords : String(p.searchKeywords || '').split(',').map(x=>x.trim()).filter(Boolean);
+  let detailHighlights = Array.isArray(p.highlights) ? p.highlights : String(p.highlights || '').split('\n').map(x=>x.trim()).filter(Boolean);
+  let detailSpecs = Array.isArray(p.specifications) ? p.specifications : (p.specifications && typeof p.specifications === 'object' ? Object.entries(p.specifications).map(([k,v])=>`${k}: ${v}`) : String(p.specifications || '').split('\n').map(x=>x.trim()).filter(Boolean));
+  let validVariations = Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length);
 
   document.getElementById('c_detailContent').innerHTML = `<div class="panel">
    <img id="c_mainDetailImg" class="detailImg" src="${esc(imgs[0])}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'" ontouchstart="C.detailTouchStart(event)" ontouchend="C.detailTouchEnd(event)">
    ${imgs.length > 1 ? `<div class="thumbs">${imgs.slice(0,4).map((u,i)=>`<img class="${i===0?'sel':''}" src="${esc(u)}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'" onclick="C.selectDetailImage(${i})">`).join('')}</div>` : ''}
-   <h2>${esc(p.name)}</h2>
-   <div class="small">SKU: ${esc(p.sku)} • ${esc(p.cat)} | GST: ${p.gstRate||18}% ${p.hsn?'| HSN: '+esc(p.hsn):''}</div>
-   <div class="price" id="c_detailPriceDisp">${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span></div>
-   <div id="c_modeStatusBanner" class="b2b-status-banner">🛒 B2C Retail Mode (${defaultB2cText})</div>
-   ${discount(p)?`<div class="discount" id="c_detailDiscDiv">Save ${money(discount(p).rs)} • ${discount(p).pct.toFixed(0)}% OFF</div>`:''}
-   <p>${esc(p.desc||'')}</p>
-   ${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).length?`<div class="variantChooser"><b>Choose your options</b><div class="small">Apni pasand ka size, colour ya weight select karein.</div>${Object.entries(p.variations||{}).filter(([k,v])=>v&&v.length).map(([k,v])=>`<label><b>${esc(k)}</b></label><select class="field variation" data-var="${esc(k)}">${v.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>`).join('')}</div>`:''}
+   ${discount(p)?`<div class="discount detailDiscount" id="c_detailDiscDiv">Save ${money(discount(p).rs)} • ${discount(p).pct.toFixed(0)}% OFF</div>`:''}
    <label><b>Quantity (Enter ${b2bMin}+ for B2B Wholesale Rate: ${money(b2bPriceVal)})</b></label>
    <input class="field" id="c_detailQty" type="number" min="1" max="${Math.max(1,p.stock)}" value="1" oninput="C.handleDetailQtyChange()">
-   <div class="notice">${p.stock<=0?'Currently out of stock':p.stock<=5?'Only '+p.stock+' left in stock':p.stock+' available in stock'}</div>
-   <div class="row" style="margin-top:12px">
+   <div class="row" style="margin:10px 0 12px">
     <button class="primary" ${p.stock<=0?'disabled':''} onclick="C.addToCart('${esc(p.id)}')">Add to Cart</button>
     <button class="primary" ${p.stock<=0?'disabled':''} onclick="if(C.addToCart('${esc(p.id)}',true)){C.showPage('c_checkout');C.renderCheckout()}">Order Now</button>
    </div>
+   <section class="productDetails">
+    <h2>${esc(p.name)}</h2>
+    <div class="small">SKU: ${esc(p.sku)} • ${esc(p.cat)} | GST: ${p.gstRate||18}% ${p.hsn?'| HSN: '+esc(p.hsn):''}</div>
+    <div class="price" id="c_detailPriceDisp">${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span></div>
+    <div id="c_modeStatusBanner" class="b2b-status-banner">🛒 B2C Retail Mode (${defaultB2cText})</div>
+    ${p.desc?`<h3>Product Details</h3><p>${esc(p.desc)}</p>`:''}
+    ${(detailSpecs.length || validVariations.length)?`
+     <div class="variantChooser">
+      <h3 style="margin:0 0 6px;color:var(--navy)">Product Specifications &amp; Variations</h3>
+      ${detailSpecs.length?`<ul style="margin:4px 0 10px;padding-left:18px">${detailSpecs.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`:''}
+      ${validVariations.length?`<div class="small">Apni pasand ka size, colour ya weight select karein:</div>${validVariations.map(([k,v])=>`<label><b>${esc(k)}</b></label><select class="field variation" data-var="${esc(k)}">${v.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>`).join('')}`:''}
+     </div>
+    `:''}
+    ${detailHighlights.length?`<h3>Product Highlights</h3><ul>${detailHighlights.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`:''}
+    ${detailKeywords.length?`<div class="small"><b>Search tags:</b> ${detailKeywords.map(esc).join(', ')}</div>`:''}
+    <div class="notice" style="margin-top:8px">${p.stock<=0?'Currently out of stock':p.stock<=5?'Only '+p.stock+' left in stock':p.stock+' available in stock'}</div>
+   </section>
   </div>`;
   showPage('c_details');
  }
@@ -1789,9 +1807,9 @@ window.C = (() => {
    },
    theme: { color: '#0756a5' },
    handler: async function(response){
-    let rzpPaymentId = response.razorpay_payment_id || '';
-    if(!rzpPaymentId){
-     alert('Payment ID nahi mila. Order place nahi hua.');
+    let rzpPaymentId = String(response.razorpay_payment_id || '').trim();
+    if(!rzpPaymentId || !rzpPaymentId.startsWith('pay_')){
+     alert('Valid Razorpay Payment ID nahi mila. Order place nahi hua.');
      if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
      return;
     }
@@ -1828,6 +1846,17 @@ window.C = (() => {
   let localOrders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
 
   try {
+   if(window.db && window.fbLib){
+    /* Lock paymentRef in used_utrs so one Razorpay payment ID cannot be replayed for fake orders */
+    const utrRef = window.fbLib.doc(window.db, "used_utrs", String(rzpPaymentId));
+    await window.fbLib.setDoc(utrRef, {
+     paymentRef: String(rzpPaymentId),
+     orderCount: orderGroups.length,
+     amountPaid: (payOpt === 'COD') ? Math.min(codAdv, grandTotal) : grandTotal,
+     createdAt: Date.now()
+    });
+   }
+
    for (let idx = 0; idx < orderGroups.length; idx++) {
     const grp = orderGroups[idx];
     let groupTotalWithDelivery = grp.subtotal + grp.deliveryFee;
@@ -1877,8 +1906,9 @@ window.C = (() => {
      await window.fbLib.setDoc(window.fbLib.doc(window.db, "orders", String(num)), orderObj);
      for (const it of grp.items) {
       let x = p.find(a=>a.id===it.id);
-      let newStock = x ? Math.max(0, Number(x.stock) - it.qty) : 0;
-      if(x){
+      let oldStock = x ? Number(x.stock) || 0 : 0;
+      let newStock = Math.max(0, oldStock - it.qty);
+      if(x && newStock < oldStock){
        try {
         await window.fbLib.updateDoc(window.fbLib.doc(window.db, "products", String(x.id)), { stock: newStock });
        } catch (stockErr) {
@@ -1891,7 +1921,7 @@ window.C = (() => {
    }
 
    localStorage.setItem(ORDERS, JSON.stringify(localOrders));
-   /* NOTE: Guest visitors do NOT auto-save profile unless they saved it in Profile tab */
+   /* Guest visitors do NOT auto-save profile unless they saved it in Profile tab */
    let existingProf = getProfile();
    if(hasSavedCustomerProfile(existingProf)){
     localStorage.setItem(PROFILE, JSON.stringify({
@@ -2673,7 +2703,7 @@ window.A = (() => {
  function newProduct(){ productForm(null); }
  function editProduct(id){ productForm(products().find(x=>x.id===id)); }
 
- /* ==================== 3-PAGE PRODUCT LISTING FORM (DIRECT CLICK TABS + 9 ROWS) ==================== */
+ /* ==================== 3-PAGE PRODUCT LISTING FORM (VARIATIONS INSIDE SPECIFICATIONS BOX) ==================== */
  function productForm(p, isDuplicate=false){
   let x = p || {id:'p'+Date.now(),name:'',sku:'',cat:CATS[0],sellerPrice:'',deliveryChargeB2C:'',profit:'',mrp:'',price:'',b2bPrice:'',b2bMinQty:10,gstRate:18,stock:0,images:[],showcaseImage:'',desc:'',live:true,showcase:false,variations:{}};
   let b2bDefault = x.b2bPrice || (x.price ? Math.round(x.price * 0.85) : '');
@@ -2702,7 +2732,7 @@ window.A = (() => {
     <button type="button" class="productStepBadge" data-product-step-label="3" onclick="A.goProductStep(3)">3. Photos</button>
    </div>
 
-   <!-- PAGE 1: ROWS 1 TO 4 -->
+   <!-- PAGE 1: DETAILS + SPECIFICATIONS (WITH VARIATIONS INSIDE) + SKU/STOCK/CATEGORY -->
    <section data-product-step="1">
     <div class="formRowBox">
      <span class="formRowTag">Row 1 • Product Name</span>
@@ -2710,8 +2740,36 @@ window.A = (() => {
     </div>
 
     <div class="formRowBox">
-     <span class="formRowTag">Row 2 • Description</span>
-     <textarea class="field" id="a_fDesc" rows="2" placeholder="Enter Product Description">${esc(x.desc||'')}</textarea>
+     <span class="formRowTag">Row 2 • Product Content (Separate Sections)</span>
+     <div class="formRowBox">
+      <span class="formRowTag">Google Search Keywords</span>
+      <label>Keywords ko comma se alag karein</label>
+      <input class="field" id="a_fKeywords" placeholder="e.g. drill machine, power tools, hardware" value="${esc(Array.isArray(x.searchKeywords)?x.searchKeywords.join(', '):(x.searchKeywords||''))}">
+     </div>
+     <div class="formRowBox">
+      <span class="formRowTag">Product Highlights</span>
+      <label>Har bullet point alag line par likhein</label>
+      <textarea class="field" id="a_fHighlights" rows="3" placeholder="Durable construction&#10;Easy to use&#10;Suitable for professional work">${esc(Array.isArray(x.highlights)?x.highlights.join('\n'):(x.highlights||''))}</textarea>
+     </div>
+     <div class="formRowBox">
+      <span class="formRowTag">Product Details</span>
+      <label>Product ka detailed description</label>
+      <textarea class="field" id="a_fDesc" rows="3" placeholder="Product ki jankari likhein">${esc(x.desc||'')}</textarea>
+     </div>
+     <div class="formRowBox" style="margin-bottom:0;border-color:#93c5fd;background:#f4faff">
+      <span class="formRowTag">Product Specifications &amp; Variations</span>
+      <label>Har specification alag line par likhein (jaise: Material: Steel)</label>
+      <textarea class="field" id="a_fSpecifications" rows="3" placeholder="Material: Steel&#10;Power: 500W&#10;Warranty: 1 year">${esc(Array.isArray(x.specifications)?x.specifications.join('\n'):(x.specifications && typeof x.specifications === 'object' ? Object.entries(x.specifications).map(([k,v])=>`${k}: ${v}`).join('\n') : (x.specifications||'')))}</textarea>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1">
+       <label style="color:#07366c;margin-bottom:4px">Variations (Colour, Size, Weight, Combo — comma se alag karein)</label>
+       <div class="formGrid4">
+        <div><label>Colour</label><input class="field" id="a_fColour" placeholder="Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}"></div>
+        <div><label>Size</label><input class="field" id="a_fSize" placeholder="S, M, L" value="${esc((x.variations?.Size||[]).join(','))}"></div>
+        <div><label>Weight</label><input class="field" id="a_fWeight" placeholder="500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}"></div>
+        <div><label>Combo</label><input class="field" id="a_fCombo" placeholder="Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}"></div>
+       </div>
+      </div>
+     </div>
     </div>
 
     <div class="formRowBox">
@@ -2720,16 +2778,6 @@ window.A = (() => {
       <div><label>SKU Code *</label><input class="field" id="a_fSku" placeholder="SKU" value="${esc(x.sku)}" required></div>
       <div><label>Stock *</label><input class="field" id="a_fStock" type="number" min="0" step="1" placeholder="Qty" value="${x.stock}" required></div>
       <div><label>Category *</label><select class="field" id="a_fCat" required>${CATS.map(c=>`<option ${c===x.cat?'selected':''}>${c}</option>`).join('')}</select></div>
-     </div>
-    </div>
-
-    <div class="formRowBox">
-     <span class="formRowTag">Row 4 • Variations (Comma-Separated)</span>
-     <div class="formGrid4">
-      <div><label>Colour</label><input class="field" id="a_fColour" placeholder="Red, Blue" value="${esc((x.variations?.Colour||[]).join(','))}"></div>
-      <div><label>Size</label><input class="field" id="a_fSize" placeholder="S, M, L" value="${esc((x.variations?.Size||[]).join(','))}"></div>
-      <div><label>Weight</label><input class="field" id="a_fWeight" placeholder="500g, 1kg" value="${esc((x.variations?.Weight||[]).join(','))}"></div>
-      <div><label>Combo</label><input class="field" id="a_fCombo" placeholder="Full Kit" value="${esc((x.variations?.['Combo Kit']||x.variations?.Combo||[]).join(','))}"></div>
      </div>
     </div>
 
@@ -2981,6 +3029,10 @@ window.A = (() => {
  }
 
  async function saveProduct(id, withPhotos=true, makeLive=true){
+  if(!window.adminUser){
+   alert('Product save karne ke liye pehle Admin Login karein.');
+   return;
+  }
   let old = products().find(x=>x.id===id);
   let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
@@ -3030,7 +3082,10 @@ window.A = (() => {
     image:finalImages[0]||'',
     showcaseImage:finalHeroImage,
     heroScheme: old?.heroScheme || { enabled: true },
-    desc:document.getElementById('a_fDesc').value,
+    desc:document.getElementById('a_fDesc').value.trim(),
+    searchKeywords:document.getElementById('a_fKeywords').value.split(',').map(s=>s.trim()).filter(Boolean),
+    highlights:document.getElementById('a_fHighlights').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    specifications:document.getElementById('a_fSpecifications').value.split('\n').map(s=>s.trim()).filter(Boolean),
     hsn,
     live:makeLive ? true : (old?old.live!==false:true),
     showcase:finalHeroImage ? true : (old?isShowcased(old):false),
@@ -3046,7 +3101,10 @@ window.A = (() => {
    showPage('a_products');
   }catch(err){
    console.error('Save product error:',err);
-   alert('Could not save product: '+err.message);
+   const saveMessage = err.code === 'permission-denied'
+    ? 'Firebase ne product save block kiya (Missing or insufficient permissions). Admin account se sign-in aur Firestore Rules check karein.'
+    : 'Could not save product: ' + err.message;
+   alert(saveMessage);
    if(btn){ btn.disabled=false; btn.textContent=withPhotos?'✅ Save & Publish Product':'🚀 Save & Make Live (Without Image)'; }
   }
  }
@@ -3559,7 +3617,7 @@ window.A = (() => {
    document.getElementById('a_loginPassword').value='';
   }catch(err){
    console.error('Firebase login failed:',err);
-   const messages={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check internet connection.'};
+   const messages={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check internet connection.'};
    const msg = messages[err.code]||('Login failed: '+(err.message||err.code));
    if(status) status.textContent=msg; alert(msg);
   }
