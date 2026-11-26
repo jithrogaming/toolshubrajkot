@@ -431,7 +431,6 @@ button{cursor:pointer}
      <a href="#policy-refund" onclick="event.preventDefault();C.openPolicyModal('refund')">Refund &amp; Cancellation</a>
      <a href="#policy-shipping" onclick="event.preventDefault();C.openPolicyModal('shipping')">Shipping Policy</a>
      <a href="#policy-contact" onclick="event.preventDefault();C.openPolicyModal('contact')">Contact Us</a>
-     <a href="#admin" onclick="event.preventDefault();switchToAdmin()">Seller Panel</a>
     </div>
     <div class="footer" style="padding:2px 0 0">©Shree Estore Powered by Tools Hub Rajkot . Your trusted tools shop</div>
    </div>
@@ -698,6 +697,13 @@ button{cursor:pointer}
    </div>
 
    <div id="a_fullAccountWrap">
+    <div id="a_loggedInCompactBar" class="hidden" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+     <button type="button" class="compactIconLauncher" onclick="document.getElementById('a_loginPanel').classList.toggle('hidden')" title="Show/Hide Admin Login Details">
+      <span class="icoCircle">🔐</span>
+      <span id="a_loggedInLabel" style="font-size:12px">Admin Logged In</span>
+     </button>
+     <button type="button" class="btn ghost" style="padding:7px 12px;font-size:12px;min-height:38px" onclick="A.logout()">Logout</button>
+    </div>
     <div class="panel" id="a_loginPanel">
      <h3 style="margin:0 0 8px">Admin Login</h3>
      <input class="field" placeholder="Admin Email" id="a_loginEmail">
@@ -876,8 +882,8 @@ window.C = (() => {
  function openPolicyModal(type){
   let s = window.storeSettings || {};
   let codAdv = getCodAdvanceAmount();
-  let phoneTxt = s.phone ? esc(s.phone) : 'Contact Store Support';
-  let addrTxt = s.address ? esc(s.address) : 'Rajkot, Gujarat, India';
+  let emailTxt = s.email ? esc(s.email) : 'jithrogaming@gmail.com';
+  let addrTxt = 'KEstore ToolsHubRajkot Jamnagar Road Madhapar Chock';
   const policies = {
    terms: {
     title: 'Terms & Conditions – Shree Estore (Tools Hub Rajkot)',
@@ -983,8 +989,8 @@ window.C = (() => {
      <ul>
       <li><strong>Business Name:</strong> Shree Estore (Tools Hub Rajkot)</li>
       <li><strong>Warehouse / Office Address:</strong> ${addrTxt}</li>
+      <li><strong>Email Support:</strong> <a href="mailto:${emailTxt}" style="color:#0756a5;font-weight:700">${emailTxt}</a></li>
       <li><strong>Website:</strong> https://toolsrajkot.pages.dev</li>
-      <li><strong>Phone / WhatsApp Support:</strong> ${phoneTxt}</li>
       <li><strong>Working Hours:</strong> Monday to Saturday, 10:00 AM – 7:00 PM IST</li>
      </ul>`
    }
@@ -2267,9 +2273,13 @@ window.A = (() => {
   const loginPanel = document.getElementById('a_loginPanel');
   const profPanel = document.getElementById('a_profileFormPanel');
 
+  const loggedInBar = document.getElementById('a_loggedInCompactBar');
+  const loggedInLbl = document.getElementById('a_loggedInLabel');
+
   if(!window.adminUser){
    sellerFormManuallyExpanded = false;
    if(collapsedBar) collapsedBar.classList.add('hidden');
+   if(loggedInBar) loggedInBar.classList.add('hidden');
    if(fullWrap) fullWrap.classList.remove('hidden');
    if(loginPanel) loginPanel.classList.remove('hidden');
    if(profPanel) profPanel.classList.add('hidden');
@@ -2278,7 +2288,9 @@ window.A = (() => {
 
   if(collapsedBar) collapsedBar.classList.add('hidden');
   if(fullWrap) fullWrap.classList.remove('hidden');
-  if(loginPanel) loginPanel.classList.remove('hidden');
+  if(loggedInBar) loggedInBar.classList.remove('hidden');
+  if(loggedInLbl) loggedInLbl.textContent = window.adminUser.email || 'Admin Logged In';
+  if(loginPanel) loginPanel.classList.add('hidden');
   if(profPanel) profPanel.classList.remove('hidden');
  }
 
