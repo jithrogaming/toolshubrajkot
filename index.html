@@ -36,10 +36,14 @@
 
   const app = initializeApp(firebaseConfig);
 
-  const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LcN6CkuAAAAAO2mGx4aP6GnYvUqz-n46ee_23xn'),
-    isTokenAutoRefreshEnabled: true
-  });
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider('6LcN6CkuAAAAAO2mGx4aP6GnYvUqz-n46ee_23xn'),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (appCheckErr) {
+    console.warn('AppCheck skipped:', appCheckErr);
+  }
 
   const db = getFirestore(app);
   const auth = getAuth(app);
@@ -114,7 +118,7 @@ button{cursor:pointer}
 #customerApp .sectionHead h2{font-size:18px;margin:0;color:var(--navy)}
 #customerApp .linkBtn{background:transparent;color:var(--blue);font-weight:700;padding:7px}
 
-#customerApp .catgrid{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#customerApp .catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:10px;padding:2px 2px 8px}
 #customerApp .catgrid::-webkit-scrollbar{display:none}
 #customerApp .cat{flex:0 0 94px;min-width:94px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 6px;text-align:center;color:var(--navy);font-weight:700;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
 #customerApp .cat img{display:block;width:58px;height:54px;object-fit:contain;margin:0 auto 5px;border-radius:9px;background:#f8fafc}
@@ -197,6 +201,16 @@ button{cursor:pointer}
 .thr-policy-body ul{padding-left:18px;margin:6px 0 12px}
 .thr-policy-body li{margin-bottom:5px}
 
+#appToastHost{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100000;display:flex;flex-direction:column;gap:8px;width:min(92vw,420px);pointer-events:none}
+.appToast{background:#0f172a;color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,0.25);pointer-events:auto;text-align:center;line-height:1.4}
+.appToast.ok{background:#166534}
+.appToast.err{background:#b91c1c}
+#appConfirmOverlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.58);z-index:100001;align-items:center;justify-content:center;padding:16px}
+#appConfirmOverlay.active{display:flex}
+.appConfirmBox{background:#fff;color:#0f172a;width:min(92vw,360px);border-radius:14px;padding:18px;box-shadow:0 16px 40px rgba(0,0,0,0.25)}
+.appConfirmBox p{margin:0 0 14px;font-size:14px;font-weight:700;line-height:1.45}
+.appConfirmBtns{display:flex;gap:10px;justify-content:flex-end}
+.appConfirmBtns button{padding:9px 16px;border-radius:8px;border:0;font-weight:700;font-size:13px}
 @media(min-width:700px){
  #customerApp .catgrid{grid-template-columns:repeat(5,1fr)}
  #customerApp .products{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
@@ -412,12 +426,12 @@ button{cursor:pointer}
 
    <div class="legalFooterBox">
     <div class="legalLinksRow">
-     <a href="policies.html#terms" onclick="event.preventDefault();C.openPolicyModal('terms')">Terms &amp; Conditions</a>
-     <a href="policies.html#privacy" onclick="event.preventDefault();C.openPolicyModal('privacy')">Privacy Policy</a>
-     <a href="policies.html#refund" onclick="event.preventDefault();C.openPolicyModal('refund')">Refund &amp; Cancellation</a>
-     <a href="policies.html#shipping" onclick="event.preventDefault();C.openPolicyModal('shipping')">Shipping Policy</a>
-     <a href="policies.html#contact" onclick="event.preventDefault();C.openPolicyModal('contact')">Contact Us</a>
-     <a href="#admin" onclick="event.preventDefault();window.location.hash='admin'">Seller Panel</a>
+     <a href="#policy-terms" onclick="event.preventDefault();C.openPolicyModal('terms')">Terms &amp; Conditions</a>
+     <a href="#policy-privacy" onclick="event.preventDefault();C.openPolicyModal('privacy')">Privacy Policy</a>
+     <a href="#policy-refund" onclick="event.preventDefault();C.openPolicyModal('refund')">Refund &amp; Cancellation</a>
+     <a href="#policy-shipping" onclick="event.preventDefault();C.openPolicyModal('shipping')">Shipping Policy</a>
+     <a href="#policy-contact" onclick="event.preventDefault();C.openPolicyModal('contact')">Contact Us</a>
+     <a href="#admin" onclick="event.preventDefault();switchToAdmin()">Seller Panel</a>
     </div>
     <div class="footer" style="padding:2px 0 0">©Shree Estore Powered by Tools Hub Rajkot . Your trusted tools shop</div>
    </div>
@@ -706,8 +720,8 @@ button{cursor:pointer}
       <input class="field" id="a_sellerState" placeholder="State">
       <input class="field" id="a_invoicePrefix" placeholder="Invoice Prefix">
      </div>
-     <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">COD Advance Online Payment Amount (₹) *</label>
-     <input class="field" id="a_sellerCodAdvance" type="number" min="1" step="1" placeholder="e.g. 49">
+     <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">COD Advance Online Payment Amount (₹) * <span class="muted">(0 = No Advance / Free COD)</span></label>
+     <input class="field" id="a_sellerCodAdvance" type="number" min="0" step="1" placeholder="e.g. 0, 49, 99">
      <label style="font-size:12px;font-weight:700;display:block;margin-top:4px">Razorpay Live Key ID (rzp_live_...) *</label>
      <input class="field" id="a_sellerRazorpayKey" placeholder="e.g. rzp_live_xxxxxxxxxxxxxx">
      <button class="btn" id="a_saveSellerBtn" onclick="A.saveGSTSettings()">Save Profile &amp; Razorpay Settings</button>
@@ -732,6 +746,16 @@ button{cursor:pointer}
  </div>
  <div id="printStage"></div>
 </div>
+<div id="appToastHost" aria-live="polite"></div>
+<div id="appConfirmOverlay" role="dialog" aria-modal="true">
+ <div class="appConfirmBox">
+  <p id="appConfirmMsg"></p>
+  <div class="appConfirmBtns">
+   <button type="button" id="appConfirmNo" style="background:#e2e8f0;color:#1e293b">Cancel</button>
+   <button type="button" id="appConfirmYes" style="background:#dc2626;color:#fff">Confirm</button>
+  </div>
+ </div>
+</div>
 
 <script>
 /* ==================== SHARED HELPERS & ROUTING ==================== */
@@ -747,18 +771,67 @@ const INDIAN_STATES = [
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
 
+function appAlert(msg){
+ const host = document.getElementById('appToastHost');
+ if(!host) return;
+ const el = document.createElement('div');
+ const text = String(msg || '');
+ const isErr = /fail|error|galat|invalid|mismatch|blocked|missing|required|not |nahi|cannot|limit/i.test(text);
+ const isOk = /saved|confirmed|updated|added|ready|verified|live|published/i.test(text);
+ el.className = 'appToast ' + (isErr ? 'err' : (isOk ? 'ok' : ''));
+ el.textContent = text;
+ host.appendChild(el);
+ setTimeout(() => { el.remove(); }, 3600);
+}
+
+function appConfirm(msg){
+ return new Promise(resolve => {
+  const ov = document.getElementById('appConfirmOverlay');
+  const msgEl = document.getElementById('appConfirmMsg');
+  const yesBtn = document.getElementById('appConfirmYes');
+  const noBtn = document.getElementById('appConfirmNo');
+  if(!ov || !msgEl || !yesBtn || !noBtn){ resolve(false); return; }
+  msgEl.textContent = String(msg || 'Are you sure?');
+  ov.classList.add('active');
+  const done = (val) => {
+   ov.classList.remove('active');
+   yesBtn.onclick = null;
+   noBtn.onclick = null;
+   resolve(val);
+  };
+  yesBtn.onclick = () => done(true);
+  noBtn.onclick = () => done(false);
+ });
+}
+
+function isAdminRoute(){
+ return window.location.hash === '#admin' || new URLSearchParams(window.location.search).has('admin');
+}
+
 function applyRoute(){
- const isAdmin = window.location.hash === '#admin' || new URLSearchParams(window.location.search).has('admin');
+ const isAdmin = isAdminRoute();
  document.getElementById('customerApp').classList.toggle('app-hidden', isAdmin);
  document.getElementById('adminApp').classList.toggle('app-hidden', !isAdmin);
  document.title = isAdmin ? 'Tools Hub Rajkot Admin' : 'श्रीEstore | Tools Hub Rajkot';
  if (isAdmin && window.A) A.onOpen();
 }
+
+function switchToAdmin(){
+ try {
+  window.location.hash = 'admin';
+ } catch (e) {}
+ applyRoute();
+}
+
 function switchToCustomer(){
- const url = new URL(window.location.href);
- url.hash = '';
- url.searchParams.delete('admin');
- window.history.replaceState(null, '', url);
+ try {
+  const url = new URL(window.location.href);
+  url.hash = '';
+  url.searchParams.delete('admin');
+  window.history.replaceState(null, '', url);
+ } catch (e) {
+  window.location.hash = '';
+ }
  applyRoute();
 }
 window.addEventListener('hashchange', applyRoute);
@@ -787,7 +860,6 @@ window.initStoreFirebase = function(){
    if (window.A) {
     A.cloudSettings = { ...A.cloudSettings, ...snap.data() };
     A.renderGST();
-    if (typeof A.syncProfileVisibility === 'function') A.syncProfileVisibility(false);
    }
   }
  }, err => console.error("Settings sync error:", err));
@@ -1109,8 +1181,8 @@ window.C = (() => {
  }
 
  function renderCats(){
-  let homeCats = document.getElementById('c_homeCats');
-  if(homeCats) homeCats.innerHTML = categoryCardsHTML();
+  let browser = document.getElementById('c_categoryBrowser');
+  if(browser && document.getElementById('c_categories')?.classList.contains('active')) renderCategoryBrowser();
  }
 
  function renderCategoryBrowser(){
@@ -1129,12 +1201,7 @@ window.C = (() => {
  }
 
  function renderCareBanners(){
-  let s = window.storeSettings || {};
-  let txt = `📞 <b>Customer Care:</b> ${s.phone ? esc(s.phone) : 'Contact Admin'} ${s.address ? ' • ' + esc(s.address) : ''}`;
-  let b1 = document.getElementById('c_homeCareBanner');
-  let b2 = document.getElementById('c_profileCareBanner');
-  if(b1) b1.innerHTML = txt;
-  if(b2) b2.innerHTML = txt;
+  /* Care details are shown in Contact Us modal & footer */
  }
 
  function renderHome(){
@@ -1184,7 +1251,7 @@ window.C = (() => {
   let p = liveProducts().filter(x=>(x.name+' '+x.sku+' '+x.cat).toLowerCase().includes(q));
   p.forEach(item => addRecentSearch(item.id));
   document.getElementById('c_searchResults').innerHTML = p.map(productCard).join('') || '<div class="empty">No products found.</div>';
-  showPage('c_searchPage', document.getElementById('c_b_search'));
+  showPage('c_searchPage');
  }
 
  function searchNow(){ runSearch(document.getElementById('c_searchInput').value); }
@@ -1231,8 +1298,10 @@ window.C = (() => {
 
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
-  let b2cCustomDel = Number(p.deliveryChargeB2C ?? p.deliveryCharge) || 0;
-  let defaultB2cText = b2cCustomDel > 0 ? `₹${b2cCustomDel} per item delivery` : `1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery`;
+  let rawB2cDel = p.deliveryChargeB2C ?? p.deliveryCharge;
+  let hasCustomB2cDel = rawB2cDel !== undefined && rawB2cDel !== null && rawB2cDel !== '' && Number.isFinite(Number(rawB2cDel)) && Number(rawB2cDel) >= 0;
+  let b2cCustomDel = hasCustomB2cDel ? Number(rawB2cDel) : null;
+  let defaultB2cText = hasCustomB2cDel ? (b2cCustomDel === 0 ? 'FREE Delivery (₹0)' : `₹${b2cCustomDel} per item delivery`) : `1–5 Qty: ₹250 delivery | 6–9 Qty: ₹150 delivery`;
   let detailKeywords = Array.isArray(p.searchKeywords) ? p.searchKeywords : String(p.searchKeywords || '').split(',').map(x=>x.trim()).filter(Boolean);
   let detailHighlights = Array.isArray(p.highlights) ? p.highlights : String(p.highlights || '').split('\n').map(x=>x.trim()).filter(Boolean);
   let detailSpecs = Array.isArray(p.specifications) ? p.specifications : (p.specifications && typeof p.specifications === 'object' ? Object.entries(p.specifications).map(([k,v])=>`${k}: ${v}`) : String(p.specifications || '').split('\n').map(x=>x.trim()).filter(Boolean));
@@ -1299,8 +1368,11 @@ window.C = (() => {
   let q = Number(document.getElementById('c_detailQty').value) || 0;
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
   let b2bPriceVal = Number(p.b2bPrice) > 0 ? Number(p.b2bPrice) : Math.round(p.price * 0.85);
-  let b2bCustomDel = Number(p.deliveryChargeB2B) || 450;
-  let b2cCustomDel = Number(p.deliveryChargeB2C ?? p.deliveryCharge) || 0;
+  let rawB2bDel = p.deliveryChargeB2B ?? p.deliveryCharge;
+  let b2bCustomDel = (rawB2bDel !== undefined && rawB2bDel !== null && rawB2bDel !== '' && Number.isFinite(Number(rawB2bDel)) && Number(rawB2bDel) >= 0) ? Number(rawB2bDel) : 450;
+  let rawB2cDel = p.deliveryChargeB2C ?? p.deliveryCharge;
+  let hasCustomB2cDel = rawB2cDel !== undefined && rawB2cDel !== null && rawB2cDel !== '' && Number.isFinite(Number(rawB2cDel)) && Number(rawB2cDel) >= 0;
+  let b2cCustomDel = hasCustomB2cDel ? Number(rawB2cDel) : null;
   let priceEl = document.getElementById('c_detailPriceDisp');
   let bannerEl = document.getElementById('c_modeStatusBanner');
   let discEl = document.getElementById('c_detailDiscDiv');
@@ -1309,14 +1381,16 @@ window.C = (() => {
    let parcels = Math.ceil(q / 10);
    priceEl.innerHTML = `${money(b2bPriceVal)} <span style="font-size:12px;color:#d97706;font-weight:700">(B2B Wholesale Price)</span>`;
    bannerEl.className = 'b2b-status-banner b2b-on';
-   bannerEl.innerHTML = `📦 B2B Wholesale Active! (${q} items = ${parcels} Parcel${parcels>1?'s':''} × ₹${b2bCustomDel} delivery)`;
+   bannerEl.innerHTML = b2bCustomDel === 0
+    ? `📦 B2B Wholesale Active! (${q} items = ${parcels} Parcel${parcels>1?'s':''} • FREE Delivery)`
+    : `📦 B2B Wholesale Active! (${q} items = ${parcels} Parcel${parcels>1?'s':''} × ₹${b2bCustomDel} delivery)`;
    if(discEl) discEl.style.display = 'none';
   } else {
-   let perItemDel = b2cCustomDel > 0 ? b2cCustomDel : (q >= 6 ? 150 : 250);
+   let perItemDel = hasCustomB2cDel ? b2cCustomDel : (q >= 6 ? 150 : 250);
    let totalDel = q > 0 ? q * perItemDel : 0;
    priceEl.innerHTML = `${money(p.price)} <span class="mrp">${p.mrp?money(p.mrp):''}</span>`;
    bannerEl.className = 'b2b-status-banner';
-   bannerEl.innerHTML = `🛒 B2C Retail Mode (${q>0 ? q+' item(s) delivery = '+money(totalDel) : (b2cCustomDel>0 ? '₹'+b2cCustomDel+' per item' : '1–5 Qty: ₹250 | 6–9 Qty: ₹150')})`;
+   bannerEl.innerHTML = `🛒 B2C Retail Mode (${q>0 ? (totalDel === 0 ? 'FREE Delivery (₹0)' : q+' item(s) delivery = '+money(totalDel)) : (hasCustomB2cDel ? (b2cCustomDel === 0 ? 'FREE Delivery (₹0)' : '₹'+b2cCustomDel+' per item') : '1–5 Qty: ₹250 | 6–9 Qty: ₹150')})`;
    if(discEl && discount(p)) discEl.style.display = 'inline-block';
   }
  }
@@ -1334,7 +1408,8 @@ window.C = (() => {
  function addToCart(id, silent, selectedVars){
   let p = getProducts().find(x=>x.id===id);
   if(!p) return false;
-  let q = Math.max(1, Number(document.getElementById('c_detailQty')?.value||1));
+  if((Number(p.stock)||0) <= 0){ appAlert('Currently out of stock.'); return false; }
+  let q = Math.min(Number(p.stock)||1, Math.max(1, Number(document.getElementById('c_detailQty')?.value||1)));
   let c = getCart();
   let vars = selectedVars || getSelectedVariations(), vKey = varText(vars);
   let b2bMin = Number(p.b2bMinQty) > 0 ? Number(p.b2bMinQty) : 10;
@@ -1350,7 +1425,7 @@ window.C = (() => {
    c.push({ cartId:id+'_'+Date.now(), id, qty:q, vars, vKey, isB2B, unitPrice:isB2B ? b2bPriceVal : p.price });
   }
   saveCart(c);
-  if(!silent) alert(q >= b2bMin ? 'Added to Cart (B2B Wholesale Applied!)' : 'Added to Cart (B2C Retail)');
+  if(!silent) appAlert(q >= b2bMin ? 'Added to Cart (B2B Wholesale Applied!)' : 'Added to Cart (B2C Retail)');
   return true;
  }
 
@@ -1364,8 +1439,11 @@ window.C = (() => {
    let retailPriceVal = prod ? prod.price : it.unitPrice;
    let isB2B = it.qty >= b2bMin;
    let activeUnitPrice = isB2B ? b2bPriceVal : retailPriceVal;
-   let b2bCustomDel = Number(prod?.deliveryChargeB2B) || 450;
-   let b2cCustomDel = Number(prod?.deliveryChargeB2C ?? prod?.deliveryCharge) || 0;
+   let rawB2bDel = prod?.deliveryChargeB2B ?? prod?.deliveryCharge;
+   let b2bCustomDel = (rawB2bDel !== undefined && rawB2bDel !== null && rawB2bDel !== '' && Number.isFinite(Number(rawB2bDel)) && Number(rawB2bDel) >= 0) ? Number(rawB2bDel) : 450;
+   let rawB2cDel = prod?.deliveryChargeB2C ?? prod?.deliveryCharge;
+   let hasCustomB2cDel = rawB2cDel !== undefined && rawB2cDel !== null && rawB2cDel !== '' && Number.isFinite(Number(rawB2cDel)) && Number(rawB2cDel) >= 0;
+   let b2cCustomDel = hasCustomB2cDel ? Number(rawB2cDel) : null;
 
    if(isB2B){
     let remQty = it.qty, parcelNum = 1;
@@ -1375,8 +1453,8 @@ window.C = (() => {
      remQty -= chunkQty; parcelNum++;
     }
    } else {
-    let perItemDelivery = (it.qty >= 6) ? 150 : 250;
-    let totalDelivery = b2cCustomDel > 0 ? (b2cCustomDel * it.qty) : (it.qty * perItemDelivery);
+    let perItemDelivery = hasCustomB2cDel ? b2cCustomDel : ((it.qty >= 6) ? 150 : 250);
+    let totalDelivery = it.qty * perItemDelivery;
     orders.push({ cartIdx, isB2B:false, parcelLabel:`B2C Retail Order`, items:[{...it, qty:it.qty, unitPrice:activeUnitPrice, isB2B:false}], deliveryFee:totalDelivery, subtotal:activeUnitPrice*it.qty });
    }
   });
@@ -1435,7 +1513,7 @@ window.C = (() => {
   if(!it) return;
   let p = getProducts().find(x=>x.id===it.id);
   let totalForProd = c.filter(x=>x.id===it.id).reduce((s,x)=>s+x.qty,0);
-  if(d>0 && p && totalForProd>=p.stock){ alert('Stock limit reached'); return; }
+  if(d>0 && p && totalForProd>=p.stock){ appAlert('Stock limit reached'); return; }
   let newQty = it.qty + d;
   if(newQty<=0) c.splice(idx,1);
   else if(p){
@@ -1544,12 +1622,12 @@ window.C = (() => {
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Verifying Pincode & Address...'; }
   let err = await validateCustomerAddressStrict({name, phone, street, landmark, pincode, city, state});
   if(btn){ btn.disabled = false; btn.textContent = 'Save Profile & Address'; }
-  if(err){ alert(err); return; }
+  if(err){ appAlert(err); return; }
 
   let fullAddr = buildFullAddress({street, landmark, city, state, pincode});
   let p = { name, phone, email, street, landmark, pincode, city, state, address: fullAddr };
   localStorage.setItem(PROFILE, JSON.stringify(p));
-  alert('Verified Profile & Address Saved!');
+  appAlert('Verified Profile & Address Saved!');
   renderDeliveryLocation();
   renderProfile();
  }
@@ -1608,8 +1686,11 @@ window.C = (() => {
 
  function getCodAdvanceAmount(){
   let s = window.storeSettings || {};
-  let amt = Number(s.codAdvance);
-  return (Number.isFinite(amt) && amt > 0) ? amt : 49;
+  if(s.codAdvance !== undefined && s.codAdvance !== null && s.codAdvance !== ''){
+   let amt = Number(s.codAdvance);
+   if(Number.isFinite(amt) && amt >= 0) return amt;
+  }
+  return 49;
  }
 
  /* CHECKOUT: SAVED PROFILE CUSTOMERS SEE COMPACT ICON (NO RE-TYPING), GUEST VISITORS FILL FORM ON EVERY ORDER */
@@ -1622,6 +1703,10 @@ window.C = (() => {
 
  function renderCheckout(){
   let c = getCart();
+  if(!c.length){
+   document.getElementById('c_checkoutContent').innerHTML = `<div class="panel"><div class="empty">Your cart is empty.</div><button class="primary" onclick="C.showPage('c_home')">Continue Shopping</button></div>`;
+   return;
+  }
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
   let pr = getProfile();
@@ -1670,11 +1755,13 @@ window.C = (() => {
    <h3>Payment Method (Razorpay Secure Checkout)</h3>
    <div style="margin:8px 0 12px">
     <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
-     <input type="radio" name="c_payOpt" value="COD" checked>
-     <span>💵 Cash on Delivery (COD) — <b>${money(codAdv)} Advance via Razorpay</b> (Baaki ${money(Math.max(0, grandTotal - codAdv))} Cash on Delivery)</span>
+     <input type="radio" name="c_payOpt" value="COD" checked onchange="C.updatePayBtnLabel()">
+     <span>${codAdv === 0
+      ? `💵 Cash on Delivery (COD) — <b>₹0 Advance (No Advance)</b> • Full ${money(grandTotal)} Cash on Delivery`
+      : `💵 Cash on Delivery (COD) — <b>${money(Math.min(codAdv, grandTotal))} Advance via Razorpay</b> (Baaki ${money(Math.max(0, grandTotal - codAdv))} Cash on Delivery)`}</span>
     </label>
     <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
-     <input type="radio" name="c_payOpt" value="Online">
+     <input type="radio" name="c_payOpt" value="Online" onchange="C.updatePayBtnLabel()">
      <span>💳 Online Payment (UPI / QR / Card) — <b>Full Payment ${money(grandTotal)} via Razorpay</b></span>
     </label>
    </div>
@@ -1688,7 +1775,7 @@ window.C = (() => {
     </div>`;
    }).join('')}
    <div class="total" style="margin-top:10px">Grand Total: ${money(grandTotal)}</div>
-   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.startRazorpayCheckout()">🔒 Pay &amp; Place Order via Razorpay</button>
+   <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.startRazorpayCheckout()">${codAdv === 0 ? '✅ Place COD Order (₹0 Advance)' : '🔒 Pay &amp; Place Order via Razorpay'}</button>
   </div>`;
   if(pr.pincode && pr.pincode.length === 6) onPincodeInput('co');
  }
@@ -1743,14 +1830,14 @@ window.C = (() => {
 
  async function startRazorpayCheckout(){
   let c = getCart();
-  if(!c.length){ alert('Your cart is empty.'); return; }
+  if(!c.length){ appAlert('Your cart is empty.'); return; }
 
   let btn = document.getElementById('c_confirmOrderBtn');
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Verifying Address...'; }
 
   let addr = await getCheckoutAddressData();
   if(addr.err){
-   alert(addr.err);
+   appAlert(addr.err);
    if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
    return;
   }
@@ -1758,23 +1845,30 @@ window.C = (() => {
   let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
   selectedPayMode = payOpt;
 
-  let s = window.storeSettings || {};
-  let rzpKey = (s.razorpayKeyId || '').trim();
-  if(!rzpKey){
-   alert('Admin ne abhi Razorpay Key ID set nahi kiya hai. Please Admin Panel > Seller Form mein Razorpay Key ID dalein.');
-   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
-   return;
-  }
-  if(typeof window.Razorpay !== 'function'){
-   alert('Razorpay SDK load nahi hua hai. Internet connection check karke page refresh karein.');
-   if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
-   return;
-  }
-
   let orderGroups = getProcessedCartOrders(c);
   let grandTotal = orderGroups.reduce((sum, grp) => sum + grp.subtotal + grp.deliveryFee, 0);
   let codAdv = getCodAdvanceAmount();
   let payableNow = (payOpt === 'COD') ? Math.min(codAdv, grandTotal) : grandTotal;
+
+  if(payOpt === 'COD' && payableNow === 0){
+   let codRef = 'COD_FREE_' + Date.now() + '_' + Math.floor(100 + Math.random() * 900);
+   await finalizeOrderAfterRazorpay(addr, payOpt, codRef);
+   return;
+  }
+
+  let s = window.storeSettings || {};
+  let rzpKey = (s.razorpayKeyId || '').trim();
+  if(!rzpKey){
+   appAlert('Admin ne abhi Razorpay Key ID set nahi kiya hai. Please Admin Panel > Seller Form mein Razorpay Key ID dalein.');
+   if(btn){ btn.disabled = false; updatePayBtnLabel(); }
+   return;
+  }
+  if(typeof window.Razorpay !== 'function'){
+   appAlert('Razorpay SDK load nahi hua hai. Internet connection check karke page refresh karein.');
+   if(btn){ btn.disabled = false; updatePayBtnLabel(); }
+   return;
+  }
+
   let amountInPaise = Math.round(payableNow * 100);
 
   let options = {
@@ -1809,7 +1903,7 @@ window.C = (() => {
    handler: async function(response){
     let rzpPaymentId = String(response.razorpay_payment_id || '').trim();
     if(!rzpPaymentId || !rzpPaymentId.startsWith('pay_')){
-     alert('Valid Razorpay Payment ID nahi mila. Order place nahi hua.');
+     appAlert('Valid Razorpay Payment ID nahi mila. Order place nahi hua.');
      if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
      return;
     }
@@ -1825,12 +1919,12 @@ window.C = (() => {
   try{
    let rzp = new window.Razorpay(options);
    rzp.on('payment.failed', function(resp){
-    alert('Payment Failed: ' + (resp.error?.description || 'Transaction declined'));
+    appAlert('Payment Failed: ' + (resp.error?.description || 'Transaction declined'));
     if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
    });
    rzp.open();
   }catch(err){
-   alert('Razorpay error: ' + err.message);
+   appAlert('Razorpay error: ' + err.message);
    if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
   }
  }
@@ -1846,15 +1940,19 @@ window.C = (() => {
   let localOrders = JSON.parse(localStorage.getItem(ORDERS)||'[]');
 
   try {
+   let paidAmtNow = (payOpt === 'COD') ? Math.min(codAdv, grandTotal) : grandTotal;
    if(window.db && window.fbLib){
-    /* Lock paymentRef in used_utrs so one Razorpay payment ID cannot be replayed for fake orders */
-    const utrRef = window.fbLib.doc(window.db, "used_utrs", String(rzpPaymentId));
-    await window.fbLib.setDoc(utrRef, {
-     paymentRef: String(rzpPaymentId),
-     orderCount: orderGroups.length,
-     amountPaid: (payOpt === 'COD') ? Math.min(codAdv, grandTotal) : grandTotal,
-     createdAt: Date.now()
-    });
+    try {
+     const utrRef = window.fbLib.doc(window.db, "used_utrs", String(rzpPaymentId));
+     await window.fbLib.setDoc(utrRef, {
+      paymentRef: String(rzpPaymentId),
+      orderCount: orderGroups.length,
+      amountPaid: paidAmtNow > 0 ? paidAmtNow : grandTotal,
+      createdAt: Date.now()
+     });
+    } catch (utrErr) {
+     console.warn("used_utrs write skipped:", utrErr);
+    }
    }
 
    for (let idx = 0; idx < orderGroups.length; idx++) {
@@ -1872,7 +1970,7 @@ window.C = (() => {
     let advancePaid = (payOpt === 'COD') ? (idx === 0 ? Math.min(codAdv, groupTotalWithDelivery) : 0) : groupTotalWithDelivery;
     let codDue = Math.max(0, groupTotalWithDelivery - advancePaid);
     let payMethodLabel = (payOpt === 'COD')
-     ? `COD (Razorpay Adv ₹${advancePaid} Paid, Due ₹${codDue})`
+     ? (advancePaid > 0 ? `COD (Razorpay Adv ₹${advancePaid} Paid, Due ₹${codDue})` : `Cash on Delivery (₹0 Advance, Due ₹${codDue})`)
      : `Razorpay Full Paid`;
 
     let orderObj = {
@@ -1942,19 +2040,28 @@ window.C = (() => {
    document.getElementById('c_checkoutContent').innerHTML = `<div class="panel">
     <h2 style="color:#168047">✅ Payment Verified &amp; Order Confirmed!</h2>
     <p>Total <b>${orderGroups.length}</b> separate bills/orders confirmed with Shree Estore (Tools Hub Rajkot).</p>
-    <p>Grand Total: <b>${money(grandTotal)}</b> • Paid via Razorpay: <b>${money(paidNowSummary)}</b> (${esc(payOpt)})</p>
-    <p>Razorpay Payment ID: <code>${esc(rzpPaymentId)}</code></p>
+    <p>Grand Total: <b>${money(grandTotal)}</b> • ${paidNowSummary > 0 ? `Paid via Razorpay: <b>${money(paidNowSummary)}</b>` : `<b>COD Confirmed (₹0 Advance)</b>`} (${esc(payOpt)})</p>
+    <p>Reference ID: <code>${esc(rzpPaymentId)}</code></p>
     <p class="small"><b>Verified Address:</b> ${esc(addr.fullAddress)}</p>
     <button class="primary" onclick="C.showPage('c_profile')">View My Orders</button>
    </div>`;
   } catch(err){
    console.error('Order save after Razorpay failed:', err);
-   alert('Payment received (ID: ' + rzpPaymentId + '), but order save error: ' + err.message);
+   appAlert('Payment received (ID: ' + rzpPaymentId + '), but order save error: ' + err.message);
    if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay & Place Order via Razorpay'; }
   }
  }
 
+ function updatePayBtnLabel(){
+  let btn = document.getElementById('c_confirmOrderBtn');
+  if(!btn) return;
+  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
+  let codAdv = getCodAdvanceAmount();
+  btn.textContent = (payOpt === 'COD' && codAdv === 0) ? '✅ Place COD Order (₹0 Advance)' : '🔒 Pay & Place Order via Razorpay';
+ }
+
  return {
+  updatePayBtnLabel,
   onProductsUpdated(){ renderHome(); renderCategoryBrowser(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
   onSettingsUpdated(){ renderCareBanners(); },
   onPincodeInput, onHeroScroll, openPolicyModal, closePolicyModal,
@@ -1991,7 +2098,7 @@ window.A = (() => {
    (s.name || '').trim() &&
    (s.address || '').trim() &&
    (s.phone || '').trim() &&
-   Number(s.codAdvance) > 0 &&
+   Number.isFinite(Number(s.codAdvance)) && Number(s.codAdvance) >= 0 &&
    (s.razorpayKeyId || '').trim()
   );
  }
@@ -2049,7 +2156,7 @@ window.A = (() => {
  async function saveOrderToFirebase(orderData){
   if(!window.db || !window.fbLib) return;
   try{ await window.fbLib.setDoc(window.fbLib.doc(window.db, "orders", String(orderData.number)), orderData); }
-  catch(err){ console.error("Error saving order:", err); alert("Firebase order update failed!"); }
+  catch(err){ console.error("Error saving order:", err); appAlert("Firebase order update failed!"); }
  }
 
  function smartCompressImage(file, maxDim=800, targetBytes=26000){
@@ -2134,15 +2241,10 @@ window.A = (() => {
    return;
   }
 
-  if(isSellerFormComplete() && !sellerFormManuallyExpanded){
-   if(fullWrap) fullWrap.classList.add('hidden');
-   if(collapsedBar) collapsedBar.classList.remove('hidden');
-  } else {
-   if(collapsedBar) collapsedBar.classList.add('hidden');
-   if(fullWrap) fullWrap.classList.remove('hidden');
-   if(loginPanel) loginPanel.classList.remove('hidden');
-   if(profPanel) profPanel.classList.remove('hidden');
-  }
+  if(collapsedBar) collapsedBar.classList.add('hidden');
+  if(fullWrap) fullWrap.classList.remove('hidden');
+  if(loginPanel) loginPanel.classList.remove('hidden');
+  if(profPanel) profPanel.classList.remove('hidden');
  }
 
  function expandSellerAccountSection(){
@@ -2153,9 +2255,9 @@ window.A = (() => {
  function openLoginPanel(){ openSellerAndLogin(); }
  function openSellerForm(){ openSellerAndLogin(); }
  function openSellerAndLogin(){
-  sellerFormManuallyExpanded = false;
+  sellerFormManuallyExpanded = true;
   showPage('a_login');
-  syncProfileVisibility(false);
+  syncProfileVisibility(true);
  }
  function openHeroEditor(){
   closeModal();
@@ -2295,7 +2397,7 @@ window.A = (() => {
    await saveSingleProductToFirebase({ ...x, showcaseImage: compressed, showcase: true });
    renderHeroEditor();
   }catch(err){
-   alert('Hero image upload failed: ' + err.message);
+   appAlert('Hero image upload failed: ' + err.message);
   }
  }
 
@@ -2312,10 +2414,10 @@ window.A = (() => {
     showcase: true,
     heroScheme: { enabled, headline, subline, theme }
    });
-   alert('Hero Card updated!');
+   appAlert('Hero Card updated!');
    renderHeroEditor();
   }catch(err){
-   alert('Save failed: ' + err.message);
+   appAlert('Save failed: ' + err.message);
   }
  }
 
@@ -2565,9 +2667,10 @@ window.A = (() => {
     }
    } else if(col === 'delivery'){
     let n = Number(raw);
-    if(Number.isFinite(n) && n >= 0 && fin.delCharge !== n){
+    if(Number.isFinite(n) && n >= 0 && (fin.delCharge !== n || updated.deliveryChargeB2C === undefined)){
      updated.deliveryCharge = n;
      updated.deliveryChargeB2C = n;
+     updated.deliveryChargeB2B = n;
      updated.totalCost = fin.sellerPrice + fin.gstAmt + n + fin.profit;
      changed = true;
     }
@@ -2678,9 +2781,9 @@ window.A = (() => {
  function closeQuick(){ document.getElementById('a_quickHost').innerHTML=''; }
 
  async function deleteProd(id){
-  if(!confirm('Delete this product permanently?')) return;
+  if(!(await appConfirm('Delete this product permanently?'))) return;
   closeQuick();
-  try{ await deleteProductFromFirebase(id); }catch(err){ alert('Delete failed: '+err.message); }
+  try{ await deleteProductFromFirebase(id); }catch(err){ appAlert('Delete failed: '+err.message); }
  }
  async function toggleShowcase(id){
   let x = products().find(a=>a.id===id); if(!x) return;
@@ -2948,7 +3051,7 @@ window.A = (() => {
    renderAllPhotoSlots();
    if(statusEl) statusEl.textContent = '✅ Photo ready!';
   }catch(err){
-   alert('Could not load photo: ' + err.message);
+   appAlert('Could not load photo: ' + err.message);
   }
  }
 
@@ -2963,7 +3066,7 @@ window.A = (() => {
    renderAllPhotoSlots();
    if(statusEl) statusEl.textContent = '✅ Showcase Hero image ready!';
   }catch(err){
-   alert('Could not load Showcase Hero image: ' + err.message);
+   appAlert('Could not load Showcase Hero image: ' + err.message);
   }
  }
 
@@ -3006,14 +3109,14 @@ window.A = (() => {
   const hsn=document.getElementById('a_fHsn').value.trim();
   const mrpInput=document.getElementById('a_fMrp').value.trim(), priceInput=document.getElementById('a_fPrice').value.trim();
   const mrp=Number(mrpInput), price=Number(priceInput);
-  if(!hsn||mrpInput===''||priceInput===''){ alert('HSN Code, GST Rate, MRP and B2C Price are required.'); return false; }
-  if(!Number.isFinite(mrp)||mrp<0||!Number.isFinite(price)||price<0){ alert('Enter valid MRP and B2C Price.'); return false; }
+  if(!hsn||mrpInput===''||priceInput===''){ appAlert('HSN Code, GST Rate, MRP and B2C Price are required.'); return false; }
+  if(!Number.isFinite(mrp)||mrp<0||!Number.isFinite(price)||price<0){ appAlert('Enter valid MRP and B2C Price.'); return false; }
   const pct=Number(document.getElementById('a_fB2bPct').value);
-  if(!Number.isFinite(pct)||pct<0||pct>100){ alert('B2B Discount must be between 0 and 100%.'); return false; }
+  if(!Number.isFinite(pct)||pct<0||pct>100){ appAlert('B2B Discount must be between 0 and 100%.'); return false; }
   const minQty=Number(document.getElementById('a_fB2bMin').value);
-  if(!Number.isFinite(minQty)||minQty<1){ alert('B2B Min Qty must be at least 1.'); return false; }
+  if(!Number.isFinite(minQty)||minQty<1){ appAlert('B2B Min Qty must be at least 1.'); return false; }
   const b2bInput=document.getElementById('a_fB2bPrice').value.trim();
-  if(b2bInput!==''&&(!Number.isFinite(Number(b2bInput))||Number(b2bInput)<0)){ alert('Enter a valid B2B Price.'); return false; }
+  if(b2bInput!==''&&(!Number.isFinite(Number(b2bInput))||Number(b2bInput)<0)){ appAlert('Enter a valid B2B Price.'); return false; }
   return true;
  }
 
@@ -3030,13 +3133,13 @@ window.A = (() => {
 
  async function saveProduct(id, withPhotos=true, makeLive=true){
   if(!window.adminUser){
-   alert('Product save karne ke liye pehle Admin Login karein.');
+   appAlert('Product save karne ke liye pehle Admin Login karein.');
    return;
   }
   let old = products().find(x=>x.id===id);
   let name=document.getElementById('a_fName').value.trim(), sku=document.getElementById('a_fSku').value.trim();
   let stockInput=document.getElementById('a_fStock'), stock=Number(stockInput.value);
-  if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ alert('Page 1 par Product Name, SKU aur valid Stock bharna zaroori hai.'); goProductStep(1); return; }
+  if(!name||!sku||stockInput.value.trim()===''||!Number.isInteger(stock)||stock<0){ appAlert('Page 1 par Product Name, SKU aur valid Stock bharna zaroori hai.'); goProductStep(1); return; }
   if(!validateProductPricing()){ goProductStep(2); return; }
 
   let sellerPrice=Number(document.getElementById('a_fSellerPrice')?.value) || 0;
@@ -3072,7 +3175,7 @@ window.A = (() => {
     sellerPrice,
     deliveryCharge:deliveryChargeVal,
     deliveryChargeB2C:deliveryChargeVal,
-    deliveryChargeB2B:Number(old?.deliveryChargeB2B) || deliveryChargeVal,
+    deliveryChargeB2B:(old?.deliveryChargeB2B !== undefined && old?.deliveryChargeB2B !== null && old?.deliveryChargeB2B !== '') ? Number(old.deliveryChargeB2B) : deliveryChargeVal,
     profit:profitVal,
     totalCost:totalCostVal,
     mrp,price,b2bPrice,
@@ -3104,7 +3207,7 @@ window.A = (() => {
    const saveMessage = err.code === 'permission-denied'
     ? 'Firebase ne product save block kiya (Missing or insufficient permissions). Admin account se sign-in aur Firestore Rules check karein.'
     : 'Could not save product: ' + err.message;
-   alert(saveMessage);
+   appAlert(saveMessage);
    if(btn){ btn.disabled=false; btn.textContent=withPhotos?'✅ Save & Publish Product':'🚀 Save & Make Live (Without Image)'; }
   }
  }
@@ -3308,11 +3411,11 @@ window.A = (() => {
  }
 
  async function deleteOrder(num){
-  if(!confirm('Delete Order '+num+' permanently from Firebase?')) return;
+  if(!(await appConfirm('Delete Order '+num+' permanently from Firebase?'))) return;
   closeQuick();
   if(window.db && window.fbLib){
    try{ await window.fbLib.deleteDoc(window.fbLib.doc(window.db,'orders',String(num))); }
-   catch(err){ console.error('Firebase order delete failed:',err); alert('Order delete failed: '+err.message); }
+   catch(err){ console.error('Firebase order delete failed:',err); appAlert('Order delete failed: '+err.message); }
   }
  }
 
@@ -3506,6 +3609,7 @@ window.A = (() => {
    <p>CGST: <b>${money(st.taxTotal/2)}</b> • SGST: <b>${money(st.taxTotal/2)}</b> (Total GST: <b>${money(st.taxTotal)}</b>)</p>
    <p>Total Order Value (Incl. GST): <b>${money(st.total)}</b></p>`;
 
+  if(document.activeElement && document.activeElement.closest('#a_profileFormPanel')) return;
   let s = getSellerSettings();
   document.getElementById('a_sellerName').value = s.name||'Shree Estore (Tools Hub Rajkot)';
   document.getElementById('a_sellerGstin').value = s.gstin||'';
@@ -3513,7 +3617,7 @@ window.A = (() => {
   document.getElementById('a_sellerPhone').value = s.phone||'';
   document.getElementById('a_sellerState').value = s.state||'';
   document.getElementById('a_invoicePrefix').value = s.prefix||'';
-  document.getElementById('a_sellerCodAdvance').value = s.codAdvance || 49;
+  document.getElementById('a_sellerCodAdvance').value = (s.codAdvance !== undefined && s.codAdvance !== null && s.codAdvance !== '') ? Number(s.codAdvance) : 49;
   document.getElementById('a_sellerRazorpayKey').value = s.razorpayKeyId||'';
  }
 
@@ -3564,17 +3668,18 @@ window.A = (() => {
 
  async function saveGSTSettings(){
   if(!window.adminUser){
-   alert('Please pehle Admin Login karein, uske baad Seller Form save karein.');
+   appAlert('Please pehle Admin Login karein, uske baad Seller Form save karein.');
    return;
   }
-  let codAdvVal = Number(document.getElementById('a_sellerCodAdvance').value);
-  if(!Number.isFinite(codAdvVal) || codAdvVal < 1){
-   alert('Please valid COD Advance Amount (₹) dalein.');
+  let rawCodAdv = document.getElementById('a_sellerCodAdvance').value.trim();
+  let codAdvVal = rawCodAdv === '' ? 0 : Number(rawCodAdv);
+  if(!Number.isFinite(codAdvVal) || codAdvVal < 0){
+   appAlert('Please valid COD Advance Amount (0 ya zyada ₹) dalein.');
    return;
   }
   let rzpVal = document.getElementById('a_sellerRazorpayKey').value.trim();
   if(!rzpVal){
-   alert('Please Razorpay Live Key ID dalein.');
+   appAlert('Please Razorpay Live Key ID dalein.');
    return;
   }
   const newSettings = {
@@ -3596,10 +3701,10 @@ window.A = (() => {
    window.storeSettings = { ...window.storeSettings, ...newSettings };
    sellerFormManuallyExpanded = false;
    syncProfileVisibility(false);
-   alert('Seller Profile & Razorpay settings saved!');
+   appAlert('Seller Profile & Razorpay settings saved!');
   }catch(err){
    console.error('Save settings error:', err);
-   alert('Save error: ' + (err.message || err.code || 'Check Firebase rules'));
+   appAlert('Save error: ' + (err.message || err.code || 'Check Firebase rules'));
   }finally{
    if(btn){ btn.disabled = false; btn.textContent = 'Save Profile & Razorpay Settings'; }
   }
@@ -3608,8 +3713,8 @@ window.A = (() => {
  /* AUTHENTICATION */
  async function demoLogin(){
   const email=document.getElementById('a_loginEmail').value.trim(), password=document.getElementById('a_loginPassword').value;
-  if(!email||!password){ alert('Enter email and password'); return; }
-  if(!window.adminAuthApi||!window.adminAuth){ alert('Firebase Authentication is not ready.'); return; }
+  if(!email||!password){ appAlert('Enter email and password'); return; }
+  if(!window.adminAuthApi||!window.adminAuth){ appAlert('Firebase Authentication is not ready.'); return; }
   const status=document.getElementById('a_authStatus');
   if(status) status.textContent='Signing in…';
   try{
@@ -3619,13 +3724,13 @@ window.A = (() => {
    console.error('Firebase login failed:',err);
    const messages={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No Firebase admin user exists for this email.','auth/wrong-password':'Password is incorrect.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check internet connection.'};
    const msg = messages[err.code]||('Login failed: '+(err.message||err.code));
-   if(status) status.textContent=msg; alert(msg);
+   if(status) status.textContent=msg; appAlert(msg);
   }
  }
  async function logout(){
-  if(!confirm('Logout from Admin?')) return;
+  if(!(await appConfirm('Logout from Admin?'))) return;
   try{ if(window.adminAuthApi&&window.adminAuth) await window.adminAuthApi.signOut(window.adminAuth); }
-  catch(err){ console.error('Firebase logout failed:',err); alert('Logout failed. Please retry.'); }
+  catch(err){ console.error('Firebase logout failed:',err); appAlert('Logout failed. Please retry.'); }
  }
 
  initHeaderSortLongPress();
@@ -3635,8 +3740,12 @@ window.A = (() => {
   get cloudSettings(){ return cloudSettings; },
   set cloudSettings(v){ cloudSettings = v; },
   onOpen(){
-   if(window.adminUser){ startFirebaseListeners(); }
-   else showPage('a_login');
+   if(window.adminUser){
+    startFirebaseListeners();
+    showPage('a_dashboard');
+   } else {
+    showPage('a_login');
+   }
   },
   authChanged(user){
    const status = document.getElementById('a_authStatus');
@@ -3644,12 +3753,12 @@ window.A = (() => {
     if(status) status.textContent = 'Signed in: ' + (user.email||'Firebase admin');
     startFirebaseListeners();
     syncProfileVisibility(false);
-    showPage('a_dashboard');
+    if(isAdminRoute()) showPage('a_dashboard');
    } else {
     if(status) status.textContent = 'Not signed in. Use your Firebase admin email and password.';
     stopFirebaseListeners();
     syncProfileVisibility(false);
-    if(window.location.hash === '#admin') showPage('a_login');
+    if(isAdminRoute()) showPage('a_login');
    }
   },
   showPage, syncProfileVisibility, expandSellerAccountSection, toggleProfileEditPanel, toggleLoginPanel, openLoginPanel, openSellerForm, openSellerAndLogin, openHeroEditor, openOrderList, openGSTManagement,
