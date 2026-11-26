@@ -3205,7 +3205,7 @@ window.A = (() => {
   }catch(err){
    console.error('Save product error:',err);
    const saveMessage = err.code === 'permission-denied'
-    ? 'Firebase ne product save block kiya (Missing or insufficient permissions). Admin account se sign-in aur Firestore Rules check karein.'
+    ? 'Firebase ne product save block kiya (Missing or insufficient permissions). UID: ' + (window.adminUser?.uid || 'none') + ' — Firestore Rules aur App Check check karein.'
     : 'Could not save product: ' + err.message;
    appAlert(saveMessage);
    if(btn){ btn.disabled=false; btn.textContent=withPhotos?'✅ Save & Publish Product':'🚀 Save & Make Live (Without Image)'; }
@@ -3704,7 +3704,7 @@ window.A = (() => {
    appAlert('Seller Profile & Razorpay settings saved!');
   }catch(err){
    console.error('Save settings error:', err);
-   appAlert('Save error: ' + (err.message || err.code || 'Check Firebase rules'));
+   appAlert('Save error: ' + (err.message || err.code || 'Check Firebase rules') + ' | UID: ' + (window.adminUser?.uid || 'none'));
   }finally{
    if(btn){ btn.disabled = false; btn.textContent = 'Save Profile & Razorpay Settings'; }
   }
@@ -3750,7 +3750,7 @@ window.A = (() => {
   authChanged(user){
    const status = document.getElementById('a_authStatus');
    if(user){
-    if(status) status.textContent = 'Signed in: ' + (user.email||'Firebase admin');
+    if(status) status.textContent = 'Signed in: ' + (user.email||'Firebase admin') + ' | UID: ' + user.uid;
     startFirebaseListeners();
     syncProfileVisibility(false);
     if(isAdminRoute()) showPage('a_dashboard');
