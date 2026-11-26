@@ -1755,16 +1755,17 @@ window.C = (() => {
    <h3>Payment Method (Razorpay Secure Checkout)</h3>
    <div style="margin:8px 0 12px">
     <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
-     <input type="radio" name="c_payOpt" value="COD" checked onchange="C.updatePayBtnLabel()">
+     <input type="radio" name="c_payOpt" value="COD" ${selectedPayMode!=='Online'?'checked':''} onchange="C.updatePayBtnLabel()">
      <span>${codAdv === 0
-      ? `💵 Cash on Delivery (COD) — <b>₹0 Advance (No Advance)</b> • Full ${money(grandTotal)} Cash on Delivery`
-      : `💵 Cash on Delivery (COD) — <b>${money(Math.min(codAdv, grandTotal))} Advance via Razorpay</b> (Baaki ${money(Math.max(0, grandTotal - codAdv))} Cash on Delivery)`}</span>
+      ? `💵 Cash on Delivery (COD) — <b>₹0 Advance (No Advance)</b> • Full ${money(grandTotal)} Delivery par Cash`
+      : `💵 Cash on Delivery (COD) — <b>${money(Math.min(codAdv, grandTotal))} Advance abhi (Razorpay)</b> • Baaki <b>${money(Math.max(0, grandTotal - Math.min(codAdv, grandTotal)))}</b> Delivery par Cash`}</span>
     </label>
     <label class="checkrow" style="padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;background:#f8fafc">
-     <input type="radio" name="c_payOpt" value="Online" onchange="C.updatePayBtnLabel()">
+     <input type="radio" name="c_payOpt" value="Online" ${selectedPayMode==='Online'?'checked':''} onchange="C.updatePayBtnLabel()">
      <span>💳 Online Payment (UPI / QR / Card) — <b>Full Payment ${money(grandTotal)} via Razorpay</b></span>
     </label>
    </div>
+   <div id="c_payBreakdownBox" style="background:#f4faff;border:1.5px solid #93c5fd;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px"></div>
 
    <h3>Order Summary (${orderGroups.length} Separate Bills/Parcels)</h3>
    ${orderGroups.map((grp, gIdx)=>{
@@ -1777,7 +1778,19 @@ window.C = (() => {
    <div class="total" style="margin-top:10px">Grand Total: ${money(grandTotal)}</div>
    <button class="primary" id="c_confirmOrderBtn" style="width:100%;margin-top:12px" onclick="C.startRazorpayCheckout()">${codAdv === 0 ? '✅ Place COD Order (₹0 Advance)' : '🔒 Pay &amp; Place Order via Razorpay'}</button>
   </div>`;
+  updatePayBtnLabel();
   if(pr.pincode && pr.pincode.length === 6) onPincodeInput('co');
+  if(window.db && window.fbLib?.getDoc){
+   window.fbLib.getDoc(window.fbLib.doc(window.db, "settings", "store_profile")).then(snap => {
+    if(snap.exists()){
+     let oldAdv = getCodAdvanceAmount();
+     window.storeSettings = { ...window.storeSettings, ...snap.data() };
+     if(getCodAdvanceAmount() !== oldAdv && document.getElementById('c_checkout')?.classList.contains('active')){
+      renderCheckout();
+     }
+    }
+   }).catch(()=>{});
+  }
  }
 
  async function getCheckoutAddressData(){
@@ -2053,17 +2066,39 @@ window.C = (() => {
  }
 
  function updatePayBtnLabel(){
+  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
+  selectedPayMode = payOpt;
+  let c = getCart();
+  let orderGroups = getProcessedCartOrders(c);
+  let grandTotal = orderGroups.reduce((s,grp)=>s + grp.subtotal + grp.deliveryFee, 0);
+  let codAdv = getCodAdvanceAmount();
+  let advNow = (payOpt === 'COD') ? Math.min(codAdv, grandTotal) : grandTotal;
+  let dueLater = Math.max(0, grandTotal - advNow);
+
+  let box = document.getElementById('c_payBreakdownBox');
+  if(box){
+   box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Order Amount:</span><b>${money(grandTotal)}</b></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#0756a5"><span>${payOpt==='COD' ? 'Abhi Online Advance (Razorpay):' : 'Abhi Full Online Payment (Razorpay):'}</span><b>${advNow > 0 ? '- ' + money(advNow) : '₹0 (No Advance)'}</b></div>
+    <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:1px dashed #93c5fd;font-size:14px;color:#07366c"><span><b>Delivery par Baaki Cash (COD):</b></span><b style="color:${dueLater>0?'#b45309':'#168047'}">${money(dueLater)}</b></div>
+   `;
+  }
+
   let btn = document.getElementById('c_confirmOrderBtn');
   if(!btn) return;
-  let payOpt = document.querySelector('input[name="c_payOpt"]:checked')?.value || 'COD';
-  let codAdv = getCodAdvanceAmount();
-  btn.textContent = (payOpt === 'COD' && codAdv === 0) ? '✅ Place COD Order (₹0 Advance)' : '🔒 Pay & Place Order via Razorpay';
+  if(payOpt === 'COD' && advNow === 0){
+   btn.textContent = `✅ Place COD Order (${money(dueLater)} Cash on Delivery)`;
+  } else if(payOpt === 'COD'){
+   btn.textContent = `🔒 Pay ${money(advNow)} Advance & Place Order (Baaki ${money(dueLater)} COD)`;
+  } else {
+   btn.textContent = `🔒 Pay ${money(advNow)} Online & Place Order`;
+  }
  }
 
  return {
   updatePayBtnLabel,
   onProductsUpdated(){ renderHome(); renderCategoryBrowser(); if(document.getElementById('c_all').classList.contains('active')) renderListing(); },
-  onSettingsUpdated(){ renderCareBanners(); },
+  onSettingsUpdated(){ renderCareBanners(); if(document.getElementById('c_checkout')?.classList.contains('active')) renderCheckout(); },
   onPincodeInput, onHeroScroll, openPolicyModal, closePolicyModal,
   showPage, openDetails, selectDetailImage, detailTouchStart, detailTouchEnd, handleDetailQtyChange, addToCart, changeQty, removeCart,
   renderCart, renderCheckout, toggleCheckoutAddressForm, startRazorpayCheckout, openCategory,
